@@ -3,7 +3,14 @@
  * All methods will be combined to set turns, make moves, etc.
  *
  * AI will be implemented later.
+ * 
+ * TODO: Add images
  * **/
+
+/**
+ * Chess piece images from https://commons.wikimedia.org/wiki/Category:PNG_chess_pieces/Standard_transparent
+ *
+ **/
 
 
 public class Hackberry {
