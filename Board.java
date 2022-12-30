@@ -44,9 +44,9 @@ public class Board extends JComponent implements MouseListener {
         for(int i = 0; i < NUM_SQUARES; i++){
             for(int j = 0; j < NUM_SQUARES; j++){
                 if(flag)
-                    squares[i][j] = new Square(X_OFFSET + i * SQUARE_WIDTH, Y_OFFSET + j * SQUARE_WIDTH, SQUARE_WIDTH, WHITE);
+                    squares[i][j] = new Square(i, j, SQUARE_WIDTH, WHITE);
                 else
-                    squares[i][j] = new Square(X_OFFSET + i * SQUARE_WIDTH, Y_OFFSET + j * SQUARE_WIDTH, SQUARE_WIDTH, BLACK);
+                    squares[i][j] = new Square(i, j, SQUARE_WIDTH, BLACK);
 
                 // Carrying on the color if at the end of the column
                 if(j != NUM_SQUARES - 1)
@@ -55,46 +55,12 @@ public class Board extends JComponent implements MouseListener {
         }
     }
 
-
-    /*
-    public void placePiece(int i, int j, char pieceType){
-        switch(pieceType){
-            case 'R':
-                if(j == 0) pieces[i][j] = new Piece(i, j, "black-rook");
-                else pieces[i][j] = new Piece(i, j, "white-rook");
-            break;
-            case 'N':
-                if(j == 0) pieces[i][j] = new Piece(i, j, "black-knight");
-                else pieces[i][j] = new Piece(i, j, "white-knight");
-            break;
-            case 'B':
-                if(j == 0) pieces[i][j] = new Piece(i, j, "black-bishop");
-                else pieces[i][j] = new Piece(i, j, "white-bishop");
-            break;
-            case 'Q':
-                if(j == 0) pieces[i][j] = new Piece(i, j, "black-queen");
-                else pieces[i][j] = new Piece(i, j, "white-queen");
-            break;
-            case 'K':
-                if(j == 0) pieces[i][j] = new Piece(i, j, "black-king");
-                else pieces[i][j] = new Piece(i, j, "white-king");
-            break;
-            case 'P':
-                if(j == 1) pieces[i][j] = new Piece(i, j, "black-pawn");
-                else pieces[i][j] = new Piece(i, j, "white-pawn");
-            break;
-
-            default:
-                // None
-        }
-    }*/
-
     public void initPieces(){
         pieces = new Piece[NUM_SQUARES][NUM_SQUARES];
 
         for(int i = 0; i < NUM_SQUARES; i++){
             for(int j = 0; j < NUM_SQUARES; j++){
-                pieces[i][j] = new Piece(i * SQUARE_WIDTH + X_OFFSET, j * SQUARE_WIDTH + Y_OFFSET, boardState[i][j]);
+                pieces[i][j] = new Piece(i, j, boardState[i][j]);
             }
         }
     }
@@ -102,7 +68,6 @@ public class Board extends JComponent implements MouseListener {
     public Board(){
         this.initSquares();
         this.initPieces();
-
 
         // Add mouse listener
         addMouseListener(this);
@@ -118,6 +83,11 @@ public class Board extends JComponent implements MouseListener {
         for (int i = 0; i < NUM_SQUARES; i++){
             for (int j = 0; j < NUM_SQUARES; j++) {
                 squares[i][j].paint(g);
+            }
+        }
+
+        for (int i = 0; i < NUM_SQUARES; i++){
+            for (int j = 0; j < NUM_SQUARES; j++) {
                 pieces[i][j].paint(g);
             }
         }
@@ -132,11 +102,8 @@ public class Board extends JComponent implements MouseListener {
                 if(squares[i][j].contains(e.getX(), e.getY())){
                     // Second click
                     if(numClicks == 1){
-                        numClicks = 0;
-                        pieces[i][j].setPiece(i * SQUARE_WIDTH + X_OFFSET, j * SQUARE_WIDTH + Y_OFFSET, prevPieceType);
-                        pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0] * SQUARE_WIDTH + X_OFFSET,
-                                                                      prevCoords[1] * SQUARE_WIDTH + Y_OFFSET,
-                                                                    "");
+                        pieces[i][j].setPiece(i, j, prevPieceType);
+                        pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1],"");
 
                         squares[i][j].deselectSquare();
                         squares[prevCoords[0]][prevCoords[1]].deselectSquare();
@@ -144,6 +111,7 @@ public class Board extends JComponent implements MouseListener {
                         // Reset
                         prevCoords[0] = -1;
                         prevCoords[1] = -1;
+                        numClicks = 0;
 
                     } else {
                         numClicks++;
@@ -158,27 +126,6 @@ public class Board extends JComponent implements MouseListener {
                 }
             }
         }
-
-
-        /* Pseudocode
-        * IF clicked in a square
-        *       numClicks++;
-        *
-        *       IF numClicks == 1
-        *           numClicks = 0;
-        *           Move the piece to that square.
-        *           if(pieces[selectedX][selectedY].legalMove(i, j))
-        *               pieces[selectedX][selectedY].moveTo(i, j);
-        *               selectedX = -1;
-        *               selectedY = -1;
-        *               pieces[i][j] = null;
-        *
-        *       ELSE
-        *           select that square
-        *           selectedX = that_square_x;
-         *          selectedY = that_square_y;
-        *
-        * */
     }
 
     @Override
