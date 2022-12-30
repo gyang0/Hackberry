@@ -12,15 +12,18 @@ import javax.swing.JFrame;
 public class Square extends JFrame {
     private int x;
     private int y;
+
     private int w;
     private Color col;
     private boolean activeMode;
 
     private final Color ACTIVE_COLOR = new Color(255, 255, 25);
+    private final int X_OFFSET = 100;
+    private final int Y_OFFSET = 100;
 
     public Square(int x, int y, int w, Color col){
-        this.x = x;
-        this.y = y;
+        this.x = x * w + X_OFFSET;
+        this.y = y * w + Y_OFFSET;
         this.w = w;
         this.col = col;
     }
