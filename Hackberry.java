@@ -3,8 +3,9 @@
  * All methods will be combined to set turns, make moves, etc.
  *
  * AI will be implemented later.
- * 
+ *
  * TODO: Add images
+ * TODO: Fix piece movement bug
  * **/
 
 /**
