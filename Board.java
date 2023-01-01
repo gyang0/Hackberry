@@ -29,8 +29,8 @@ public class Board extends JComponent implements MouseListener {
     private final int X_OFFSET = 100;
     private final int Y_OFFSET = 100;
 
-    private final Color WHITE = new Color(0xFFFFFF);
-    private final Color BLACK = new Color(0x000000);
+    private final Color WHITE = new Color(184,139,74);
+    private final Color BLACK = new Color(227,193,111);
 
     private int numClicks = 0;
     private int[] prevCoords = {-1, -1};
@@ -60,7 +60,8 @@ public class Board extends JComponent implements MouseListener {
 
         for(int i = 0; i < NUM_SQUARES; i++){
             for(int j = 0; j < NUM_SQUARES; j++){
-                pieces[i][j] = new Piece(i, j, boardState[i][j]);
+                // Reversed coordinates for display
+                pieces[j][i] = new Piece(j, i, boardState[i][j]);
             }
         }
     }
@@ -102,16 +103,26 @@ public class Board extends JComponent implements MouseListener {
                 if(squares[i][j].contains(e.getX(), e.getY())){
                     // Second click
                     if(numClicks == 1){
-                        pieces[i][j].setPiece(i, j, prevPieceType);
-                        pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1],"");
+                        // Clicked same square (deselect)
+                        if(i == prevCoords[0] && j == prevCoords[1]) {
+                            squares[i][j].deselectSquare();
 
-                        squares[i][j].deselectSquare();
-                        squares[prevCoords[0]][prevCoords[1]].deselectSquare();
+                            // Reset
+                            prevCoords[0] = -1;
+                            prevCoords[1] = -1;
+                            numClicks = 0;
+                        } else {
+                            pieces[i][j].setPiece(i, j, prevPieceType);
+                            pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1],"");
 
-                        // Reset
-                        prevCoords[0] = -1;
-                        prevCoords[1] = -1;
-                        numClicks = 0;
+                            squares[i][j].deselectSquare();
+                            squares[prevCoords[0]][prevCoords[1]].deselectSquare();
+
+                            // Reset
+                            prevCoords[0] = -1;
+                            prevCoords[1] = -1;
+                            numClicks = 0;
+                        }
 
                     } else {
                         numClicks++;
