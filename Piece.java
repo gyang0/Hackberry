@@ -1,12 +1,8 @@
+import javax.swing.*;
 import java.awt.*;
 
 /**
  * Individual pieces on the chessboard
- *
- * TODO
- * Moving to different squares
- *
- *
  * **/
 
 public class Piece {
@@ -27,8 +23,8 @@ public class Piece {
     private final int Y_OFFSET = 100;
 
     public Piece(int i, int j, String type){
-        this.x = j * SQUARE_WIDTH + X_OFFSET;
-        this.y = i * SQUARE_WIDTH + Y_OFFSET;
+        this.x = i * SQUARE_WIDTH + X_OFFSET;
+        this.y = j * SQUARE_WIDTH + Y_OFFSET;
 
         this.gridX = i;
         this.gridY = j;
@@ -37,8 +33,8 @@ public class Piece {
     }
 
     public void setPiece(int x, int y, String type){
-        this.x = y * SQUARE_WIDTH + X_OFFSET;
-        this.y = x * SQUARE_WIDTH + Y_OFFSET;
+        this.x = x * SQUARE_WIDTH + X_OFFSET;
+        this.y = y * SQUARE_WIDTH + Y_OFFSET;
 
         this.gridX = x;
         this.gridY = y;
@@ -54,20 +50,30 @@ public class Piece {
         g.setColor(Color.YELLOW);
         g.setFont(Font.decode(PIECE_FONT));
 
-        if(this.type.equals("wp")) g.drawString("\u2659", this.x, this.y + 40);
-        else if(this.type.equals("wr")) g.drawString("\u2656", this.x, this.y + 40);
-        else if(this.type.equals("wn")) g.drawString("\u2658", this.x, this.y + 40);
-        else if(this.type.equals("wb")) g.drawString("\u2657", this.x, this.y + 40);
-        else if(this.type.equals("wq")) g.drawString("\u2655", this.x, this.y + 40);
-        else if(this.type.equals("wk")) g.drawString("\u2654", this.x, this.y + 40);
+        //BufferedImage img = ImageIO.read(new File("/imgs/white_pawn.png"));
 
-        else if(this.type.equals("bp")) g.drawString("\u265F", this.x, this.y + 40);
-        else if(this.type.equals("br")) g.drawString("\u265C", this.x, this.y + 40);
-        else if(this.type.equals("bn")) g.drawString("\u265E", this.x, this.y + 40);
-        else if(this.type.equals("bb")) g.drawString("\u265D", this.x, this.y + 40);
-        else if(this.type.equals("bq")) g.drawString("\u265B", this.x, this.y + 40);
-        else if(this.type.equals("bk")) g.drawString("\u265A", this.x, this.y + 40);
-        else g.drawString("", this.x, this.y + 40);
+        //if(this.type.equals("wp")) img = ImageIO.read(new File("/imgs/white_pawn.png"));
+        //else if(this.type.equals("wr")) img = ImageIO.read(new File("/imgs/white_rook.png"));
+
+        if(!this.type.equals("")){
+            ImageIcon img = null;
+
+            if(this.type.equals("wp")) img = new ImageIcon("src/imgs/white_pawn.png");
+            else if(this.type.equals("wr")) img = new ImageIcon("src/imgs/white_rook.png");
+            else if(this.type.equals("wn")) img = new ImageIcon("src/imgs/white_knight.png");
+            else if(this.type.equals("wb")) img = new ImageIcon("src/imgs/white_bishop.png");
+            else if(this.type.equals("wq")) img = new ImageIcon("src/imgs/white_queen.png");
+            else if(this.type.equals("wk")) img = new ImageIcon("src/imgs/white_king.png");
+            else if(this.type.equals("bp")) img = new ImageIcon("src/imgs/black_pawn.png");
+            else if(this.type.equals("br")) img = new ImageIcon("src/imgs/black_rook.png");
+            else if(this.type.equals("bn")) img = new ImageIcon("src/imgs/black_knight.png");
+            else if(this.type.equals("bb")) img = new ImageIcon("src/imgs/black_bishop.png");
+            else if(this.type.equals("bq")) img = new ImageIcon("src/imgs/black_queen.png");
+            else img = new ImageIcon("src/imgs/black_king.png");
+
+            Image i = img.getImage();
+            g.drawImage(i, this.x, this.y, SQUARE_WIDTH, SQUARE_WIDTH, null);
+        }
     }
 
 
