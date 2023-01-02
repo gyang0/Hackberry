@@ -89,8 +89,34 @@ public class Piece {
          *
          * Not between 6th and 8th rank - return false;
          * */
-        } else if(this.type.equals("wn")){
-            
+
+            // Basic form for now
+            if(toX == this.gridX && (this.gridY - toY == 1 || this.gridY - toY == 2))
+                return true;
+
+        } else if(this.type.equals("wn") || this.type.equals("bn")){
+            if(Math.abs(toX - this.gridX) == 2 && Math.abs(toY - this.gridY) == 1)
+                return true;
+            else if(Math.abs(toX - this.gridX) == 1 && Math.abs(toY - this.gridY) == 2)
+                return true;
+
+        } else if(this.type.equals("wb") || this.type.equals("bb")){
+            if(Math.abs(toX - this.gridX) == Math.abs(toY - this.gridY))
+                return true;
+
+        } else if(this.type.equals("wr") || this.type.equals("br")){
+            if(toX == this.gridX) return true;
+            if(toY == this.gridY) return true;
+
+        } else if(this.type.equals("wk") || this.type.equals("bk")){
+            if(Math.abs(toX - this.gridX) <= 1 && Math.abs(toY - this.gridY) <= 1)
+                return true;
+
+        } else if(this.type.equals("wq") || this.type.equals("bq")){
+            // Queen is a rook and bishop combined.
+            if(toX == this.gridX) return true;
+            if(toY == this.gridY) return true;
+            if(Math.abs(toX - this.gridX) == Math.abs(toY - this.gridY)) return true;
         }
 
         return false;
