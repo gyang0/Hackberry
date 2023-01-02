@@ -84,6 +84,14 @@ public class Board extends JComponent implements MouseListener {
         for (int i = 0; i < NUM_SQUARES; i++){
             for (int j = 0; j < NUM_SQUARES; j++) {
                 squares[i][j].paint(g);
+
+                // Selected a piece
+                if(prevCoords[0] != -1 && prevCoords[1] != -1){
+                    if(pieces[prevCoords[0]][prevCoords[1]].legalMove(i, j)){
+                        g.setColor(Color.GRAY);
+                        g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
+                    }
+                }
             }
         }
 
@@ -107,8 +115,11 @@ public class Board extends JComponent implements MouseListener {
                         if(i == prevCoords[0] && j == prevCoords[1]) {
                             squares[i][j].deselectSquare();
                         } else {
-                            pieces[i][j].setPiece(i, j, prevPieceType);
-                            pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1],"");
+                            // Legal move
+                            if(pieces[prevCoords[0]][prevCoords[1]].legalMove(i, j)){
+                                pieces[i][j].setPiece(i, j, prevPieceType);
+                                pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1],"");
+                            }
 
                             squares[prevCoords[0]][prevCoords[1]].deselectSquare();
                         }
