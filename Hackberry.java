@@ -4,8 +4,7 @@
  *
  * AI will be implemented later.
  *
- * TODO: Add images
- * TODO: Fix piece movement bug
+ * TODO: Blank square click + piece click shouldn't remove pieces
  * **/
 
 /**
