@@ -89,6 +89,8 @@ public class Piece {
          *
          * Not between 6th and 8th rank - return false;
          * */
+        } else if(this.type.equals("wn")){
+            
         }
 
         return false;
