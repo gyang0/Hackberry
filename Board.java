@@ -106,23 +106,18 @@ public class Board extends JComponent implements MouseListener {
                         // Clicked same square (deselect)
                         if(i == prevCoords[0] && j == prevCoords[1]) {
                             squares[i][j].deselectSquare();
-
-                            // Reset
-                            prevCoords[0] = -1;
-                            prevCoords[1] = -1;
-                            numClicks = 0;
                         } else {
                             pieces[i][j].setPiece(i, j, prevPieceType);
                             pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1],"");
 
-                            squares[i][j].deselectSquare();
                             squares[prevCoords[0]][prevCoords[1]].deselectSquare();
-
-                            // Reset
-                            prevCoords[0] = -1;
-                            prevCoords[1] = -1;
-                            numClicks = 0;
                         }
+
+                        // Reset
+                        squares[i][j].deselectSquare();
+                        prevCoords[0] = -1;
+                        prevCoords[1] = -1;
+                        numClicks = 0;
 
                     } else {
                         numClicks++;
