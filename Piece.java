@@ -7,6 +7,7 @@ import java.awt.*;
 
 public class Piece {
     private String type;
+    private char side;
 
     // this.x and this.y are the displaying coordinates.
     private int x;
@@ -22,7 +23,7 @@ public class Piece {
     private final int X_OFFSET = 100;
     private final int Y_OFFSET = 100;
 
-    public Piece(int i, int j, String type){
+    public Piece(int i, int j, String type, char side){
         this.x = i * SQUARE_WIDTH + X_OFFSET;
         this.y = j * SQUARE_WIDTH + Y_OFFSET;
 
@@ -30,9 +31,10 @@ public class Piece {
         this.gridY = j;
 
         this.type = type;
+        this.side = side;
     }
 
-    public void setPiece(int x, int y, String type){
+    public void setPiece(int x, int y, String type, char side){
         this.x = x * SQUARE_WIDTH + X_OFFSET;
         this.y = y * SQUARE_WIDTH + Y_OFFSET;
 
@@ -40,11 +42,14 @@ public class Piece {
         this.gridY = y;
 
         this.type = type;
+        this.side = side;
     }
 
     public String getType(){
         return this.type;
     }
+
+    public char getSide(){ return this.side; }
 
     public void paint(Graphics g){
         g.setColor(Color.YELLOW);
@@ -77,24 +82,41 @@ public class Piece {
     }
 
 
-    public boolean legalMove(int toX, int toY){
-        if (this.type.equals("wp")) {/*
-         * Still on first rank
-         * - Path not blocked
-         * - One move forward or one move backwards
-         *
-         * Not on first rank
-         * - Path not blocked
-         * - A diagonal capture
-         *
-         * Not between 6th and 8th rank - return false;
-         * */
+    public boolean legalMove(int toX, int toY, Piece[][] pieces){
+        if (this.type.equals("wp")) {
+            // If the move is diagonal
+            if(toX == this.gridX - 1 || toX == this.gridX + 1){
+                if(toX == this.gridX - 1 && toY == this.gridY - 1 && pieces[toX][toY].side == 'b') return true;
+                else if(toX == this.gridX + 1 && toY == this.gridY - 1 && pieces[toX][toY].side == 'b') return true;
+            }
 
-            // Basic form for now
-            if(toX == this.gridX && (this.gridY - toY == 1 || this.gridY - toY == 2))
-                return true;
+            // If the pawn hasn't moved yet
+            if(this.gridY == 6){
+                if(this.gridX == toX && toY == 5 && pieces[toX][toY].side == ' ') return true;
+                if(this.gridX == toX && toY == 4 && pieces[toX][toY].side == ' ' && pieces[toX][toY + 1].side == ' ') return true;
+            }
+
+            else if(toX == this.gridX && toY == this.gridY - 1 && pieces[toX][toY].side == ' ') return true;
+
+        } else if(this.type.equals("bp")){
+            // If the move is diagonal
+            if(toX == this.gridX - 1 || toX == this.gridX + 1){
+                if(toX == this.gridX - 1 && toY == this.gridY + 1 && pieces[toX][toY].side == 'w') return true;
+                else if(toX == this.gridX + 1 && toY == this.gridY + 1 && pieces[toX][toY].side == 'w') return true;
+            }
+
+            // If the pawn hasn't moved yet
+            if(this.gridY == 1){
+                if(this.gridX == toX && toY == 2 && pieces[toX][toY].side == ' ') return true;
+                if(this.gridX == toX && toY == 3 && pieces[toX][toY].side == ' ' && pieces[toX][toY - 1].side == ' ') return true;
+            }
+
+            else if(toX == this.gridX && toY == this.gridY + 1 && pieces[toX][toY].side == ' ') return true;
 
         } else if(this.type.equals("wn") || this.type.equals("bn")){
+            // Can't capture pieces on its own side
+            if(pieces[toX][toY].side == 'w') return false;
+
             if(Math.abs(toX - this.gridX) == 2 && Math.abs(toY - this.gridY) == 1)
                 return true;
             else if(Math.abs(toX - this.gridX) == 1 && Math.abs(toY - this.gridY) == 2)
