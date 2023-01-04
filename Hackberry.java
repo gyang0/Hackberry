@@ -4,7 +4,6 @@
  *
  * AI will be implemented later.
  *
- * TODO: Blank square click + piece click shouldn't remove pieces
  * **/
 
 /**
