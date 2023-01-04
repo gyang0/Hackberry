@@ -1,3 +1,8 @@
+/** Milestones
+ * Jan 4, 2023 - Successfully recreated the Opera Game (Paul Morphy vs Duke of Brunswick & Count Isouard, 1858).
+ *
+ * **/
+
 /**
  * This is where most of the stuff will take place.
  * All methods will be combined to set turns, make moves, etc.
