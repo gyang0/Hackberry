@@ -17,7 +17,7 @@ public class Square extends JFrame {
     private Color col;
     private boolean activeMode;
 
-    private final Color ACTIVE_COLOR = new Color(255, 255, 25);
+    private final Color ACTIVE_COLOR = new Color(50, 50, 50, 200);
     private final int X_OFFSET = 100;
     private final int Y_OFFSET = 100;
 
