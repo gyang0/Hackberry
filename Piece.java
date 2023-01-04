@@ -9,6 +9,8 @@ public class Piece {
     private String type;
     private char side;
 
+    public int numMoves = 0;
+
     // this.x and this.y are the displaying coordinates.
     private int x;
     private int y;
@@ -83,6 +85,10 @@ public class Piece {
 
 
     public boolean legalMove(int toX, int toY, Piece[][] pieces){
+        // Can't capture pieces on its own side
+        if(pieces[toX][toY].side == this.type.charAt(0))
+            return false;
+
         if (this.type.equals("wp")) {
             // If the move is diagonal
             if(toX == this.gridX - 1 || toX == this.gridX + 1){
@@ -114,9 +120,6 @@ public class Piece {
             else if(toX == this.gridX && toY == this.gridY + 1 && pieces[toX][toY].side == ' ') return true;
 
         } else if(this.type.equals("wn") || this.type.equals("bn")){
-            // Can't capture pieces on its own side
-            if(pieces[toX][toY].side == 'w') return false;
-
             if(Math.abs(toX - this.gridX) == 2 && Math.abs(toY - this.gridY) == 1)
                 return true;
             else if(Math.abs(toX - this.gridX) == 1 && Math.abs(toY - this.gridY) == 2)
@@ -130,7 +133,53 @@ public class Piece {
             if(toX == this.gridX) return true;
             if(toY == this.gridY) return true;
 
-        } else if(this.type.equals("wk") || this.type.equals("bk")){
+        } else if(this.type.equals("wk")){
+            // Kingside castling
+            if(this.numMoves == 0 && toX == 6 && toY == this.gridY){
+                // Rook hasn't moved
+                if(pieces[7][this.gridY].getType().equals("wr") && pieces[7][this.gridY].numMoves == 0){
+                    // All spaces cleared
+                    if(pieces[5][this.gridY].side == ' ' && pieces[6][this.gridY].side == ' ')
+                        return true;
+                }
+            }
+
+            // Queenside castling
+            else if(this.numMoves == 0 && toX == 2 && toY == this.gridY){
+                // Rook hasn't moved
+                if(pieces[0][this.gridY].getType().equals("wr") && pieces[0][this.gridY].numMoves == 0){
+                    // All spaces cleared
+                    if(pieces[1][this.gridY].side == ' ' && pieces[2][this.gridY].side == ' ' && pieces[3][this.gridY].side == ' ')
+                        return true;
+                }
+            }
+
+
+            if(Math.abs(toX - this.gridX) <= 1 && Math.abs(toY - this.gridY) <= 1)
+                return true;
+
+        } else if(this.type.equals("bk")){
+            // Kingside castling
+            if(this.numMoves == 0 && toX == 6 && toY == this.gridY){
+                // Rook hasn't moved
+                if(pieces[7][this.gridY].getType().equals("br") && pieces[7][this.gridY].numMoves == 0){
+                    // All spaces cleared
+                    if(pieces[5][this.gridY].side == ' ' && pieces[6][this.gridY].side == ' ')
+                        return true;
+                }
+            }
+
+            // Queenside castling
+            else if(this.numMoves == 0 && toX == 2 && toY == this.gridY){
+                // Rook hasn't moved
+                if(pieces[0][this.gridY].getType().equals("br") && pieces[0][this.gridY].numMoves == 0){
+                    // All spaces cleared
+                    if(pieces[1][this.gridY].side == ' ' && pieces[2][this.gridY].side == ' ' && pieces[3][this.gridY].side == ' ')
+                        return true;
+                }
+            }
+
+
             if(Math.abs(toX - this.gridX) <= 1 && Math.abs(toY - this.gridY) <= 1)
                 return true;
 
