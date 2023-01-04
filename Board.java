@@ -37,21 +37,22 @@ public class Board extends JComponent implements MouseListener {
     private int[] prevCoords = {-1, -1};
     private String prevPieceType = "";
     private char prevPieceSide = ' ';
+    private boolean myTurn = true;
 
-    public void initSquares(){
+    public void initSquares() {
         squares = new Square[NUM_SQUARES][NUM_SQUARES];
 
         boolean flag = true;
 
-        for(int i = 0; i < NUM_SQUARES; i++){
-            for(int j = 0; j < NUM_SQUARES; j++){
-                if(flag)
+        for (int i = 0; i < NUM_SQUARES; i++) {
+            for (int j = 0; j < NUM_SQUARES; j++) {
+                if (flag)
                     squares[i][j] = new Square(i, j, SQUARE_WIDTH, WHITE);
                 else
                     squares[i][j] = new Square(i, j, SQUARE_WIDTH, BLACK);
 
                 // Carrying on the color if at the end of the column
-                if(j != NUM_SQUARES - 1)
+                if (j != NUM_SQUARES - 1)
                     flag = !flag;
             }
         }
@@ -124,7 +125,32 @@ public class Board extends JComponent implements MouseListener {
                                 else if(prevPieceType.equals("bp") && j == 7) pieces[i][j].setPiece(i, j, "bq", 'b');
                                 else pieces[i][j].setPiece(i, j, prevPieceType, prevPieceSide);
 
+                                // Castling - white, kingside & queenside
+                                if(prevPieceType.equals("wk") && pieces[prevCoords[0]][prevCoords[1]].numMoves == 0){
+                                    if(i == 6) {
+                                        pieces[5][7].setPiece(5, 7, "wr", 'w');
+                                        pieces[7][7].setPiece(7, 7, "", ' ');
+                                    } else if(i == 2){
+                                        pieces[3][7].setPiece(3, 7, "wr", 'w');
+                                        pieces[0][7].setPiece(0, 7, "", ' ');
+                                    }
+                                }
+                                // Castling - black, kingside & queenside
+                                else if(prevPieceType.equals("bk") && pieces[prevCoords[0]][prevCoords[1]].numMoves == 0){
+                                    if(i == 6) {
+                                        pieces[5][0].setPiece(5, 0, "br", 'b');
+                                        pieces[7][0].setPiece(7, 0, "", ' ');
+                                    } else if(i == 2){
+                                        pieces[3][0].setPiece(3, 0, "br", 'b');
+                                        pieces[0][0].setPiece(0, 0, "", ' ');
+                                    }
+                                }
+
                                 pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1],"", ' ');
+
+                                // Successfully made a legal move
+                                myTurn = !myTurn;
+                                pieces[i][j].numMoves++;
                             }
 
                             squares[prevCoords[0]][prevCoords[1]].deselectSquare();
@@ -139,13 +165,16 @@ public class Board extends JComponent implements MouseListener {
                     } else {
                         // Not a blank square
                         if(!pieces[i][j].getType().equals("")){
-                            numClicks++;
-                            prevCoords[0] = i;
-                            prevCoords[1] = j;
-                            prevPieceType = pieces[i][j].getType();
-                            prevPieceSide = pieces[i][j].getSide();
+                            if((myTurn && pieces[i][j].getType().charAt(0) == 'w') ||
+                               (!myTurn && pieces[i][j].getType().charAt(0) == 'b')){
+                                numClicks++;
+                                prevCoords[0] = i;
+                                prevCoords[1] = j;
+                                prevPieceType = pieces[i][j].getType();
+                                prevPieceSide = pieces[i][j].getSide();
 
-                            squares[i][j].selectSquare();
+                                squares[i][j].selectSquare();
+                            }
                         }
                     }
 
