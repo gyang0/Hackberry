@@ -31,10 +31,12 @@ public class Board extends JComponent implements MouseListener {
 
     private final Color WHITE = new Color(184,139,74);
     private final Color BLACK = new Color(227,193,111);
+    private Color OPAQUE_GRAY = new Color(100, 100, 100, 100);
 
     private int numClicks = 0;
     private int[] prevCoords = {-1, -1};
     private String prevPieceType = "";
+    private char prevPieceSide = ' ';
 
     public void initSquares(){
         squares = new Square[NUM_SQUARES][NUM_SQUARES];
@@ -61,7 +63,7 @@ public class Board extends JComponent implements MouseListener {
         for(int i = 0; i < NUM_SQUARES; i++){
             for(int j = 0; j < NUM_SQUARES; j++){
                 // Reversed coordinates for display
-                pieces[j][i] = new Piece(j, i, boardState[i][j]);
+                pieces[j][i] = new Piece(j, i, boardState[i][j], boardState[i][j].equals("") ? ' ' : boardState[i][j].charAt(0));
             }
         }
     }
@@ -87,8 +89,8 @@ public class Board extends JComponent implements MouseListener {
 
                 // Selected a piece
                 if(prevCoords[0] != -1 && prevCoords[1] != -1){
-                    if(pieces[prevCoords[0]][prevCoords[1]].legalMove(i, j)){
-                        g.setColor(Color.GRAY);
+                    if(pieces[prevCoords[0]][prevCoords[1]].legalMove(i, j, pieces)){
+                        g.setColor(OPAQUE_GRAY);
                         g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
                     }
                 }
@@ -116,9 +118,13 @@ public class Board extends JComponent implements MouseListener {
                             squares[i][j].deselectSquare();
                         } else {
                             // Legal move
-                            if(pieces[prevCoords[0]][prevCoords[1]].legalMove(i, j)){
-                                pieces[i][j].setPiece(i, j, prevPieceType);
-                                pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1],"");
+                            if(pieces[prevCoords[0]][prevCoords[1]].legalMove(i, j, pieces)){
+                                // Promotion
+                                if(prevPieceType.equals("wp") && j == 0) pieces[i][j].setPiece(i, j, "wq", 'w');
+                                else if(prevPieceType.equals("bp") && j == 7) pieces[i][j].setPiece(i, j, "bq", 'b');
+                                else pieces[i][j].setPiece(i, j, prevPieceType, prevPieceSide);
+
+                                pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1],"", ' ');
                             }
 
                             squares[prevCoords[0]][prevCoords[1]].deselectSquare();
@@ -131,12 +137,16 @@ public class Board extends JComponent implements MouseListener {
                         numClicks = 0;
 
                     } else {
-                        numClicks++;
-                        prevCoords[0] = i;
-                        prevCoords[1] = j;
-                        prevPieceType = pieces[i][j].getType();
+                        // Not a blank square
+                        if(!pieces[i][j].getType().equals("")){
+                            numClicks++;
+                            prevCoords[0] = i;
+                            prevCoords[1] = j;
+                            prevPieceType = pieces[i][j].getType();
+                            prevPieceSide = pieces[i][j].getSide();
 
-                        squares[i][j].selectSquare();
+                            squares[i][j].selectSquare();
+                        }
                     }
 
                     repaint();
