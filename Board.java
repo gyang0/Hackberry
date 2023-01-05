@@ -13,9 +13,19 @@ public class Board extends JComponent implements MouseListener {
     private Piece[][] pieces;
 
     // First char is for what side (white or black), second char is for the piece (N for knight, R for rook, etc.)
-    private String boardState[][] = {
+    /*private String boardState[][] = {
             {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
             {"bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"},
+            {"", "", "", "", "", "", "", ""},
+            {"", "", "", "", "", "", "", ""},
+            {"", "", "", "", "", "", "", ""},
+            {"", "", "", "", "", "", "", ""},
+            {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
+            {"wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr"}
+    };*/
+    private String boardState[][] = {
+            {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
+            {"bp", "wp", "bp", "bp", "bp", "bp", "bp", "bp"},
             {"", "", "", "", "", "", "", ""},
             {"", "", "", "", "", "", "", ""},
             {"", "", "", "", "", "", "", ""},
@@ -38,6 +48,9 @@ public class Board extends JComponent implements MouseListener {
     private String prevPieceType = "";
     private char prevPieceSide = ' ';
     private boolean myTurn = true;
+
+    PromoOptions promoOption = new PromoOptions(0, 0, ' ');
+    private boolean showPromoOptions = false;
 
     public void initSquares() {
         squares = new Square[NUM_SQUARES][NUM_SQUARES];
@@ -102,6 +115,26 @@ public class Board extends JComponent implements MouseListener {
             for (int j = 0; j < NUM_SQUARES; j++) {
                 pieces[i][j].paint(g);
             }
+        }
+
+
+        // Search for a pawn on the back rank
+        for(int i = 0; i < NUM_SQUARES; i++){
+            if(pieces[i][0].getType().equals("wp")){
+                promoOption.setPos(i, 0, pieces[i][0].getSide());
+                this.showPromoOptions = true;
+            } else if(pieces[i][NUM_SQUARES - 1].getType().equals("bp")){
+                promoOption.setPos(i, NUM_SQUARES - 1, pieces[i][NUM_SQUARES - 1].getSide());
+                this.showPromoOptions = true;
+            }
+        }
+
+        // Opaque color scheme for better focus when promoting
+        if(this.showPromoOptions){
+            g.setColor(OPAQUE_GRAY);
+            g.fillRoundRect(X_OFFSET - 10, Y_OFFSET - 10, NUM_SQUARES*SQUARE_WIDTH + 20, NUM_SQUARES*SQUARE_WIDTH + 20, 3, 3);
+
+            promoOption.paint(g);
         }
     }
 
