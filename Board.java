@@ -120,32 +120,7 @@ public class Board extends JComponent implements MouseListener {
                         } else {
                             // Legal move
                             if(pieces[prevCoords[0]][prevCoords[1]].legalMove(i, j, pieces)){
-                                // Promotion
-                                if(prevPieceType.equals("wp") && j == 0) pieces[i][j].setPiece(i, j, "wq", 'w');
-                                else if(prevPieceType.equals("bp") && j == 7) pieces[i][j].setPiece(i, j, "bq", 'b');
-                                else pieces[i][j].setPiece(i, j, prevPieceType, prevPieceSide);
-
-                                // Castling - white, kingside & queenside
-                                if(prevPieceType.equals("wk") && pieces[prevCoords[0]][prevCoords[1]].numMoves == 0){
-                                    if(i == 6) {
-                                        pieces[5][7].setPiece(5, 7, "wr", 'w');
-                                        pieces[7][7].setPiece(7, 7, "", ' ');
-                                    } else if(i == 2){
-                                        pieces[3][7].setPiece(3, 7, "wr", 'w');
-                                        pieces[0][7].setPiece(0, 7, "", ' ');
-                                    }
-                                }
-                                // Castling - black, kingside & queenside
-                                else if(prevPieceType.equals("bk") && pieces[prevCoords[0]][prevCoords[1]].numMoves == 0){
-                                    if(i == 6) {
-                                        pieces[5][0].setPiece(5, 0, "br", 'b');
-                                        pieces[7][0].setPiece(7, 0, "", ' ');
-                                    } else if(i == 2){
-                                        pieces[3][0].setPiece(3, 0, "br", 'b');
-                                        pieces[0][0].setPiece(0, 0, "", ' ');
-                                    }
-                                }
-
+                                pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces);
                                 pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1],"", ' ');
 
                                 // Successfully made a legal move
