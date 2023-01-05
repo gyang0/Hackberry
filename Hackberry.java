@@ -14,7 +14,9 @@
  * TODO: Check for attacked king when castling.
  * TODO: Promotion options
  * TODO: Javadoc comments
+ * TODO: clicking king after promoting pawn results in a bug.
  *
+ * Last step: some optimizations (searching the entire board gets costly pretty quick)
  * **/
 
 /**
