@@ -3,11 +3,17 @@
  *
  * **/
 
+
 /**
  * This is where most of the stuff will take place.
  * All methods will be combined to set turns, make moves, etc.
  *
  * AI will be implemented later.
+ *
+ * TODO: En passant
+ * TODO: Check for attacked king when castling.
+ * TODO: Promotion options
+ * TODO: Javadoc comments
  *
  * **/
 
