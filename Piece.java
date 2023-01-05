@@ -128,7 +128,6 @@ public class Piece {
         return false;
     }
 
-
     /**
      * Checks if a move is legal for a bishop.
      *
@@ -301,9 +300,8 @@ public class Piece {
 
     public void playMove(int i, int j, Piece[][] pieces) {
         // Promotion
-        if (this.type.equals("wp") && j == 0) pieces[i][j].setPiece(i, j, "wq", 'w');
-        else if (this.type.equals("bp") && j == 7) pieces[i][j].setPiece(i, j, "bq", 'b');
-        else pieces[i][j].setPiece(i, j, this.type, this.side);
+        //if (this.type.equals("wp") && j == 0) pieces[i][j].setPiece(i, j, "wq", 'w');
+        //else if (this.type.equals("bp") && j == 7) pieces[i][j].setPiece(i, j, "bq", 'b');
 
         // Castling - white, kingside & queenside
         if(this.type.equals("wk")){
@@ -325,6 +323,10 @@ public class Piece {
                 pieces[0][0].setPiece(0, 0, "", ' ');
             }
         }
+
+        // Other pieces
+        else
+            pieces[i][j].setPiece(i, j, this.type, this.side);
     }
 
     // Images
