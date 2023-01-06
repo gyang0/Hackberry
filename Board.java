@@ -25,7 +25,7 @@ public class Board extends JComponent implements MouseListener {
     };*/
     private String boardState[][] = {
             {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
-            {"bp", "wp", "bp", "bp", "bp", "bp", "bp", "bp"},
+            {"bp", "bp", "wp", "bp", "bp", "bp", "bp", "bp"},
             {"", "", "", "", "", "", "", ""},
             {"", "", "", "", "", "", "", ""},
             {"", "", "", "", "", "", "", ""},
@@ -51,6 +51,9 @@ public class Board extends JComponent implements MouseListener {
 
     PromoOptions promoOption = new PromoOptions(0, 0, ' ');
     private boolean showPromoOptions = false;
+    private int promoClicks = 0;
+    private int promoX;
+    private int promoY;
 
     public void initSquares() {
         squares = new Square[NUM_SQUARES][NUM_SQUARES];
@@ -123,9 +126,13 @@ public class Board extends JComponent implements MouseListener {
             if(pieces[i][0].getType().equals("wp")){
                 promoOption.setPos(i, 0, pieces[i][0].getSide());
                 this.showPromoOptions = true;
+                promoX = i;
+                promoY = 0;
             } else if(pieces[i][NUM_SQUARES - 1].getType().equals("bp")){
                 promoOption.setPos(i, NUM_SQUARES - 1, pieces[i][NUM_SQUARES - 1].getSide());
                 this.showPromoOptions = true;
+                promoX = i;
+                promoY = NUM_SQUARES - 1;
             }
         }
 
@@ -142,53 +149,89 @@ public class Board extends JComponent implements MouseListener {
     /* Mouse events */
     @Override
     public void mouseClicked(MouseEvent e){
-        for(int i = 0; i < NUM_SQUARES; i++){
-            for(int j = 0; j < NUM_SQUARES; j++){
-                if(squares[i][j].contains(e.getX(), e.getY())){
-                    // Second click
-                    if(numClicks == 1){
-                        // Clicked same square (deselect)
-                        if(i == prevCoords[0] && j == prevCoords[1]) {
+        if(showPromoOptions){
+            if(promoClicks == 0) {
+                int choice = promoOption.handleMouseInteractions(e.getX(), e.getY());
+
+                boolean done = false;
+                switch(choice){
+                    case 0:
+                        pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wr" : "br", promoOption.side);
+                        done = true;
+                    break;
+                    case 1:
+                        pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wn" : "bn", promoOption.side);
+                        done = true;
+                    break;
+                    case 2:
+                        pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wb" : "bb", promoOption.side);
+                        done = true;
+                    break;
+                    case 3:
+                        pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wq" : "bq", promoOption.side);
+                        done = true;
+                    break;
+                }
+
+                if(done)
+                   promoClicks++;
+
+            } else {
+                showPromoOptions = false;
+            }
+        }
+        else {
+
+            for (int i = 0; i < NUM_SQUARES; i++) {
+                for (int j = 0; j < NUM_SQUARES; j++) {
+                    if (squares[i][j].contains(e.getX(), e.getY())) {
+                        // Second click
+                        if (numClicks == 1) {
+                            // Clicked same square (deselect)
+                            if (i == prevCoords[0] && j == prevCoords[1]) {
+                                squares[i][j].deselectSquare();
+                            } else {
+                                // Legal move
+                                if (pieces[prevCoords[0]][prevCoords[1]].legalMove(i, j, pieces)) {
+                                    pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces);
+                                    pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1], "", ' ');
+
+                                    // Successfully made a legal move
+                                    myTurn = !myTurn;
+                                    pieces[i][j].numMoves++;
+                                }
+
+                                squares[prevCoords[0]][prevCoords[1]].deselectSquare();
+                            }
+
+                            // Reset
                             squares[i][j].deselectSquare();
+                            prevCoords[0] = -1;
+                            prevCoords[1] = -1;
+                            numClicks = 0;
+
                         } else {
-                            // Legal move
-                            if(pieces[prevCoords[0]][prevCoords[1]].legalMove(i, j, pieces)){
-                                pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces);
-                                pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1],"", ' ');
+                            // Not a blank square
+                            if (!pieces[i][j].getType().equals("")) {
+                                if ((myTurn && pieces[i][j].getType().charAt(0) == 'w') ||
+                                        (!myTurn && pieces[i][j].getType().charAt(0) == 'b')) {
+                                    numClicks++;
+                                    prevCoords[0] = i;
+                                    prevCoords[1] = j;
+                                    prevPieceType = pieces[i][j].getType();
+                                    prevPieceSide = pieces[i][j].getSide();
 
-                                // Successfully made a legal move
-                                myTurn = !myTurn;
-                                pieces[i][j].numMoves++;
-                            }
-
-                            squares[prevCoords[0]][prevCoords[1]].deselectSquare();
-                        }
-
-                        // Reset
-                        squares[i][j].deselectSquare();
-                        prevCoords[0] = -1;
-                        prevCoords[1] = -1;
-                        numClicks = 0;
-
-                    } else {
-                        // Not a blank square
-                        if(!pieces[i][j].getType().equals("")){
-                            if((myTurn && pieces[i][j].getType().charAt(0) == 'w') ||
-                               (!myTurn && pieces[i][j].getType().charAt(0) == 'b')){
-                                numClicks++;
-                                prevCoords[0] = i;
-                                prevCoords[1] = j;
-                                prevPieceType = pieces[i][j].getType();
-                                prevPieceSide = pieces[i][j].getSide();
-
-                                squares[i][j].selectSquare();
+                                    squares[i][j].selectSquare();
+                                }
                             }
                         }
+
+                        repaint();
                     }
-
-                    repaint();
                 }
             }
+
+
         }
     }
 
