@@ -299,10 +299,6 @@ public class Piece {
     }
 
     public void playMove(int i, int j, Piece[][] pieces) {
-        // Promotion
-        //if (this.type.equals("wp") && j == 0) pieces[i][j].setPiece(i, j, "wq", 'w');
-        //else if (this.type.equals("bp") && j == 7) pieces[i][j].setPiece(i, j, "bq", 'b');
-
         // Castling - white, kingside & queenside
         if(this.type.equals("wk")){
             if(i == 6) {
@@ -311,7 +307,8 @@ public class Piece {
             } else if(i == 2){
                 pieces[3][7].setPiece(3, 7, "wr", 'w');
                 pieces[0][7].setPiece(0, 7, "", ' ');
-            }
+            } else
+                pieces[i][j].setPiece(i, j, "wk", 'w');
         }
         // Castling - black, kingside & queenside
         else if(this.type.equals("bk")){
@@ -321,7 +318,8 @@ public class Piece {
             } else if(i == 2){
                 pieces[3][0].setPiece(3, 0, "br", 'b');
                 pieces[0][0].setPiece(0, 0, "", ' ');
-            }
+            } else
+                pieces[i][j].setPiece(i, j, "bk", 'b');
         }
 
         // Other pieces
