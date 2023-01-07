@@ -150,8 +150,7 @@ public class Board extends JComponent implements MouseListener {
     @Override
     public void mouseClicked(MouseEvent e){
         if(showPromoOptions){
-            if(promoClicks == 0) {
-                int choice = promoOption.handleMouseInteractions(e.getX(), e.getY());
+            int choice = promoOption.handleMouseInteractions(e.getX(), e.getY());
 
                 boolean done = false;
                 switch(choice){
@@ -173,12 +172,10 @@ public class Board extends JComponent implements MouseListener {
                     break;
                 }
 
-                if(done)
-                   promoClicks++;
-
-            } else {
-                showPromoOptions = false;
-            }
+                if(done) {
+                    showPromoOptions = false;
+                    repaint();
+                }
         }
         else {
 
