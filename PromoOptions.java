@@ -12,7 +12,7 @@ public class PromoOptions {
     private int x = 0;
     private int y = 0;
     public char side = ' ';
-    private int BUTTON_WIDTH = 45;
+    private int BUTTON_WIDTH = 46;
     private final int X_OFFSET = 100;
     private final int Y_OFFSET = 100;
 
@@ -41,10 +41,10 @@ public class PromoOptions {
         this.y = y;
         this.side = side;
 
-        btn1.setPos(X_OFFSET + this.x * BUTTON_WIDTH - 75, Y_OFFSET + this.y * BUTTON_WIDTH, BUTTON_WIDTH);
-        btn2.setPos(X_OFFSET + this.x * BUTTON_WIDTH - 25, Y_OFFSET + this.y * BUTTON_WIDTH, BUTTON_WIDTH);
-        btn3.setPos(X_OFFSET + this.x * BUTTON_WIDTH + 25, Y_OFFSET + this.y * BUTTON_WIDTH, BUTTON_WIDTH);
-        btn4.setPos(X_OFFSET + this.x * BUTTON_WIDTH + 75, Y_OFFSET + this.y * BUTTON_WIDTH, BUTTON_WIDTH);
+        btn1.setPos(X_OFFSET + this.x * BUTTON_WIDTH - 75, Y_OFFSET + this.y * BUTTON_WIDTH, BUTTON_WIDTH/2);
+        btn2.setPos(X_OFFSET + this.x * BUTTON_WIDTH - 25, Y_OFFSET + this.y * BUTTON_WIDTH, BUTTON_WIDTH/2);
+        btn3.setPos(X_OFFSET + this.x * BUTTON_WIDTH + 25, Y_OFFSET + this.y * BUTTON_WIDTH, BUTTON_WIDTH/2);
+        btn4.setPos(X_OFFSET + this.x * BUTTON_WIDTH + 75, Y_OFFSET + this.y * BUTTON_WIDTH, BUTTON_WIDTH/2);
     }
 
     public boolean contains(int x, int y){
@@ -85,37 +85,28 @@ public class PromoOptions {
         private int x;
         private int y;
         private int radius;
-        private final Color PROMO_CIRCLE_COL = new Color(100, 100, 100, 150);
-        private final Color ACTIVE_PROMO_CIRCLE_COL = new Color(50, 50, 50, 150);
-        private final Color CURRENT_COL = new Color(0, 0, 0, 0);
-        public boolean mouseInside = false;
+        private final Color BUTTON_COL = new Color(150, 150, 150);
 
         public PromoOptionBtn(int x, int y, int radius){
+            this.radius = radius;
             this.x = x;
             this.y = y;
-            this.radius = radius;
         }
 
         public void setPos(int x, int y, int radius){
+            this.radius = radius;
             this.x = x;
             this.y = y;
-            this.radius = radius;
         }
 
         public boolean contains(int mouseX, int mouseY){
             // Avoiding slow square roots
-            return (Math.pow(this.x - mouseX, 2) + Math.pow(this.y - mouseY, 2) < Math.pow(radius, 2));
+            return (Math.pow((this.x + this.radius) - mouseX, 2) + Math.pow((this.y + this.radius) - mouseY, 2) < Math.pow(this.radius, 2));
         }
 
         public void paint(Graphics g){
-            g.setColor(CURRENT_COL);
-            g.fillOval(this.x, this.y, this.radius, this.radius);
-        }
-
-        public void handleMouseInteractions(int mouseX, int mouseY){
-            if(this.contains(mouseX, mouseY)){
-                mouseInside = true;
-            }
+            g.setColor(BUTTON_COL);
+            g.fillOval(this.x, this.y, this.radius * 2, this.radius * 2);
         }
 
     }
