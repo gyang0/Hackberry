@@ -78,10 +78,6 @@ public class Piece {
         }
     }
 
-    public boolean inBounds(int toCheck, int minBounds, int maxBounds){
-        return toCheck >= minBounds && toCheck <= maxBounds;
-    }
-
     /**
      * Checks if a move is legal for a rook.
      *
@@ -171,8 +167,7 @@ public class Piece {
         return false;
     }
 
-
-    public boolean legalMove(int toX, int toY, Piece[][] pieces){
+    public boolean legalMove(int toX, int toY, Piece[][] pieces, int[] mostRecentPieceMov){
         // Can't capture pieces on its own side
         if(pieces[toX][toY].side == this.type.charAt(0))
             return false;
@@ -184,6 +179,13 @@ public class Piece {
                 if((toX == this.gridX - 1 || toX == this.gridX + 1) && toY == this.gridY - 1){
                     if(toX == this.gridX - 1 && pieces[toX][toY].side == 'b') isLegal = true;
                     else if(toX == this.gridX + 1 && pieces[toX][toY].side == 'b') isLegal = true;
+
+                    // En passant
+                    if(toY == this.gridY - 1 && Math.abs(toX - this.gridX) == 1 && pieces[toX][toY].side == ' ' && pieces[toX][toY + 1].type.equals("bp") && pieces[toX][toY + 1].numMoves == 1) {
+                        if(mostRecentPieceMov[0] == toX && mostRecentPieceMov[1] == toY + 1) {
+                            return true;
+                        }
+                    }
                 }
 
                 // If the pawn hasn't moved yet
@@ -200,6 +202,13 @@ public class Piece {
                 if(toX == this.gridX - 1 || toX == this.gridX + 1){
                     if(toX == this.gridX - 1 && toY == this.gridY + 1 && pieces[toX][toY].side == 'w') isLegal = true;
                     else if(toX == this.gridX + 1 && toY == this.gridY + 1 && pieces[toX][toY].side == 'w') isLegal = true;
+
+                    // En passant
+                    if(toY == this.gridY + 1 && Math.abs(toX - this.gridX) == 1 && pieces[toX][toY].side == ' ' && pieces[toX][toY - 1].type.equals("wp") && pieces[toX][toY - 1].numMoves == 1) {
+                        if(mostRecentPieceMov[0] == toX && mostRecentPieceMov[1] == toY - 1) {
+                            return true;
+                        }
+                    }
                 }
 
                 // If the pawn hasn't moved yet
@@ -299,13 +308,27 @@ public class Piece {
     }
 
     public void playMove(int i, int j, Piece[][] pieces) {
+        // En passant
+        // The target pawn must have moved in the last move, moved two squares up, and be next to the current pawn.
+        if(this.type.equals("wp") && j == this.gridY - 1 && Math.abs(i - this.gridX) == 1){
+            pieces[i][j].setPiece(i, j, this.type, this.side);
+            pieces[i][j + 1].setPiece(i, j + 1, "", ' ');
+        }
+
+        else if(this.type.equals("bp") && j == this.gridY + 1 && Math.abs(i - this.gridX) == 1){
+            pieces[i][j].setPiece(i, j, this.type, this.side);
+            pieces[i][j - 1].setPiece(i, j - 1, "", ' ');
+        }
+
         // Castling - white, kingside & queenside
-        if(this.type.equals("wk")){
+        else if(this.type.equals("wk")){
             if(i == 6) {
                 pieces[5][7].setPiece(5, 7, "wr", 'w');
+                pieces[6][7].setPiece(6, 7, "wk", 'w');
                 pieces[7][7].setPiece(7, 7, "", ' ');
             } else if(i == 2){
                 pieces[3][7].setPiece(3, 7, "wr", 'w');
+                pieces[2][7].setPiece(2, 7, "wk", 'w');
                 pieces[0][7].setPiece(0, 7, "", ' ');
             } else
                 pieces[i][j].setPiece(i, j, "wk", 'w');
@@ -314,9 +337,11 @@ public class Piece {
         else if(this.type.equals("bk")){
             if(i == 6) {
                 pieces[5][0].setPiece(5, 0, "br", 'b');
+                pieces[6][0].setPiece(6, 0, "bk", 'b');
                 pieces[7][0].setPiece(7, 0, "", ' ');
             } else if(i == 2){
                 pieces[3][0].setPiece(3, 0, "br", 'b');
+                pieces[2][0].setPiece(2, 0, "bk", 'b');
                 pieces[0][0].setPiece(0, 0, "", ' ');
             } else
                 pieces[i][j].setPiece(i, j, "bk", 'b');
