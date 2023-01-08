@@ -17,4 +17,4 @@ First version (On Khan Academy): https://www.khanacademy.org/computer-programmin
 ## Program Screenshot
 
 <img src="https://github.com/gyang0/Hackberry/blob/main/docImgs/Hackberry_ExampleImg.png" width="400px">
-I think it looks quite nice. First few moves of the Marshall Attack (probably).
+I think it looks quite nice. First few moves of the Marshall Attack.
