@@ -11,27 +11,39 @@
  *
  * AI will be implemented later.
  *
- * TODO: En passant
  * TODO: Check for attacked king when castling.
- * TODO: Promotion options
  * TODO: Javadoc comments
- * TODO: clicking king after promoting pawn results in a bug.
- * TODO: fix mouse collision issues for promotion button
+ * TODO: Different side toggle
  *
  * Last step: some optimizations (searching the entire board gets costly pretty quick)
  * **/
 
+import javax.swing.*;
+import java.awt.*;
+
 /**
  * Chess piece images from https://commons.wikimedia.org/wiki/Category:PNG_chess_pieces/Standard_transparent
  *
+ * @author Gene Yang
+ * @version Jan. 7, 2023
  **/
 
 
 public class Hackberry {
-    private InitChessboard chessboard;
+    public static final int WIDTH = 600;
+    public static final int HEIGHT = 600;
+    private Board board;
+
 
     public void run(){
-        chessboard = new InitChessboard();
+         JFrame window = new JFrame();
+         window.setSize(WIDTH, HEIGHT);
+         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+         window.setLayout(new BorderLayout());
+
+         board = new Board();
+         window.add(board, BorderLayout.CENTER);
+         window.setVisible(true);
     }
 
     public static void main(String[] args) {
