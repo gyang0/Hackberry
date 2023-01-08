@@ -11,9 +11,7 @@ import java.awt.event.MouseListener;
 public class Board extends JComponent implements MouseListener {
     private Square[][] squares;
     private Piece[][] pieces;
-
-    // First char is for what side (white or black), second char is for the piece (N for knight, R for rook, etc.)
-    /*private String boardState[][] = {
+    private String boardState[][] = {
             {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
             {"bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"},
             {"", "", "", "", "", "", "", ""},
@@ -22,17 +20,11 @@ public class Board extends JComponent implements MouseListener {
             {"", "", "", "", "", "", "", ""},
             {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
             {"wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr"}
-    };*/
-    private String boardState[][] = {
-            {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
-            {"bp", "bp", "wp", "bp", "bp", "bp", "bp", "bp"},
-            {"", "", "", "", "", "", "", ""},
-            {"", "", "", "", "", "", "", ""},
-            {"", "", "", "", "", "", "", ""},
-            {"", "", "", "", "", "", "", ""},
-            {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
-            {"wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr"}
     };
+
+    // The squares controlled by each side
+    private boolean squaresControlledW[][];
+    private boolean squaresControlledB[][];
 
     private final int NUM_SQUARES = 8;
     private final int SQUARE_WIDTH = 50;
@@ -45,18 +37,23 @@ public class Board extends JComponent implements MouseListener {
 
     private int numClicks = 0;
     private int[] prevCoords = {-1, -1};
+
+    // First two indices hold the x and y position of white's move.
+    // Third and fourth indices hold the x and y position of black's move.
+    private int[] mostRecentPieceMov = {-1, -1};
     private String prevPieceType = "";
     private char prevPieceSide = ' ';
     private boolean myTurn = true;
 
     PromoOptions promoOption = new PromoOptions(0, 0, ' ');
     private boolean showPromoOptions = false;
-    private int promoClicks = 0;
     private int promoX;
     private int promoY;
 
     public void initSquares() {
         squares = new Square[NUM_SQUARES][NUM_SQUARES];
+        squaresControlledW = new boolean[NUM_SQUARES][NUM_SQUARES];
+        squaresControlledB = new boolean[NUM_SQUARES][NUM_SQUARES];
 
         boolean flag = true;
 
@@ -70,6 +67,11 @@ public class Board extends JComponent implements MouseListener {
                 // Carrying on the color if at the end of the column
                 if (j != NUM_SQUARES - 1)
                     flag = !flag;
+
+
+                // Setting the squares controlled
+                squaresControlledW[i][j] = false;
+                squaresControlledB[i][j] = false;
             }
         }
     }
@@ -106,7 +108,7 @@ public class Board extends JComponent implements MouseListener {
 
                 // Selected a piece
                 if(prevCoords[0] != -1 && prevCoords[1] != -1){
-                    if(pieces[prevCoords[0]][prevCoords[1]].legalMove(i, j, pieces)){
+                    if(pieces[prevCoords[0]][prevCoords[1]].legalMove(i, j, pieces, mostRecentPieceMov)){
                         g.setColor(OPAQUE_GRAY);
                         g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
                     }
@@ -189,13 +191,16 @@ public class Board extends JComponent implements MouseListener {
                                 squares[i][j].deselectSquare();
                             } else {
                                 // Legal move
-                                if (pieces[prevCoords[0]][prevCoords[1]].legalMove(i, j, pieces)) {
+                                if (pieces[prevCoords[0]][prevCoords[1]].legalMove(i, j, pieces, mostRecentPieceMov)) {
                                     pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces);
                                     pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1], "", ' ');
 
                                     // Successfully made a legal move
                                     myTurn = !myTurn;
-                                    pieces[i][j].numMoves++;
+                                    pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
+
+                                    mostRecentPieceMov[0] = i;
+                                    mostRecentPieceMov[1] = j;
                                 }
 
                                 squares[prevCoords[0]][prevCoords[1]].deselectSquare();
