@@ -167,9 +167,9 @@ public class Piece {
         return false;
     }
 
-    public boolean legalMove(int toX, int toY, Piece[][] pieces, int[] mostRecentPieceMov){
+    public boolean legalMove(int toX, int toY, Piece[][] pieces, int[] mostRecentPieceMov, boolean[][] squaresControlledW, boolean[][] squaresControlledB){
         // Can't capture pieces on its own side
-        if(pieces[toX][toY].side == this.type.charAt(0))
+        if(pieces[toX][toY].side == this.side)
             return false;
 
         boolean isLegal = false;
@@ -183,7 +183,7 @@ public class Piece {
                     // En passant
                     if(toY == this.gridY - 1 && Math.abs(toX - this.gridX) == 1 && pieces[toX][toY].side == ' ' && pieces[toX][toY + 1].type.equals("bp") && pieces[toX][toY + 1].numMoves == 1) {
                         if(mostRecentPieceMov[0] == toX && mostRecentPieceMov[1] == toY + 1) {
-                            return true;
+                            isLegal = true;
                         }
                     }
                 }
@@ -206,7 +206,7 @@ public class Piece {
                     // En passant
                     if(toY == this.gridY + 1 && Math.abs(toX - this.gridX) == 1 && pieces[toX][toY].side == ' ' && pieces[toX][toY - 1].type.equals("wp") && pieces[toX][toY - 1].numMoves == 1) {
                         if(mostRecentPieceMov[0] == toX && mostRecentPieceMov[1] == toY - 1) {
-                            return true;
+                            isLegal = true;
                         }
                     }
                 }
@@ -253,7 +253,9 @@ public class Piece {
                     if(pieces[7][this.gridY].getType().equals("wr") && pieces[7][this.gridY].numMoves == 0){
                         // All spaces cleared
                         if(pieces[5][this.gridY].side == ' ' && pieces[6][this.gridY].side == ' ')
-                            isLegal = true;
+                            // Not in check
+                            if(!squaresControlledB[4][this.gridY] && !squaresControlledB[5][this.gridY] && !squaresControlledB[6][this.gridY])
+                               isLegal = true;
                     }
                 }
 
@@ -263,10 +265,12 @@ public class Piece {
                     if(pieces[0][this.gridY].getType().equals("wr") && pieces[0][this.gridY].numMoves == 0){
                         // All spaces cleared
                         if(pieces[1][this.gridY].side == ' ' && pieces[2][this.gridY].side == ' ' && pieces[3][this.gridY].side == ' ')
-                            isLegal = true;
+                            // Not in check
+                            if(!squaresControlledB[4][this.gridY] && !squaresControlledB[1][this.gridY] && !squaresControlledB[2][this.gridY] && !squaresControlledB[3][this.gridY])
+                                isLegal = true;
                     }
                 }
-                else if(Math.abs(toX - this.gridX) <= 1 && Math.abs(toY - this.gridY) <= 1)
+                else if(Math.abs(toX - this.gridX) <= 1 && Math.abs(toY - this.gridY) <= 1 && !squaresControlledB[toX][toY])
                     isLegal = true;
             break;
 
@@ -277,7 +281,9 @@ public class Piece {
                     if(pieces[7][this.gridY].getType().equals("br") && pieces[7][this.gridY].numMoves == 0){
                         // All spaces cleared
                         if(pieces[5][this.gridY].side == ' ' && pieces[6][this.gridY].side == ' ')
-                            isLegal = true;
+                            // Not in check
+                            if(!squaresControlledB[4][this.gridY] && !squaresControlledB[5][this.gridY] && !squaresControlledB[6][this.gridY])
+                                isLegal = true;
                     }
                 }
 
@@ -287,10 +293,12 @@ public class Piece {
                     if(pieces[0][this.gridY].getType().equals("br") && pieces[0][this.gridY].numMoves == 0){
                         // All spaces cleared
                         if(pieces[1][this.gridY].side == ' ' && pieces[2][this.gridY].side == ' ' && pieces[3][this.gridY].side == ' ')
-                            isLegal = true;
+                            // Not in check
+                            if(!squaresControlledB[4][this.gridY] && !squaresControlledB[1][this.gridY] && !squaresControlledB[2][this.gridY] && !squaresControlledB[3][this.gridY])
+                                isLegal = true;
                     }
                 }
-                else if(Math.abs(toX - this.gridX) <= 1 && Math.abs(toY - this.gridY) <= 1)
+                else if(Math.abs(toX - this.gridX) <= 1 && Math.abs(toY - this.gridY) <= 1 && !squaresControlledW[toX][toY])
                     isLegal = true;
             break;
 
@@ -310,12 +318,12 @@ public class Piece {
     public void playMove(int i, int j, Piece[][] pieces) {
         // En passant
         // The target pawn must have moved in the last move, moved two squares up, and be next to the current pawn.
-        if(this.type.equals("wp") && j == this.gridY - 1 && Math.abs(i - this.gridX) == 1){
+        if(this.type.equals("wp") && j == this.gridY - 1 && Math.abs(i - this.gridX) == 1 && pieces[i][j].getSide() == ' '){
             pieces[i][j].setPiece(i, j, this.type, this.side);
             pieces[i][j + 1].setPiece(i, j + 1, "", ' ');
         }
 
-        else if(this.type.equals("bp") && j == this.gridY + 1 && Math.abs(i - this.gridX) == 1){
+        else if(this.type.equals("bp") && j == this.gridY + 1 && Math.abs(i - this.gridX) == 1 && pieces[i][j].getSide() == ' '){
             pieces[i][j].setPiece(i, j, this.type, this.side);
             pieces[i][j - 1].setPiece(i, j - 1, "", ' ');
         }
