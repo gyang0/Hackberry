@@ -1,7 +1,7 @@
 
 /** Milestones
  * Jan 4, 2023 - Successfully recreated the Opera Game (Paul Morphy vs Duke of Brunswick & Count Isouard, 1858).
- *
+ * Jan 8, 2023 - All legal moves are now recognized (hopefully), including: En passant, castling, checks, promotion, etc.
  * **/
 
 
@@ -11,7 +11,6 @@
  *
  * AI will be implemented later.
  *
- * TODO: Check for attacked king when castling.
  * TODO: Javadoc comments
  * TODO: Different side toggle
  *
@@ -25,7 +24,7 @@ import java.awt.*;
  * Chess piece images from https://commons.wikimedia.org/wiki/Category:PNG_chess_pieces/Standard_transparent
  *
  * @author Gene Yang
- * @version Jan. 7, 2023
+ * @version Jan. 9, 2023
  **/
 
 
