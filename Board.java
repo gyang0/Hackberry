@@ -33,7 +33,8 @@ public class Board extends JComponent implements MouseListener {
 
     private final Color WHITE = new Color(184,139,74);
     private final Color BLACK = new Color(227,193,111);
-    private Color OPAQUE_GRAY = new Color(100, 100, 100, 100);
+    private final Color OPAQUE_GRAY = new Color(100, 100, 100, 100);
+    private final Color CHECK_COLOR = new Color(255, 0, 0, 100);
 
     private int numClicks = 0;
     private int[] prevCoords = {-1, -1};
@@ -49,6 +50,9 @@ public class Board extends JComponent implements MouseListener {
     private boolean showPromoOptions = false;
     private int promoX;
     private int promoY;
+
+    public boolean whiteKingInCheck = false;
+    public boolean blackKingInCheck = false;
 
     public void initSquares() {
         squares = new Square[NUM_SQUARES][NUM_SQUARES];
@@ -87,6 +91,72 @@ public class Board extends JComponent implements MouseListener {
         }
     }
 
+    /**
+     * Checks the squares controlled by the side specified
+     *
+     * @param arr - Array of the squares controlled to be updated, either from squaresControlledW or squaresControlledB.
+     * @param whichSide - The side of the current side to check.
+     * **/
+    public void checkControlledSquares(boolean arr[][], char whichSide){
+        // Reset
+        for(int i = 0; i < NUM_SQUARES; i++)
+            for(int j = 0; j < NUM_SQUARES; j++)
+                arr[i][j] = false;
+
+        if(whichSide == 'w')
+            blackKingInCheck = false;
+        else
+            whiteKingInCheck = false;
+
+        // Brute-force approach of iterating through every square, finding a piece, and going through again.
+        // Worst case is 8^4 = 4096 iterations, which is fine but might need optimization later.
+
+        Piece prev = new Piece(0, 0, "", ' ');
+
+        for(int i = 0; i < NUM_SQUARES; i++){
+            for(int j = 0; j < NUM_SQUARES; j++){
+
+                // Found a piece from that side.
+                if(pieces[i][j].getSide() == whichSide){
+
+                    // Go through board again and check off the controlled squares.
+                    for(int pos1 = 0; pos1 < NUM_SQUARES; pos1++){
+                        for(int pos2 = 0; pos2 < NUM_SQUARES; pos2++){
+                            // For testing purposes, we set the piece of an opposite side at that square.
+                            // Then we see if that piece can be captured.
+                            prev.setPiece(pos1, pos2, pieces[pos1][pos2].getType(), pieces[pos1][pos2].getSide());
+                            pieces[pos1][pos2].setPiece(pos1, pos2, whichSide == 'w' ? "bp" : "wp", whichSide == 'w' ? 'b' : 'w');
+
+                            // Can make a capture (if necessary) at that position.
+                            if(pieces[i][j].legalMove(pos1, pos2, pieces, mostRecentPieceMov, squaresControlledW, squaresControlledB)){
+                                arr[pos1][pos2] = true;
+
+                                // If the piece at that position is a king, it's in check.
+                                if(prev.getType().equals("bk") && pieces[i][j].getSide() == 'w')
+                                    blackKingInCheck = true;
+                                else if(prev.getType().equals("wk") && pieces[i][j].getSide() == 'b')
+                                    whiteKingInCheck = true;
+
+                            }
+
+                            pieces[pos1][pos2].setPiece(pos1, pos2, prev.getType(), prev.getSide());
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    public void updateControlledSquares(){
+        checkControlledSquares(squaresControlledW, 'w');
+        checkControlledSquares(squaresControlledB, 'b');
+    }
+
+    /**
+     * Constructor for Board class.
+     * Adds the mouse listener and initializes the squares and pieces.
+     * **/
     public Board(){
         this.initSquares();
         this.initPieces();
@@ -108,11 +178,18 @@ public class Board extends JComponent implements MouseListener {
 
                 // Selected a piece
                 if(prevCoords[0] != -1 && prevCoords[1] != -1){
-                    if(pieces[prevCoords[0]][prevCoords[1]].legalMove(i, j, pieces, mostRecentPieceMov)){
+                    if(pieces[prevCoords[0]][prevCoords[1]].legalMove(i, j, pieces, mostRecentPieceMov, squaresControlledW, squaresControlledB)){
                         g.setColor(OPAQUE_GRAY);
                         g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
                     }
                 }
+
+                // King in check.
+                if((blackKingInCheck && pieces[i][j].getType().equals("bk")) || (whiteKingInCheck && pieces[i][j].getType().equals("wk"))){
+                    g.setColor(CHECK_COLOR);
+                    g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
+                }
+
             }
         }
 
@@ -191,16 +268,40 @@ public class Board extends JComponent implements MouseListener {
                                 squares[i][j].deselectSquare();
                             } else {
                                 // Legal move
-                                if (pieces[prevCoords[0]][prevCoords[1]].legalMove(i, j, pieces, mostRecentPieceMov)) {
+                                if (pieces[prevCoords[0]][prevCoords[1]].legalMove(i, j, pieces, mostRecentPieceMov, squaresControlledW, squaresControlledB)) {
+                                    Piece prev = new Piece(i, j, pieces[i][j].getType(), pieces[i][j].getSide());
+
                                     pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces);
                                     pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1], "", ' ');
+
+                                    // Update controlled squares
+                                    this.updateControlledSquares();
+
+                                    // King is in check?
+                                    if((whiteKingInCheck && myTurn) || (blackKingInCheck && !myTurn)){
+                                        // Then we can't make that move.
+                                        // Take it back.
+                                        pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1], pieces[i][j].getType(), pieces[i][j].getSide());
+                                        pieces[i][j].setPiece(i, j, prev.getType(), prev.getSide());
+
+                                        squares[i][j].deselectSquare();
+                                        squares[prevCoords[0]][prevCoords[1]].deselectSquare();
+                                        prevCoords[0] = -1;
+                                        prevCoords[1] = -1;
+                                        numClicks = 0;
+
+                                        this.updateControlledSquares();
+
+                                        return;
+                                    }
+
 
                                     // Successfully made a legal move
                                     myTurn = !myTurn;
                                     pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
-
                                     mostRecentPieceMov[0] = i;
                                     mostRecentPieceMov[1] = j;
+
                                 }
 
                                 squares[prevCoords[0]][prevCoords[1]].deselectSquare();
@@ -216,7 +317,7 @@ public class Board extends JComponent implements MouseListener {
                             // Not a blank square
                             if (!pieces[i][j].getType().equals("")) {
                                 if ((myTurn && pieces[i][j].getType().charAt(0) == 'w') ||
-                                        (!myTurn && pieces[i][j].getType().charAt(0) == 'b')) {
+                                    (!myTurn && pieces[i][j].getType().charAt(0) == 'b')) {
                                     numClicks++;
                                     prevCoords[0] = i;
                                     prevCoords[1] = j;
@@ -229,6 +330,9 @@ public class Board extends JComponent implements MouseListener {
                         }
 
                         repaint();
+
+                        // No point in going through the rest of the squares.
+                        return;
                     }
                 }
             }
