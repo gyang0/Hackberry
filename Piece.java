@@ -172,6 +172,10 @@ public class Piece {
         if(pieces[toX][toY].side == this.side)
             return false;
 
+        // Can't move to same square
+        if(toX == this.gridX && toY == this.gridY)
+            return false;
+
         boolean isLegal = false;
         switch(this.type){
             case "wp":
@@ -358,6 +362,23 @@ public class Piece {
         // Other pieces
         else
             pieces[i][j].setPiece(i, j, this.type, this.side);
+
+        // Clear original square
+        pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, "", ' ');
+    }
+
+    @Override
+    public boolean equals(Object o){
+        if(o == null || o.getClass() != this.getClass())
+            return false; // Thanks Luke
+
+        Piece p = (Piece) o;
+        return (this.gridX == p.gridX && this.gridY == p.gridY && this.getType().equals(p.getType()) && this.side == p.side);
+    }
+
+    @Override
+    public String toString(){
+        return "[ " + "(" + this.gridX + ", " + this.gridY + ") " + this.getType() + " " + this.getSide() + " ]\n";
     }
 
     // Images
