@@ -7,11 +7,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Board extends JComponent implements MouseListener {
     private Square[][] squares;
-    private Piece[][] pieces;
     private String boardState[][] = {
             {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
             {"bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"},
@@ -28,8 +28,8 @@ public class Board extends JComponent implements MouseListener {
     private boolean squaresControlledB[][];
 
     // HashMap of the pieces for each side and where they can move to.
-    private HashMap<Piece, Integer[][]> piecesW;
-    private HashMap<Piece, Integer[][]> piecesB;
+    private HashMap<Piece, ArrayList<int[]>> piecesW;
+    private HashMap<Piece, ArrayList<int[]>> piecesB;
 
     private final int NUM_SQUARES = 8;
     private final int SQUARE_WIDTH = 50;
@@ -85,12 +85,15 @@ public class Board extends JComponent implements MouseListener {
     }
 
     public void initPieces(){
-        pieces = new Piece[NUM_SQUARES][NUM_SQUARES];
-
         for(int i = 0; i < NUM_SQUARES; i++){
             for(int j = 0; j < NUM_SQUARES; j++){
-                // Reversed coordinates for display
-                pieces[j][i] = new Piece(j, i, boardState[i][j], boardState[i][j].equals("") ? ' ' : boardState[i][j].charAt(0));
+                if(!boardState[i][j].equals("")){
+                    // Reversed coordinates for display
+                    if(boardState[i][j].charAt(0) == 'w')
+                        piecesW.put(new Piece(j, i, boardState[i][j], boardState[i][j].charAt(0)), new ArrayList<int[]>());
+                    else
+                        piecesB.put(new Piece(j, i, boardState[i][j], boardState[i][j].charAt(0)), new ArrayList<int[]>());
+                }
             }
         }
     }
@@ -102,6 +105,7 @@ public class Board extends JComponent implements MouseListener {
      * @param whichSide - The side of the current side to check.
      * **/
     public void checkControlledSquares(boolean arr[][], char whichSide){
+        /*
         // Reset
         for(int i = 0; i < NUM_SQUARES; i++)
             for(int j = 0; j < NUM_SQUARES; j++)
@@ -149,7 +153,7 @@ public class Board extends JComponent implements MouseListener {
                 }
 
             }
-        }
+        }*/
     }
 
     public void updateControlledSquares(){
@@ -162,8 +166,8 @@ public class Board extends JComponent implements MouseListener {
      * Adds the mouse listener and initializes the squares and pieces.
      * **/
     public Board(){
-        piecesW = new HashMap<Piece, Integer[][]>();
-        piecesB = new HashMap<Piece, Integer[][]>();
+        piecesW = new HashMap<Piece, ArrayList<int[]>>();
+        piecesB = new HashMap<Piece, ArrayList<int[]>>();
 
         this.initSquares();
         this.initPieces();
@@ -183,7 +187,7 @@ public class Board extends JComponent implements MouseListener {
             for (int j = 0; j < NUM_SQUARES; j++) {
                 squares[i][j].paint(g);
 
-                // Selected a piece
+                /*// Selected a piece
                 if(prevCoords[0] != -1 && prevCoords[1] != -1){
                     if(pieces[prevCoords[0]][prevCoords[1]].legalMove(i, j, pieces, mostRecentPieceMov, squaresControlledW, squaresControlledB)){
                         g.setColor(OPAQUE_GRAY);
@@ -195,18 +199,20 @@ public class Board extends JComponent implements MouseListener {
                 if((blackKingInCheck && pieces[i][j].getType().equals("bk")) || (whiteKingInCheck && pieces[i][j].getType().equals("wk"))){
                     g.setColor(CHECK_COLOR);
                     g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
-                }
+                }*/
 
             }
         }
 
-        for (int i = 0; i < NUM_SQUARES; i++){
-            for (int j = 0; j < NUM_SQUARES; j++) {
-                pieces[i][j].paint(g);
-            }
-        }
+
+        // Piece images
+        for(Piece p : piecesW.keySet())
+            p.paint(g);
+        for(Piece p : piecesB.keySet())
+            p.paint(g);
 
 
+        /*
         // Search for a pawn on the back rank
         for(int i = 0; i < NUM_SQUARES; i++){
             if(pieces[i][0].getType().equals("wp")){
@@ -228,14 +234,14 @@ public class Board extends JComponent implements MouseListener {
             g.fillRoundRect(X_OFFSET - 10, Y_OFFSET - 10, NUM_SQUARES*SQUARE_WIDTH + 20, NUM_SQUARES*SQUARE_WIDTH + 20, 3, 3);
 
             promoOption.paint(g);
-        }
+        }*/
     }
 
 
     /* Mouse events */
     @Override
     public void mouseClicked(MouseEvent e){
-        if(showPromoOptions){
+        /*if(showPromoOptions){
             int choice = promoOption.handleMouseInteractions(e.getX(), e.getY());
 
                 boolean done = false;
@@ -262,7 +268,9 @@ public class Board extends JComponent implements MouseListener {
                     showPromoOptions = false;
                     repaint();
                 }
-        }
+        }*/
+        
+        /*
         else {
 
             for (int i = 0; i < NUM_SQUARES; i++) {
@@ -346,6 +354,7 @@ public class Board extends JComponent implements MouseListener {
 
 
         }
+        */
     }
 
     @Override
