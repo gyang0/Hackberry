@@ -1,9 +1,5 @@
 /**
  * Individual squares of the chessboard
- *
- * TODO
- * Mouse events (clicking)
- *
  * **/
 
 import java.awt.*;
@@ -29,10 +25,8 @@ public class Square extends JFrame {
     }
 
     public void paint(Graphics g){
-        if(this.activeMode)
-            g.setColor(this.ACTIVE_COLOR);
-        else
-            g.setColor(this.col);
+        if(this.activeMode) g.setColor(this.ACTIVE_COLOR);
+        else g.setColor(this.col);
 
         g.fillRoundRect(this.x, this.y, this.w, this.w, 0, 0);
     }
