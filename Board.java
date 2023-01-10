@@ -7,6 +7,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.HashMap;
 
 public class Board extends JComponent implements MouseListener {
     private Square[][] squares;
@@ -26,11 +27,14 @@ public class Board extends JComponent implements MouseListener {
     private boolean squaresControlledW[][];
     private boolean squaresControlledB[][];
 
+    // HashMap of the pieces for each side and where they can move to.
+    private HashMap<Piece, Integer[][]> piecesW;
+    private HashMap<Piece, Integer[][]> piecesB;
+
     private final int NUM_SQUARES = 8;
     private final int SQUARE_WIDTH = 50;
     private final int X_OFFSET = 100;
     private final int Y_OFFSET = 100;
-
     private final Color WHITE = new Color(184,139,74);
     private final Color BLACK = new Color(227,193,111);
     private final Color OPAQUE_GRAY = new Color(100, 100, 100, 100);
@@ -158,6 +162,9 @@ public class Board extends JComponent implements MouseListener {
      * Adds the mouse listener and initializes the squares and pieces.
      * **/
     public Board(){
+        piecesW = new HashMap<Piece, Integer[][]>();
+        piecesB = new HashMap<Piece, Integer[][]>();
+
         this.initSquares();
         this.initPieces();
 
