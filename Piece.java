@@ -47,6 +47,9 @@ public class Piece {
         this.side = side;
     }
 
+    public int getGridX(){ return this.gridX; }
+    public int getGridY(){ return this.gridY; }
+
     public String getType(){
         return this.type;
     }
@@ -373,12 +376,12 @@ public class Piece {
             return false; // Thanks Luke
 
         Piece p = (Piece) o;
-        return (this.gridX == p.gridX && this.gridY == p.gridY && this.getType().equals(p.getType()) && this.side == p.side);
+        return (this.getGridX() == p.getGridX() && this.getGridY() == p.getGridY() && this.getType().equals(p.getType()) && this.side == p.side);
     }
 
     @Override
     public String toString(){
-        return "[ " + "(" + this.gridX + ", " + this.gridY + ") " + this.getType() + " " + this.getSide() + " ]\n";
+        return "[ " + "(" + this.gridX + ", " + this.gridY + ") " + this.getType() + " " + this.getSide() + " ]";
     }
 
     // Images
