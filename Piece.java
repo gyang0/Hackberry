@@ -18,8 +18,6 @@ public class Piece {
     // this.gridX and this.gridY are the grid-type coordinates ( Like (0, 1), (1, 1), etc.).
     private int gridX;
     private int gridY;
-    private static final String PIECE_FONT = "Helvetica Neue-bold-40";
-    private final int NUM_SQUARES = 8;
 
     private final int SQUARE_WIDTH = 50;
     private final int X_OFFSET = 100;
@@ -57,9 +55,6 @@ public class Piece {
     public char getSide(){ return this.side; }
 
     public void paint(Graphics g){
-        g.setColor(Color.YELLOW);
-        g.setFont(Font.decode(PIECE_FONT));
-
         if(!this.type.equals("")){
             ImageIcon img = null;
 
