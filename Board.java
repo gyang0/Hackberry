@@ -63,6 +63,20 @@ public class Board extends JComponent implements MouseListener {
     public boolean whiteKingInCheck = false;
     public boolean blackKingInCheck = false;
 
+
+    Font MSG_FONT = new Font("sans-serif", Font.PLAIN, 30);
+    private String message = "";
+
+    /**
+     * Shows a message to the user for help and also for debugging purposes.
+     *
+     * @param msg - The message to display.
+     * **/
+    public void setMessage(String msg){
+        message = msg;
+        repaint();
+    }
+
     /**
      * Fills in the squares array with Square objects.
      * **/
@@ -188,7 +202,7 @@ public class Board extends JComponent implements MouseListener {
         }
 
     }
-    
+
     /**
      * Updates the positions every white piece can move to.
      * **/
@@ -238,7 +252,7 @@ public class Board extends JComponent implements MouseListener {
             piecesB.put(p, possibleMoves);
         }
     }
-    
+
     /**
      * Combined usage of checking possible squares and getting possible moves for all sides.
      * **/
@@ -386,6 +400,11 @@ public class Board extends JComponent implements MouseListener {
 
             promoOption.paint(g);
         }
+
+        // Message
+        g.setColor(Color.BLACK);
+        g.setFont(MSG_FONT);
+        g.drawString(message, 300, 500);
     }
 
     /* Mouse events */
@@ -417,9 +436,9 @@ public class Board extends JComponent implements MouseListener {
                                 piecesW.put(pieces[i][j], new ArrayList<int[]>());
                             else if(pieces[i][j].getSide() == 'b')
                                 piecesB.put(pieces[i][j], new ArrayList<int[]>());
-                            
+
                             //Piece prev = new Piece(i, j, pieces[i][j].getType(), pieces[i][j].getSide());
-                            
+
                             // Update controlled squares
                             this.updateControlledSquares();
 
@@ -470,6 +489,8 @@ public class Board extends JComponent implements MouseListener {
 
             repaint();
         }
+
+
 
     }
 
