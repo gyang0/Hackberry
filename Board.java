@@ -7,11 +7,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class Board extends JComponent implements MouseListener {
-    private Square[][] squares;
-    private Piece[][] pieces;
     private String boardState[][] = {
             {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
             {"bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"},
@@ -27,9 +27,13 @@ public class Board extends JComponent implements MouseListener {
     private boolean squaresControlledW[][];
     private boolean squaresControlledB[][];
 
+    // Just stores the positions of the pieces. (HashMap does the rest, below.)
+    private Piece[][] pieces;
+    private Square[][] squares;
+
     // HashMap of the pieces for each side and where they can move to.
-    private HashMap<Piece, Integer[][]> piecesW;
-    private HashMap<Piece, Integer[][]> piecesB;
+    private HashMap<Piece, ArrayList<int[]>> piecesW;
+    private HashMap<Piece, ArrayList<int[]>> piecesB;
 
     private final int NUM_SQUARES = 8;
     private final int SQUARE_WIDTH = 50;
@@ -46,8 +50,9 @@ public class Board extends JComponent implements MouseListener {
     // First two indices hold the x and y position of white's move.
     // Third and fourth indices hold the x and y position of black's move.
     private int[] mostRecentPieceMov = {-1, -1};
-    private String prevPieceType = "";
-    private char prevPieceSide = ' ';
+
+    private Piece curPiece = new Piece(0, 0, "", ' '); // Currently selected piece
+
     private boolean myTurn = true;
 
     PromoOptions promoOption = new PromoOptions(0, 0, ' ');
@@ -58,6 +63,9 @@ public class Board extends JComponent implements MouseListener {
     public boolean whiteKingInCheck = false;
     public boolean blackKingInCheck = false;
 
+    /**
+     * Fills in the squares array with Square objects.
+     * **/
     public void initSquares() {
         squares = new Square[NUM_SQUARES][NUM_SQUARES];
         squaresControlledW = new boolean[NUM_SQUARES][NUM_SQUARES];
@@ -67,15 +75,12 @@ public class Board extends JComponent implements MouseListener {
 
         for (int i = 0; i < NUM_SQUARES; i++) {
             for (int j = 0; j < NUM_SQUARES; j++) {
-                if (flag)
-                    squares[i][j] = new Square(i, j, SQUARE_WIDTH, WHITE);
-                else
-                    squares[i][j] = new Square(i, j, SQUARE_WIDTH, BLACK);
+                if (flag) squares[i][j] = new Square(i, j, SQUARE_WIDTH, WHITE);
+                else squares[i][j] = new Square(i, j, SQUARE_WIDTH, BLACK);
 
                 // Carrying on the color if at the end of the column
                 if (j != NUM_SQUARES - 1)
                     flag = !flag;
-
 
                 // Setting the squares controlled
                 squaresControlledW[i][j] = false;
@@ -84,77 +89,165 @@ public class Board extends JComponent implements MouseListener {
         }
     }
 
+    /**
+     * Fills in the pieces array with Piece objects, and also puts pieces into piecesW and piecesB.
+     * **/
     public void initPieces(){
         pieces = new Piece[NUM_SQUARES][NUM_SQUARES];
 
         for(int i = 0; i < NUM_SQUARES; i++){
             for(int j = 0; j < NUM_SQUARES; j++){
-                // Reversed coordinates for display
-                pieces[j][i] = new Piece(j, i, boardState[i][j], boardState[i][j].equals("") ? ' ' : boardState[i][j].charAt(0));
+                if(!boardState[i][j].equals("")){
+                    pieces[j][i] = new Piece(j, i, boardState[i][j], boardState[i][j].charAt(0));
+
+                    // Reversed coordinates for display
+                    if(boardState[i][j].charAt(0) == 'w')
+                        piecesW.put(pieces[j][i], new ArrayList<int[]>());
+                    else
+                        piecesB.put(pieces[j][i], new ArrayList<int[]>());
+                } else
+                    pieces[j][i] = new Piece(j, i, "", ' ');
             }
         }
     }
 
     /**
-     * Checks the squares controlled by the side specified
-     *
-     * @param arr - Array of the squares controlled to be updated, either from squaresControlledW or squaresControlledB.
-     * @param whichSide - The side of the current side to check.
+     * Checks the squares controlled by the white side.
      * **/
-    public void checkControlledSquares(boolean arr[][], char whichSide){
+    public void checkControlledSquaresW(){
         // Reset
         for(int i = 0; i < NUM_SQUARES; i++)
             for(int j = 0; j < NUM_SQUARES; j++)
-                arr[i][j] = false;
-
-        if(whichSide == 'w')
-            blackKingInCheck = false;
-        else
-            whiteKingInCheck = false;
-
-        // Brute-force approach of iterating through every square, finding a piece, and going through again.
-        // Worst case is 8^4 = 4096 iterations, which is fine but might need optimization later.
+                squaresControlledW[i][j] = false;
 
         Piece prev = new Piece(0, 0, "", ' ');
 
-        for(int i = 0; i < NUM_SQUARES; i++){
-            for(int j = 0; j < NUM_SQUARES; j++){
+        // For every black piece
+        for(Piece p : piecesW.keySet()){
+            // For every square on the board
+            for(int pos1 = 0; pos1 < NUM_SQUARES; pos1++){
+                for(int pos2 = 0; pos2 < NUM_SQUARES; pos2++){
 
-                // Found a piece from that side.
-                if(pieces[i][j].getSide() == whichSide){
+                    // Having control over that square:
+                    // For testing purposes, we set the piece of an opposite side at that square.
+                    // Then we see if that piece can be captured.
+                    prev.setPiece(pos1, pos2, pieces[pos1][pos2].getType(), pieces[pos1][pos2].getSide());
+                    pieces[pos1][pos2].setPiece(pos1, pos2, "bp", 'b');
 
-                    // Go through board again and check off the controlled squares.
-                    for(int pos1 = 0; pos1 < NUM_SQUARES; pos1++){
-                        for(int pos2 = 0; pos2 < NUM_SQUARES; pos2++){
-                            // For testing purposes, we set the piece of an opposite side at that square.
-                            // Then we see if that piece can be captured.
-                            prev.setPiece(pos1, pos2, pieces[pos1][pos2].getType(), pieces[pos1][pos2].getSide());
-                            pieces[pos1][pos2].setPiece(pos1, pos2, whichSide == 'w' ? "bp" : "wp", whichSide == 'w' ? 'b' : 'w');
+                    // Can make a capture (if necessary) at that position.
+                    if(p.legalMove(pos1, pos2, pieces, mostRecentPieceMov, squaresControlledW, squaresControlledB)){
+                        squaresControlledW[pos1][pos2] = true;
 
-                            // Can make a capture (if necessary) at that position.
-                            if(pieces[i][j].legalMove(pos1, pos2, pieces, mostRecentPieceMov, squaresControlledW, squaresControlledB)){
-                                arr[pos1][pos2] = true;
+                        // If the piece at that position is a king, it's in check.
+                        if(prev.getType().equals("bk"))
+                            blackKingInCheck = true;
+                    }
 
-                                // If the piece at that position is a king, it's in check.
-                                if(prev.getType().equals("bk") && pieces[i][j].getSide() == 'w')
-                                    blackKingInCheck = true;
-                                else if(prev.getType().equals("wk") && pieces[i][j].getSide() == 'b')
-                                    whiteKingInCheck = true;
+                    pieces[pos1][pos2].setPiece(pos1, pos2, prev.getType(), prev.getSide());
+                }
+            }
+        }
 
-                            }
+    }
 
-                            pieces[pos1][pos2].setPiece(pos1, pos2, prev.getType(), prev.getSide());
-                        }
+    /**
+     * Checks the squares controlled by the black side.
+     * **/
+    public void checkControlledSquaresB(){
+        // Reset
+        for(int i = 0; i < NUM_SQUARES; i++)
+            for(int j = 0; j < NUM_SQUARES; j++)
+                squaresControlledB[i][j] = false;
+
+        Piece prev = new Piece(0, 0, "", ' ');
+
+        // For every black piece
+        for(Piece p : piecesB.keySet()){
+            // For every square on the board
+            for(int pos1 = 0; pos1 < NUM_SQUARES; pos1++){
+                for(int pos2 = 0; pos2 < NUM_SQUARES; pos2++){
+
+                    // Having control over that square:
+                    // For testing purposes, we set the piece of an opposite side at that square.
+                    // Then we see if that piece can be captured.
+                    prev.setPiece(pos1, pos2, pieces[pos1][pos2].getType(), pieces[pos1][pos2].getSide());
+                    pieces[pos1][pos2].setPiece(pos1, pos2, "wp", 'w');
+
+                    // Can make a capture (if necessary) at that position.
+                    if(p.legalMove(pos1, pos2, pieces, mostRecentPieceMov, squaresControlledW, squaresControlledB)){
+                        squaresControlledB[pos1][pos2] = true;
+
+                        // If the piece at that position is a king, it's in check.
+                        if(prev.getType().equals("wk"))
+                            whiteKingInCheck = true;
+                    }
+
+                    pieces[pos1][pos2].setPiece(pos1, pos2, prev.getType(), prev.getSide());
+                }
+            }
+        }
+
+    }
+    
+    /**
+     * Updates the positions every white piece can move to.
+     * **/
+    public void getPossibleMovesW(){
+        // Reset
+        for(Piece p : piecesW.keySet()) piecesW.put(p, new ArrayList<int[]>());
+
+        // For every black piece
+        for(Piece p : piecesW.keySet()){
+            ArrayList<int[]> possibleMoves = new ArrayList<int[]>();
+
+            // For every square on the board
+            for(int pos1 = 0; pos1 < NUM_SQUARES; pos1++){
+                for(int pos2 = 0; pos2 < NUM_SQUARES; pos2++){
+                    // Can move to that square
+                    if(p.legalMove(pos1, pos2, pieces, mostRecentPieceMov, squaresControlledW, squaresControlledB)){
+                        possibleMoves.add(new int[]{pos1,pos2});
                     }
                 }
-
             }
+
+            piecesW.put(p, possibleMoves);
         }
     }
 
+    /**
+     * Updates the positions every black piece can move to.
+     * **/
+    public void getPossibleMovesB(){
+        // Reset
+        for(Piece p : piecesB.keySet()) piecesB.put(p, new ArrayList<int[]>());
+
+        // For every black piece
+        for(Piece p : piecesB.keySet()){
+            ArrayList<int[]> possibleMoves = new ArrayList<int[]>();
+
+            // For every square on the board
+            for(int pos1 = 0; pos1 < NUM_SQUARES; pos1++){
+                for(int pos2 = 0; pos2 < NUM_SQUARES; pos2++){
+                    // Can move to that square
+                    if(p.legalMove(pos1, pos2, pieces, mostRecentPieceMov, squaresControlledW, squaresControlledB)){
+                        possibleMoves.add(new int[]{pos1,pos2});
+                    }
+                }
+            }
+
+            piecesB.put(p, possibleMoves);
+        }
+    }
+    
+    /**
+     * Combined usage of checking possible squares and getting possible moves for all sides.
+     * **/
     public void updateControlledSquares(){
-        checkControlledSquares(squaresControlledW, 'w');
-        checkControlledSquares(squaresControlledB, 'b');
+        this.getPossibleMovesW();
+        this.getPossibleMovesB();
+
+        this.checkControlledSquaresW();
+        this.checkControlledSquaresB();
     }
 
     /**
@@ -162,14 +255,76 @@ public class Board extends JComponent implements MouseListener {
      * Adds the mouse listener and initializes the squares and pieces.
      * **/
     public Board(){
-        piecesW = new HashMap<Piece, Integer[][]>();
-        piecesB = new HashMap<Piece, Integer[][]>();
+        piecesW = new HashMap<Piece, ArrayList<int[]>>();
+        piecesB = new HashMap<Piece, ArrayList<int[]>>();
 
         this.initSquares();
         this.initPieces();
 
+        this.updateControlledSquares();
+
         // Add mouse listener
         addMouseListener(this);
+    }
+
+
+    /**
+     * Checks the specific piece's corresponding ArrayList to see if a move is legal.
+     *
+     * @param fromX - row number of the current piece.
+     * @param fromY - column number of the current piece.
+     * @param toX - row number of square to move to.
+     * @param toY - column number of square to move to.
+     * **/
+    public boolean canMoveTo(int fromX, int fromY, int toX, int toY){
+
+        if(curPiece.getSide() == 'w'){
+            for(int[] arr : piecesW.get(pieces[fromX][fromY])){
+                if(arr[0] == toX && arr[1] == toY)
+                    return true;
+            }
+
+        } else if(curPiece.getSide() == 'b'){
+            for(int[] arr : piecesB.get(pieces[fromX][fromY])){
+                if(arr[0] == toX && arr[1] == toY)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Replaces a pawn with the user's choice piece for promotion.
+     *
+     * @param choice - The ID of the piece for the promotion option (0 - rook, 1 - knight, etc.)
+     * **/
+    public void promotePawn(int choice){
+        boolean done = false;
+        switch(choice){
+            case 0:
+                pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wr" : "br", promoOption.side);
+                done = true;
+                break;
+            case 1:
+                pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wn" : "bn", promoOption.side);
+                done = true;
+                break;
+            case 2:
+                pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wb" : "bb", promoOption.side);
+                done = true;
+                break;
+            case 3:
+                pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wq" : "bq", promoOption.side);
+                done = true;
+                break;
+        }
+
+        if(done) {
+            showPromoOptions = false;
+            this.updateControlledSquares();
+            repaint();
+        }
     }
 
 
@@ -200,11 +355,13 @@ public class Board extends JComponent implements MouseListener {
             }
         }
 
-        for (int i = 0; i < NUM_SQUARES; i++){
-            for (int j = 0; j < NUM_SQUARES; j++) {
-                pieces[i][j].paint(g);
-            }
-        }
+
+        // Piece images
+        for(Piece p : piecesW.keySet())
+            p.paint(g);
+        for(Piece p : piecesB.keySet())
+            p.paint(g);
+
 
 
         // Search for a pawn on the back rank
@@ -231,121 +388,89 @@ public class Board extends JComponent implements MouseListener {
         }
     }
 
-
     /* Mouse events */
     @Override
     public void mouseClicked(MouseEvent e){
         if(showPromoOptions){
             int choice = promoOption.handleMouseInteractions(e.getX(), e.getY());
-
-                boolean done = false;
-                switch(choice){
-                    case 0:
-                        pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wr" : "br", promoOption.side);
-                        done = true;
-                    break;
-                    case 1:
-                        pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wn" : "bn", promoOption.side);
-                        done = true;
-                    break;
-                    case 2:
-                        pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wb" : "bb", promoOption.side);
-                        done = true;
-                    break;
-                    case 3:
-                        pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wq" : "bq", promoOption.side);
-                        done = true;
-                    break;
-                }
-
-                if(done) {
-                    showPromoOptions = false;
-                    repaint();
-                }
+            promotePawn(choice);
         }
         else {
+            // Did we click a valid square?
+            if (e.getX() >= X_OFFSET && e.getX() <= X_OFFSET + NUM_SQUARES * SQUARE_WIDTH &&
+                    e.getY() >= Y_OFFSET && e.getY() <= Y_OFFSET + NUM_SQUARES * SQUARE_WIDTH) {
+                int i = (e.getX() - X_OFFSET) / SQUARE_WIDTH; // Taking advantage of integer division.
+                int j = (e.getY() - Y_OFFSET) / SQUARE_WIDTH; // Used for quick square collisions.
 
-            for (int i = 0; i < NUM_SQUARES; i++) {
-                for (int j = 0; j < NUM_SQUARES; j++) {
-                    if (squares[i][j].contains(e.getX(), e.getY())) {
-                        // Second click
-                        if (numClicks == 1) {
-                            // Clicked same square (deselect)
-                            if (i == prevCoords[0] && j == prevCoords[1]) {
+                // Second click (move)
+                if(numClicks == 1){
+                    // Clicked same square (deselect)
+                    if (i == prevCoords[0] && j == prevCoords[1]) {
+                        squares[i][j].deselectSquare();
+                    } else {
+                        // Go through possible moves for that piece and check for legal moves
+                        if (this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
+                            pieces[i][j].setPiece(i, j, pieces[prevCoords[0]][prevCoords[1]].getType(), pieces[prevCoords[0]][prevCoords[1]].getSide());
+                            pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1], "", ' ');
+
+                            if(pieces[i][j].getSide() == 'w')
+                                piecesW.put(pieces[i][j], new ArrayList<int[]>());
+                            else if(pieces[i][j].getSide() == 'b')
+                                piecesB.put(pieces[i][j], new ArrayList<int[]>());
+                            
+                            //Piece prev = new Piece(i, j, pieces[i][j].getType(), pieces[i][j].getSide());
+                            
+                            // Update controlled squares
+                            this.updateControlledSquares();
+
+                            // King is in check?
+                            /*if(whiteKingInCheck && myTurn){
+                                // Then we can't make that move.
+                                pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1], pieces[i][j].getType(), pieces[i][j].getSide());
+                                pieces[i][j].setPiece(i, j, prev.getType(), prev.getSide());
+
                                 squares[i][j].deselectSquare();
-                            } else {
-                                // Legal move
-                                if (pieces[prevCoords[0]][prevCoords[1]].legalMove(i, j, pieces, mostRecentPieceMov, squaresControlledW, squaresControlledB)) {
-                                    Piece prev = new Piece(i, j, pieces[i][j].getType(), pieces[i][j].getSide());
-
-                                    pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces);
-                                    pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1], "", ' ');
-
-                                    // Update controlled squares
-                                    this.updateControlledSquares();
-
-                                    // King is in check?
-                                    if((whiteKingInCheck && myTurn) || (blackKingInCheck && !myTurn)){
-                                        // Then we can't make that move.
-                                        // Take it back.
-                                        pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1], pieces[i][j].getType(), pieces[i][j].getSide());
-                                        pieces[i][j].setPiece(i, j, prev.getType(), prev.getSide());
-
-                                        squares[i][j].deselectSquare();
-                                        squares[prevCoords[0]][prevCoords[1]].deselectSquare();
-                                        prevCoords[0] = -1;
-                                        prevCoords[1] = -1;
-                                        numClicks = 0;
-
-                                        this.updateControlledSquares();
-
-                                        return;
-                                    }
-
-
-                                    // Successfully made a legal move
-                                    myTurn = !myTurn;
-                                    pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
-                                    mostRecentPieceMov[0] = i;
-                                    mostRecentPieceMov[1] = j;
-
-                                }
-
                                 squares[prevCoords[0]][prevCoords[1]].deselectSquare();
-                            }
+                                prevCoords[0] = -1;
+                                prevCoords[1] = -1;
+                                numClicks = 0;
 
-                            // Reset
-                            squares[i][j].deselectSquare();
-                            prevCoords[0] = -1;
-                            prevCoords[1] = -1;
-                            numClicks = 0;
+                                this.updateControlledSquares();
+                                return;
+                            }*/
 
-                        } else {
-                            // Not a blank square
-                            if (!pieces[i][j].getType().equals("")) {
-                                if ((myTurn && pieces[i][j].getType().charAt(0) == 'w') ||
-                                    (!myTurn && pieces[i][j].getType().charAt(0) == 'b')) {
-                                    numClicks++;
-                                    prevCoords[0] = i;
-                                    prevCoords[1] = j;
-                                    prevPieceType = pieces[i][j].getType();
-                                    prevPieceSide = pieces[i][j].getSide();
-
-                                    squares[i][j].selectSquare();
-                                }
-                            }
+                            // Successfully made a legal move
+                            myTurn = !myTurn;
+                            pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
+                            mostRecentPieceMov[0] = i;
+                            mostRecentPieceMov[1] = j;
                         }
-
-                        repaint();
-
-                        // No point in going through the rest of the squares.
-                        return;
+                        squares[prevCoords[0]][prevCoords[1]].deselectSquare();
                     }
+
+                    // Reset
+                    squares[i][j].deselectSquare();
+                    prevCoords[0] = -1;
+                    prevCoords[1] = -1;
+                    numClicks = 0;
+                }
+
+                // First click (choice)
+                else if(numClicks == 0){
+                    // Currently selected piece
+                    curPiece.setPiece(i, j, pieces[i][j].getType(), pieces[i][j].getSide());
+                    squares[i][j].selectSquare();
+
+                    prevCoords[0] = i;
+                    prevCoords[1] = j;
+
+                    numClicks++;
                 }
             }
 
-
+            repaint();
         }
+
     }
 
     @Override

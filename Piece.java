@@ -47,6 +47,9 @@ public class Piece {
         this.side = side;
     }
 
+    public int getGridX(){ return this.gridX; }
+    public int getGridY(){ return this.gridY; }
+
     public String getType(){
         return this.type;
     }
@@ -170,6 +173,10 @@ public class Piece {
     public boolean legalMove(int toX, int toY, Piece[][] pieces, int[] mostRecentPieceMov, boolean[][] squaresControlledW, boolean[][] squaresControlledB){
         // Can't capture pieces on its own side
         if(pieces[toX][toY].side == this.side)
+            return false;
+
+        // Can't move to same square
+        if(toX == this.gridX && toY == this.gridY)
             return false;
 
         boolean isLegal = false;
@@ -358,6 +365,23 @@ public class Piece {
         // Other pieces
         else
             pieces[i][j].setPiece(i, j, this.type, this.side);
+
+        // Clear original square
+        pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, "", ' ');
+    }
+
+    @Override
+    public boolean equals(Object o){
+        if(o == null || o.getClass() != this.getClass())
+            return false; // Thanks Luke
+
+        Piece p = (Piece) o;
+        return (this.getGridX() == p.getGridX() && this.getGridY() == p.getGridY() && this.getType().equals(p.getType()) && this.side == p.side);
+    }
+
+    @Override
+    public String toString(){
+        return "[ " + "(" + this.gridX + ", " + this.gridY + ") " + this.getType() + " " + this.getSide() + " ]";
     }
 
     // Images
