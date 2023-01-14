@@ -12,25 +12,22 @@
  *
  * TODO: Javadoc comments
  * TODO: Different side toggle
- *
+ * TODO: Fix new bugs
  * **/
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Chess piece images from https://commons.wikimedia.org/wiki/Category:PNG_chess_pieces/Standard_transparent
  *
  * @author Gene Yang
- * @version Jan. 11, 2023
+ * @version Jan. 7, 2023
  **/
-
 
 public class Hackberry {
     public static final int WIDTH = 600;
-    public static final int HEIGHT = 600;
+    public static final int HEIGHT = 700;
     private Board board;
 
 
