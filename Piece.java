@@ -317,7 +317,7 @@ public class Piece {
         return isLegal;
     }
 
-    public void playMove(int i, int j, Piece[][] pieces, Board board) {
+    public void playMove(int i, int j, Piece[][] pieces) {
         Piece prev = new Piece(i, j, pieces[i][j].getType(), pieces[i][j].getSide());
 
         // En passant
