@@ -134,6 +134,7 @@ public class Board extends JComponent implements MouseListener {
             for(int j = 0; j < NUM_SQUARES; j++)
                 squaresControlledW[i][j] = false;
 
+        blackKingInCheck = false;
         Piece prev = new Piece(0, 0, "", ' ');
 
         // For every black piece
@@ -173,6 +174,7 @@ public class Board extends JComponent implements MouseListener {
             for(int j = 0; j < NUM_SQUARES; j++)
                 squaresControlledB[i][j] = false;
 
+        whiteKingInCheck = false;
         Piece prev = new Piece(0, 0, "", ' ');
 
         // For every black piece
@@ -293,12 +295,16 @@ public class Board extends JComponent implements MouseListener {
     public boolean canMoveTo(int fromX, int fromY, int toX, int toY){
 
         if(curPiece.getSide() == 'w'){
+            if(piecesW.get(pieces[fromX][fromY]) == null) return false;
+
             for(int[] arr : piecesW.get(pieces[fromX][fromY])){
                 if(arr[0] == toX && arr[1] == toY)
                     return true;
             }
 
         } else if(curPiece.getSide() == 'b'){
+            if(piecesB.get(pieces[fromX][fromY]) == null) return false;
+
             for(int[] arr : piecesB.get(pieces[fromX][fromY])){
                 if(arr[0] == toX && arr[1] == toY)
                     return true;
