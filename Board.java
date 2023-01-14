@@ -14,12 +14,12 @@ import java.util.HashMap;
 public class Board extends JComponent implements MouseListener {
     private String boardState[][] = {
             {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
-            {"bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"},
+            {"bp", "bp", "bp", "bp", "", "bp", "bp", "bp"},
             {"", "", "", "", "", "", "", ""},
             {"", "", "", "", "", "", "", ""},
             {"", "", "", "", "", "", "", ""},
             {"", "", "", "", "", "", "", ""},
-            {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
+            {"wp", "wp", "wp", "wp", "", "wp", "wp", "wp"},
             {"wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr"}
     };
 
@@ -64,7 +64,7 @@ public class Board extends JComponent implements MouseListener {
     public boolean blackKingInCheck = false;
 
 
-    Font MSG_FONT = new Font("sans-serif", Font.PLAIN, 30);
+    Font MSG_FONT = new Font("serif", Font.BOLD, 20);
     private String message = "";
 
     /**
@@ -350,34 +350,20 @@ public class Board extends JComponent implements MouseListener {
     public void whiteMove(int i, int j){
         // Go through possible moves for that piece and check for legal moves
         if (this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
-            pieces[i][j].setPiece(i, j, pieces[prevCoords[0]][prevCoords[1]].getType(), pieces[prevCoords[0]][prevCoords[1]].getSide());
-            pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1], "", ' ');
+            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, this);
 
-            piecesW.put(pieces[i][j], new ArrayList<int[]>());
+            // Successfully made a legal move
+            if (!whiteKingInCheck){
+                myTurn = !myTurn;
+                pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
+                mostRecentPieceMov[0] = i;
+                mostRecentPieceMov[1] = j;
+
+                piecesW.put(pieces[i][j], new ArrayList<int[]>());
+            }
 
             // Update controlled squares
             this.updateControlledSquares();
-
-            // King is in check?
-            if(whiteKingInCheck){
-                // Then we can't make that move.
-                pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1], pieces[i][j].getType(), pieces[i][j].getSide());
-                squares[i][j].deselectSquare();
-                squares[prevCoords[0]][prevCoords[1]].deselectSquare();
-
-                prevCoords[0] = -1;
-                prevCoords[1] = -1;
-                numClicks = 0;
-
-                this.updateControlledSquares();
-                return;
-            }
-
-            // Successfully made a legal move
-            myTurn = !myTurn;
-            pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
-            mostRecentPieceMov[0] = i;
-            mostRecentPieceMov[1] = j;
         }
         squares[prevCoords[0]][prevCoords[1]].deselectSquare();
     }
@@ -392,34 +378,20 @@ public class Board extends JComponent implements MouseListener {
     public void blackMove(int i, int j){
         // Go through possible moves for that piece and check for legal moves
         if (this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
-            pieces[i][j].setPiece(i, j, pieces[prevCoords[0]][prevCoords[1]].getType(), pieces[prevCoords[0]][prevCoords[1]].getSide());
-            pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1], "", ' ');
+            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, this);
 
-            piecesB.put(pieces[i][j], new ArrayList<int[]>());
+            // Successfully made a legal move
+            if(!blackKingInCheck) {
+                myTurn = !myTurn;
+                pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
+                mostRecentPieceMov[0] = i;
+                mostRecentPieceMov[1] = j;
+
+                piecesB.put(pieces[i][j], new ArrayList<int[]>());
+            }
 
             // Update controlled squares
             this.updateControlledSquares();
-
-            // King is in check?
-            if(blackKingInCheck){
-                // Then we can't make that move.
-                pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1], pieces[i][j].getType(), pieces[i][j].getSide());
-                squares[i][j].deselectSquare();
-                squares[prevCoords[0]][prevCoords[1]].deselectSquare();
-
-                prevCoords[0] = -1;
-                prevCoords[1] = -1;
-                numClicks = 0;
-
-                this.updateControlledSquares();
-                return;
-            }
-
-            // Successfully made a legal move
-            myTurn = !myTurn;
-            pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
-            mostRecentPieceMov[0] = i;
-            mostRecentPieceMov[1] = j;
         }
         squares[prevCoords[0]][prevCoords[1]].deselectSquare();
     }
@@ -446,6 +418,16 @@ public class Board extends JComponent implements MouseListener {
                 // King in check.
                 if((blackKingInCheck && pieces[i][j].getType().equals("bk")) || (whiteKingInCheck && pieces[i][j].getType().equals("wk"))){
                     g.setColor(CHECK_COLOR);
+                    g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
+                }
+
+                if(squaresControlledW[i][j]){
+                    g.setColor(new Color(0, 0, 255, 100));
+                    g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
+                }
+
+                if(squaresControlledB[i][j]){
+                    g.setColor(new Color(255, 0, 0, 100));
                     g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
                 }
 
@@ -487,12 +469,14 @@ public class Board extends JComponent implements MouseListener {
         // Message
         g.setColor(Color.BLACK);
         g.setFont(MSG_FONT);
-        g.drawString(message, 300, 500);
+        g.drawString(message, 300, 550);
     }
 
     /* Mouse events */
     @Override
     public void mouseClicked(MouseEvent e){
+        this.setMessage("");
+
         if(showPromoOptions){
             int choice = promoOption.handleMouseInteractions(e.getX(), e.getY());
             promotePawn(choice);
