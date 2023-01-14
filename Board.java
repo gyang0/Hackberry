@@ -211,7 +211,7 @@ public class Board extends JComponent implements MouseListener {
     public void getPossibleMovesW(){
         // Reset
         for(Piece p : piecesW.keySet()) piecesW.put(p, new ArrayList<int[]>());
-
+        
         // For every black piece
         for(Piece p : piecesW.keySet()){
             ArrayList<int[]> possibleMoves = new ArrayList<int[]>();
@@ -266,6 +266,7 @@ public class Board extends JComponent implements MouseListener {
         this.checkControlledSquaresB();
     }
 
+    
     /**
      * Constructor for Board class.
      * Adds the mouse listener and initializes the squares and pieces.
@@ -356,17 +357,14 @@ public class Board extends JComponent implements MouseListener {
     public void whiteMove(int i, int j){
         // Go through possible moves for that piece and check for legal moves
         if (this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
-            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, this);
+            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces);
 
-            // Successfully made a legal move
-            if (!whiteKingInCheck){
-                myTurn = !myTurn;
-                pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
-                mostRecentPieceMov[0] = i;
-                mostRecentPieceMov[1] = j;
+            myTurn = !myTurn;
+            pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
+            mostRecentPieceMov[0] = i;
+            mostRecentPieceMov[1] = j;
 
-                piecesW.put(pieces[i][j], new ArrayList<int[]>());
-            }
+            piecesW.put(pieces[i][j], new ArrayList<int[]>());
 
             // Update controlled squares
             this.updateControlledSquares();
@@ -384,17 +382,15 @@ public class Board extends JComponent implements MouseListener {
     public void blackMove(int i, int j){
         // Go through possible moves for that piece and check for legal moves
         if (this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
-            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, this);
+            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces);
 
             // Successfully made a legal move
-            if(!blackKingInCheck) {
-                myTurn = !myTurn;
-                pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
-                mostRecentPieceMov[0] = i;
-                mostRecentPieceMov[1] = j;
+            myTurn = !myTurn;
+            pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
+            mostRecentPieceMov[0] = i;
+            mostRecentPieceMov[1] = j;
 
-                piecesB.put(pieces[i][j], new ArrayList<int[]>());
-            }
+            piecesB.put(pieces[i][j], new ArrayList<int[]>());
 
             // Update controlled squares
             this.updateControlledSquares();
