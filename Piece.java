@@ -362,18 +362,21 @@ public class Piece {
         // Other pieces
         else {
             pieces[i][j].setPiece(i, j, this.getType(), this.getSide());
-            pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, "", ' ');
+
         }
+
+        pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, "", ' ');
 
         // Check if king is in check (no pun intended).
+        /*
         board.updateControlledSquares();
-        if((this.side == 'w' && board.whiteKingInCheck) || (this.side == 'b' && board.blackKingInCheck)){
+        if((this.getSide() == 'w' && board.whiteKingInCheck) || (this.getSide() == 'b' && board.blackKingInCheck)){
             board.setMessage("King is in check");
 
-            pieces[i][j].setPiece(i, j, prev.getType(), prev.getSide());
+            pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, this.getType(), this.getSide());
+            //pieces[i][j].setPiece(i, j, prev.getType(), prev.getSide());
             System.out.println(prev);
-            pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, this.type, this.side);
-        }
+        }*/
     }
 
     @Override
