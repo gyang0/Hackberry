@@ -317,7 +317,9 @@ public class Piece {
         return isLegal;
     }
 
-    public void playMove(int i, int j, Piece[][] pieces) {
+    public void playMove(int i, int j, Piece[][] pieces, Board board) {
+        Piece prev = new Piece(i, j, pieces[i][j].getType(), pieces[i][j].getSide());
+
         // En passant
         // The target pawn must have moved in the last move, moved two squares up, and be next to the current pawn.
         if(this.type.equals("wp") && j == this.gridY - 1 && Math.abs(i - this.gridX) == 1 && pieces[i][j].getSide() == ' '){
@@ -358,11 +360,20 @@ public class Piece {
         }
 
         // Other pieces
-        else
-            pieces[i][j].setPiece(i, j, this.type, this.side);
+        else {
+            pieces[i][j].setPiece(i, j, this.getType(), this.getSide());
+            pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, "", ' ');
+        }
 
-        // Clear original square
-        pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, "", ' ');
+        // Check if king is in check (no pun intended).
+        board.updateControlledSquares();
+        if((this.side == 'w' && board.whiteKingInCheck) || (this.side == 'b' && board.blackKingInCheck)){
+            board.setMessage("King is in check");
+
+            pieces[i][j].setPiece(i, j, prev.getType(), prev.getSide());
+            System.out.println(prev);
+            pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, this.type, this.side);
+        }
     }
 
     @Override
