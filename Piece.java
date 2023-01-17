@@ -366,17 +366,6 @@ public class Piece {
         }
 
         pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, "", ' ');
-
-        // Check if king is in check (no pun intended).
-        /*
-        board.updateControlledSquares();
-        if((this.getSide() == 'w' && board.whiteKingInCheck) || (this.getSide() == 'b' && board.blackKingInCheck)){
-            board.setMessage("King is in check");
-
-            pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, this.getType(), this.getSide());
-            //pieces[i][j].setPiece(i, j, prev.getType(), prev.getSide());
-            System.out.println(prev);
-        }*/
     }
 
     @Override
