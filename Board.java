@@ -211,7 +211,7 @@ public class Board extends JComponent implements MouseListener {
     public void getPossibleMovesW(){
         // Reset
         for(Piece p : piecesW.keySet()) piecesW.put(p, new ArrayList<int[]>());
-        
+
         // For every black piece
         for(Piece p : piecesW.keySet()){
             ArrayList<int[]> possibleMoves = new ArrayList<int[]>();
@@ -266,7 +266,7 @@ public class Board extends JComponent implements MouseListener {
         this.checkControlledSquaresB();
     }
 
-    
+
     /**
      * Constructor for Board class.
      * Adds the mouse listener and initializes the squares and pieces.
@@ -294,6 +294,9 @@ public class Board extends JComponent implements MouseListener {
      * @param toY - column number of square to move to.
      * **/
     public boolean canMoveTo(int fromX, int fromY, int toX, int toY){
+
+        Piece prev = new Piece(0, 0, "", ' ');
+        boolean toReturn = false;
 
         if(curPiece.getSide() == 'w'){
             if(piecesW.get(pieces[fromX][fromY]) == null) return false;
@@ -355,19 +358,32 @@ public class Board extends JComponent implements MouseListener {
      * @param j - The column number of the square to move to.
      * **/
     public void whiteMove(int i, int j){
+        Piece prev = new Piece(0, 0, "", ' ');
+
         // Go through possible moves for that piece and check for legal moves
         if (this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
+            prev.setPiece(i, j, pieces[i][j].getType(), pieces[i][j].getSide());
             pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces);
 
-            myTurn = !myTurn;
-            pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
-            mostRecentPieceMov[0] = i;
-            mostRecentPieceMov[1] = j;
-
-            piecesW.put(pieces[i][j], new ArrayList<int[]>());
+            piecesW.put(pieces[i][j], new ArrayList<int[]>()); // Set the value to an empty ArrayList.
 
             // Update controlled squares
             this.updateControlledSquares();
+
+            // King in check, can't move, backtrack changes.
+            if(whiteKingInCheck){
+                this.setMessage("King in check");
+
+                pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1], pieces[i][j].getType(), pieces[i][j].getSide());
+                pieces[i][j].setPiece(i, j, prev.getType(), prev.getSide());
+
+                this.updateControlledSquares();
+            } else {
+                pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
+                mostRecentPieceMov[0] = i;
+                mostRecentPieceMov[1] = j;
+                myTurn = !myTurn;
+            }
         }
         squares[prevCoords[0]][prevCoords[1]].deselectSquare();
     }
@@ -380,20 +396,32 @@ public class Board extends JComponent implements MouseListener {
      * @param j - The column number of the square to move to.
      * **/
     public void blackMove(int i, int j){
+        Piece prev = new Piece(0, 0, "", ' ');
+
         // Go through possible moves for that piece and check for legal moves
         if (this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
+            prev.setPiece(i, j, pieces[i][j].getType(), pieces[i][j].getSide());
             pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces);
 
-            // Successfully made a legal move
-            myTurn = !myTurn;
-            pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
-            mostRecentPieceMov[0] = i;
-            mostRecentPieceMov[1] = j;
-
-            piecesB.put(pieces[i][j], new ArrayList<int[]>());
+            piecesB.put(pieces[i][j], new ArrayList<int[]>()); // Set the value to an empty ArrayList.
 
             // Update controlled squares
             this.updateControlledSquares();
+
+            // King in check, can't move, backtrack changes.
+            if(blackKingInCheck){
+                this.setMessage("King in check");
+
+                pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1], pieces[i][j].getType(), pieces[i][j].getSide());
+                pieces[i][j].setPiece(i, j, prev.getType(), prev.getSide());
+
+                this.updateControlledSquares();
+            } else {
+                pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
+                mostRecentPieceMov[0] = i;
+                mostRecentPieceMov[1] = j;
+                myTurn = !myTurn;
+            }
         }
         squares[prevCoords[0]][prevCoords[1]].deselectSquare();
     }
