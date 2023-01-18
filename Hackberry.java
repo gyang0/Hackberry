@@ -1,3 +1,4 @@
+
 /** Milestones
  * Jan 4, 2023 - Successfully recreated the Opera Game (Paul Morphy vs Duke of Brunswick & Count Isouard, 1858).
  * Jan 8, 2023 - All legal moves are now recognized (hopefully), including: En passant, castling, checks, promotion, etc.
@@ -15,6 +16,7 @@
  * TODO: if two knights can move to the same square, then the notation should reflect that.
  * TODO: all (or at least most) illegal moves should be prohibited in the this.canMoveTo method.
  * TODO: illegal moves shouldn't be highlighted squares.
+ * TODO: illegal moves shouldn't be highlighted squares. (maybe a 'preventIllegalMove' method that goes through and does this)
  *
  * TODO: Note that my HashMap of pieces should never delete a piece unless it's captured. Instead, it should set that piece.
  *
