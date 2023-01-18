@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 
 /**
  * Individual pieces on the chessboard
@@ -284,7 +285,7 @@ public class Piece {
                         // All spaces cleared
                         if(pieces[5][this.gridY].side == ' ' && pieces[6][this.gridY].side == ' ')
                             // Not in check
-                            if(!squaresControlledB[4][this.gridY] && !squaresControlledB[5][this.gridY] && !squaresControlledB[6][this.gridY])
+                            if(!squaresControlledW[4][this.gridY] && !squaresControlledW[5][this.gridY] && !squaresControlledW[6][this.gridY])
                                 isLegal = true;
                     }
                 }
@@ -296,7 +297,7 @@ public class Piece {
                         // All spaces cleared
                         if(pieces[1][this.gridY].side == ' ' && pieces[2][this.gridY].side == ' ' && pieces[3][this.gridY].side == ' ')
                             // Not in check
-                            if(!squaresControlledB[4][this.gridY] && !squaresControlledB[1][this.gridY] && !squaresControlledB[2][this.gridY] && !squaresControlledB[3][this.gridY])
+                            if(!squaresControlledW[4][this.gridY] && !squaresControlledW[1][this.gridY] && !squaresControlledW[2][this.gridY] && !squaresControlledW[3][this.gridY])
                                 isLegal = true;
                     }
                 }
@@ -317,9 +318,7 @@ public class Piece {
         return isLegal;
     }
 
-    public void playMove(int i, int j, Piece[][] pieces, Board board) {
-        Piece prev = new Piece(i, j, pieces[i][j].getType(), pieces[i][j].getSide());
-
+    public void playMove(int i, int j, Piece[][] pieces) {
         // En passant
         // The target pawn must have moved in the last move, moved two squares up, and be next to the current pawn.
         if(this.type.equals("wp") && j == this.gridY - 1 && Math.abs(i - this.gridX) == 1 && pieces[i][j].getSide() == ' '){
@@ -362,18 +361,10 @@ public class Piece {
         // Other pieces
         else {
             pieces[i][j].setPiece(i, j, this.getType(), this.getSide());
-            pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, "", ' ');
+
         }
 
-        // Check if king is in check (no pun intended).
-        board.updateControlledSquares();
-        if((this.side == 'w' && board.whiteKingInCheck) || (this.side == 'b' && board.blackKingInCheck)){
-            board.setMessage("King is in check");
-
-            pieces[i][j].setPiece(i, j, prev.getType(), prev.getSide());
-            System.out.println(prev);
-            pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, this.type, this.side);
-        }
+        pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, "", ' ');
     }
 
     @Override
