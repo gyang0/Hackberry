@@ -4,7 +4,6 @@
  * Jan 8, 2023 - All legal moves are now recognized (hopefully), including: En passant, castling, checks, promotion, etc.
  * **/
 
-
 /**
  * This is where most of the stuff will take place.
  * All methods will be combined to set turns, make moves, etc.
@@ -16,6 +15,7 @@
  * TODO: save games to PGN file format
  * TODO: if two knights can move to the same square, then the notation should reflect that.
  * TODO: all (or at least most) illegal moves should be prohibited in the this.canMoveTo method.
+ * TODO: illegal moves shouldn't be highlighted squares.
  * TODO: illegal moves shouldn't be highlighted squares. (maybe a 'preventIllegalMove' method that goes through and does this)
  *
  * TODO: Note that my HashMap of pieces should never delete a piece unless it's captured. Instead, it should set that piece.
