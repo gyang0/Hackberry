@@ -254,35 +254,70 @@ public class Board extends JComponent implements MouseListener {
         }
     }
 
-    public void removeIllegalMoves(){
-        // White pieces
+    /**
+     * Removes the white pieces' moves that result in the white king being put in check.
+     * **/
+    public void removeIllegalMovesW(){
         Piece prev = new Piece(0, 0,  "", ' ');
-        int prevX, prevY, toX, toY;
+        int prevX, prevY;
 
         for(Piece p : piecesW.keySet()){
+
             ArrayList<int[]> moves = new ArrayList<int[]>();
 
-            // Every possible move
-            for(int i = 0; i < piecesW.get(p).size(); i++){
-                /*prevX = p.getGridX(); toX = piecesW.get(p).get(i)[0];
-                prevY = p.getGridY(); toY = piecesW.get(p).get(i)[1];
+            // Go through the possible listed moves
+            for(int[] arr : piecesW.get(p)){
+                // See if it results in check
+                prevX = p.getGridX();
+                prevY = p.getGridY();
+                prev.setPiece(arr[0], arr[1], pieces[arr[0]][arr[1]].getType(), pieces[arr[0]][arr[1]].getSide());
+                p.playMove(arr[0], arr[1], pieces, piecesW, piecesB);
+                this.checkControlledSquaresB();
 
-                prev.setPiece(toX, toY, pieces[toX][toY].getType(), pieces[toX][toY].getSide());
+                if(!whiteKingInCheck)
+                    moves.add(arr);
 
-                pieces[prevX][prevY].playMove(toX, toY, pieces);
-*/
-                //this.checkControlledSquaresB();
-                //if(!whiteKingInCheck) moves.add(new int[]{toX, toY});
-                //else System.out.println("Removal of " + p.getType() + " on square " + toX + ", " + toY);
-
-                //pieces[prevX][prevY].setPiece(prevX, prevY, pieces[toX][toY].getType(), pieces[toX][toY].getSide());
-                //pieces[toX][toY].setPiece(toX, toY, prev.getType(), prev.getSide());
+                pieces[arr[0]][arr[1]].playMove(prevX, prevY, pieces, piecesW, piecesB);
+                pieces[arr[0]][arr[1]].setPiece(arr[0], arr[1], prev.getType(), prev.getSide());
             }
 
-            //piecesW.put(p, moves);
-
+            piecesW.put(p, moves);
         }
+
     }
+
+    /**
+     * Removes the black pieces' moves that result in the black king being put in check.
+     * **/
+    public void removeIllegalMovesB(){
+        Piece prev = new Piece(0, 0,  "", ' ');
+        int prevX, prevY;
+
+        for(Piece p : piecesB.keySet()){
+
+            ArrayList<int[]> moves = new ArrayList<int[]>();
+
+            // Go through the possible listed moves
+            for(int[] arr : piecesB.get(p)){
+                // See if it results in check
+                prevX = p.getGridX();
+                prevY = p.getGridY();
+                prev.setPiece(arr[0], arr[1], pieces[arr[0]][arr[1]].getType(), pieces[arr[0]][arr[1]].getSide());
+                p.playMove(arr[0], arr[1], pieces, piecesW, piecesB);
+                this.checkControlledSquaresW();
+
+                if(!blackKingInCheck)
+                    moves.add(arr);
+
+                pieces[arr[0]][arr[1]].playMove(prevX, prevY, pieces, piecesW, piecesB);
+                pieces[arr[0]][arr[1]].setPiece(arr[0], arr[1], prev.getType(), prev.getSide());
+            }
+
+            piecesB.put(p, moves);
+        }
+
+    }
+
 
     /**
      * Combined usage of checking possible squares and getting possible moves for all sides.
@@ -291,11 +326,13 @@ public class Board extends JComponent implements MouseListener {
         this.getPossibleMovesW();
         this.getPossibleMovesB();
 
-        this.removeIllegalMoves();
+        this.removeIllegalMovesW();
+        this.removeIllegalMovesB();
 
         this.checkControlledSquaresW();
         this.checkControlledSquaresB();
     }
+
 
 
     /**
@@ -390,7 +427,7 @@ public class Board extends JComponent implements MouseListener {
         // Go through possible moves for that piece and check for legal moves
         if (this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
             prev.setPiece(i, j, pieces[i][j].getType(), pieces[i][j].getSide());
-            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces);
+            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB);
 
             piecesW.remove(pieces[prevCoords[0]][prevCoords[1]]);
             piecesW.put(pieces[i][j], new ArrayList<int[]>()); // Set the value to an empty ArrayList.
@@ -429,7 +466,7 @@ public class Board extends JComponent implements MouseListener {
         // Go through possible moves for that piece and check for legal moves
         if (this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
             prev.setPiece(i, j, pieces[i][j].getType(), pieces[i][j].getSide());
-            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces);
+            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB);
 
             piecesB.put(pieces[i][j], new ArrayList<int[]>()); // Set the value to an empty ArrayList.
 
@@ -467,7 +504,7 @@ public class Board extends JComponent implements MouseListener {
 
                 // Selected a piece
                 if(prevCoords[0] != -1 && prevCoords[1] != -1){
-                    if(pieces[prevCoords[0]][prevCoords[1]].legalMove(i, j, pieces, mostRecentPieceMov, squaresControlledW, squaresControlledB)){
+                    if(this.canMoveTo(prevCoords[0], prevCoords[1], i, j)){
                         g.setColor(OPAQUE_GRAY);
                         g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
                     }
@@ -521,10 +558,6 @@ public class Board extends JComponent implements MouseListener {
     /* Mouse events */
     @Override
     public void mouseClicked(MouseEvent e){
-        for(Piece p : piecesW.keySet())
-            System.out.println(p + "    " + piecesW.get(p));
-        System.out.println();
-
         this.setMessage("");
 
         if(showPromoOptions){
@@ -544,22 +577,8 @@ public class Board extends JComponent implements MouseListener {
                     if (i == prevCoords[0] && j == prevCoords[1]) {
                         squares[i][j].deselectSquare();
                     } else {
-                        if(myTurn){
-                            whiteMove(i, j);
-
-                            // Previous piece moved to (i, j)
-                            // We need to remove the previous piece, since it's in a new location.
-
-                            System.out.println("Removed " + pieces[prevCoords[0]][prevCoords[1]]);
-
-                            piecesW.remove(pieces[prevCoords[0]][prevCoords[1]]);
-                            pieces[prevCoords[0]][prevCoords[1]].setPiece(prevCoords[0], prevCoords[1], "", ' ');
-
-
-                        }
-                        else {
-                            blackMove(i, j);
-                        }
+                        if(myTurn) whiteMove(i, j);
+                        else blackMove(i, j);
                     }
 
                     // Reset
