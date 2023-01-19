@@ -1,8 +1,8 @@
-
 /** Milestones
  * Jan 4, 2023 - Successfully recreated the Opera Game (Paul Morphy vs Duke of Brunswick & Count Isouard, 1858).
  * Jan 8, 2023 - All legal moves are now recognized (hopefully), including: En passant, castling, checks, promotion, etc.
  * **/
+
 
 /**
  * This is where most of the stuff will take place.
@@ -14,11 +14,12 @@
  * TODO: Different side toggle
  * TODO: save games to PGN file format
  * TODO: if two knights can move to the same square, then the notation should reflect that.
- * TODO: all (or at least most) illegal moves should be prohibited in the this.canMoveTo method.
- * TODO: illegal moves shouldn't be highlighted squares.
- * TODO: illegal moves shouldn't be highlighted squares. (maybe a 'preventIllegalMove' method that goes through and does this)
  *
  * TODO: Note that my HashMap of pieces should never delete a piece unless it's captured. Instead, it should set that piece.
+ * TODO: Fix the HashMap bug where my moved pieces are still in the map, only empty.
+ * TODO: Sometimes when the black king is put in check, the piece attacking it is replaced by a random one and the black king is castled.
+ *
+ * TODO: Test case - promoting when it results in check. A good field test for illegal move check.
  *
  * I'll need to have a separate method or something, that goes through every move in the HashMap and tries it out.
  * Then if it causes the king to get in check, I'll make it not possible.
@@ -35,7 +36,7 @@ import java.awt.*;
  * Chess piece images from https://commons.wikimedia.org/wiki/Category:PNG_chess_pieces/Standard_transparent
  *
  * @author Gene Yang
- * @version Jan. 7, 2023
+ * @version Jan. 19, 2023
  **/
 
 public class Hackberry {
