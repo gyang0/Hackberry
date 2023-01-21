@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Individual pieces on the chessboard
@@ -322,6 +323,7 @@ public class Piece {
         // En passant
         // The target pawn must have moved in the last move, moved two squares up, and be next to the current pawn.
         if(this.type.equals("wp") && j == this.gridY - 1 && Math.abs(i - this.gridX) == 1 && pieces[i][j].getSide() == ' '){
+            System.out.println("En passant");
             pieces[i][j].setPiece(i, j, this.type, this.side);
             pieces[i][j + 1].setPiece(i, j + 1, "", ' ');
         }
@@ -332,8 +334,8 @@ public class Piece {
         }
 
         // Castling - white, kingside & queenside
-        else if(this.type.equals("wk")){
-            if(i == 6) {
+        else if(this.type.equals("wk") && this.numMoves == 0){
+            if(i == 6 && pieces[7][7].getType().equals("wr") && pieces[7][7].numMoves == 0) {
                 pieces[5][7].setPiece(5, 7, "wr", 'w');
                 pieces[6][7].setPiece(6, 7, "wk", 'w');
                 pieces[7][7].setPiece(7, 7, "", ' ');
@@ -345,7 +347,7 @@ public class Piece {
                 pieces[i][j].setPiece(i, j, "wk", 'w');
         }
         // Castling - black, kingside & queenside
-        else if(this.type.equals("bk")){
+        else if(this.type.equals("bk") && this.numMoves == 0){
             if(i == 6) {
                 pieces[5][0].setPiece(5, 0, "br", 'b');
                 pieces[6][0].setPiece(6, 0, "bk", 'b');
@@ -361,7 +363,6 @@ public class Piece {
         // Other pieces
         else {
             pieces[i][j].setPiece(i, j, this.getType(), this.getSide());
-
         }
 
         pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, "", ' ');
