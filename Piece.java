@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Individual pieces on the chessboard
@@ -167,6 +168,10 @@ public class Piece {
     }
 
     public boolean legalMove(int toX, int toY, Piece[][] pieces, int[] mostRecentPieceMov, boolean[][] squaresControlledW, boolean[][] squaresControlledB){
+        // Can't skip a move
+        if(toX == this.x && toY == this.y)
+            return false;
+
         // Can't capture pieces on its own side
         if(pieces[toX][toY].side == this.side)
             return false;
@@ -318,50 +323,85 @@ public class Piece {
         return isLegal;
     }
 
-    public void playMove(int i, int j, Piece[][] pieces) {
+    /**
+     * Plays out the move on the board and checks for special moves (en passant, castling, etc.)
+     * @param i - Row number of square to move to.
+     * @param j - Column number of square to move to.
+     * @param pieces - Array of Piece objects in the board.
+     * @param piecesW - the piecesW HashMap in Board.java.
+     * @param piecesB - the piecesB HashMap in Board.java.
+     * @param updateHashMap - Whether to actually manipulate the HashMap or not, depends on if we're checking illegal
+     *                        moves or it we're simulating an actual move.
+     * **/
+    public void playMove(int i, int j, Piece[][] pieces, HashMap<Piece, ArrayList<int[]>> piecesW, HashMap<Piece, ArrayList<int[]>> piecesB, boolean updateHashMap) {
         // En passant
         // The target pawn must have moved in the last move, moved two squares up, and be next to the current pawn.
-        if(this.type.equals("wp") && j == this.gridY - 1 && Math.abs(i - this.gridX) == 1 && pieces[i][j].getSide() == ' '){
+        if (this.type.equals("wp") && j == this.gridY - 1 && Math.abs(i - this.gridX) == 1 && pieces[i][j].getSide() == ' ') {
             pieces[i][j].setPiece(i, j, this.type, this.side);
             pieces[i][j + 1].setPiece(i, j + 1, "", ' ');
-        }
-
-        else if(this.type.equals("bp") && j == this.gridY + 1 && Math.abs(i - this.gridX) == 1 && pieces[i][j].getSide() == ' '){
+        } else if (this.type.equals("bp") && j == this.gridY + 1 && Math.abs(i - this.gridX) == 1 && pieces[i][j].getSide() == ' ') {
             pieces[i][j].setPiece(i, j, this.type, this.side);
             pieces[i][j - 1].setPiece(i, j - 1, "", ' ');
         }
 
         // Castling - white, kingside & queenside
-        else if(this.type.equals("wk")){
-            if(i == 6) {
+        else if (this.type.equals("wk") && this.numMoves == 0) {
+            if (i == 6 && pieces[7][7].getType().equals("wr") && pieces[7][7].numMoves == 0) {
                 pieces[5][7].setPiece(5, 7, "wr", 'w');
                 pieces[6][7].setPiece(6, 7, "wk", 'w');
                 pieces[7][7].setPiece(7, 7, "", ' ');
-            } else if(i == 2){
+
+                // Put pieces in HashMap
+                if (updateHashMap) {
+                    piecesW.put(pieces[6][7], new ArrayList<int[]>());
+                    piecesW.put(pieces[5][7], new ArrayList<int[]>());
+                }
+
+            } else if (i == 2 && pieces[0][7].getType().equals("wr") && pieces[0][7].numMoves == 0) {
                 pieces[3][7].setPiece(3, 7, "wr", 'w');
                 pieces[2][7].setPiece(2, 7, "wk", 'w');
                 pieces[0][7].setPiece(0, 7, "", ' ');
-            } else
-                pieces[i][j].setPiece(i, j, "wk", 'w');
+
+                // Put pieces in HashMap
+                if (updateHashMap) {
+                    piecesW.put(pieces[3][7], new ArrayList<int[]>());
+                    piecesW.put(pieces[2][7], new ArrayList<int[]>());
+                }
+
+            }
         }
         // Castling - black, kingside & queenside
-        else if(this.type.equals("bk")){
-            if(i == 6) {
+        else if (this.type.equals("bk") && this.numMoves == 0) {
+            if (i == 6 && pieces[7][0].getType().equals("br") && pieces[7][0].numMoves == 0) {
                 pieces[5][0].setPiece(5, 0, "br", 'b');
                 pieces[6][0].setPiece(6, 0, "bk", 'b');
                 pieces[7][0].setPiece(7, 0, "", ' ');
-            } else if(i == 2){
+
+                // Put pieces in HashMap
+                if (updateHashMap) {
+                    piecesB.put(pieces[5][0], new ArrayList<int[]>());
+                    piecesB.put(pieces[6][0], new ArrayList<int[]>());
+                }
+
+            } else if (i == 2 && pieces[0][0].getType().equals("br") && pieces[0][0].numMoves == 0) {
                 pieces[3][0].setPiece(3, 0, "br", 'b');
                 pieces[2][0].setPiece(2, 0, "bk", 'b');
                 pieces[0][0].setPiece(0, 0, "", ' ');
-            } else
-                pieces[i][j].setPiece(i, j, "bk", 'b');
+
+                // Put pieces in HashMap
+                if (updateHashMap) {
+                    piecesB.put(pieces[3][0], new ArrayList<int[]>());
+                    piecesB.put(pieces[2][0], new ArrayList<int[]>());
+                }
+
+            }
         }
 
         // Other pieces
-        else {
-            pieces[i][j].setPiece(i, j, this.getType(), this.getSide());
-
+        pieces[i][j].setPiece(i, j, this.type, this.side);
+        if (updateHashMap) {
+            if (this.side == 'w') piecesW.put(pieces[i][j], new ArrayList<int[]>());
+            else if (this.side == 'b') piecesB.put(pieces[i][j], new ArrayList<int[]>());
         }
 
         pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, "", ' ');
