@@ -15,9 +15,12 @@
  * TODO: Different side toggle
  * TODO: save games to PGN file format
  * TODO: if two knights can move to the same square, then the notation should reflect that.
- * TODO: Sometimes when the black king is put in check, the piece attacking it is replaced by a random one and the black king is castled.
  * TODO: en passant should work.
  * TODO: kings should be able to capture a piece that's threatening them.
+ *
+ * Note to self - how about assigning a value to each square depending on how valuable it is? Then compare the score of
+ * the squares controlled for both, and use minimax on that.
+ * Program should also keep track of how many pieces on one side control a specific square, then determine a winner.
  *
  * TODO: Test case - promoting when it results in check. A good field test for illegal move check.
  * **/
@@ -36,7 +39,6 @@ public class Hackberry {
     public static final int WIDTH = 600;
     public static final int HEIGHT = 700;
     private Board board;
-
 
     public void run(){
          JFrame window = new JFrame();
