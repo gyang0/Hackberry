@@ -290,7 +290,7 @@ public class Board extends JComponent implements MouseListener {
                 setPieces(pieces, piecesCopy);
 
                 // Move piece to square and see if it results in check.
-                p.playMove(arr[0], arr[1], pieces);
+                p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, false);
                 this.checkControlledSquaresB();
 
                 if(!whiteKingInCheck)
@@ -317,7 +317,7 @@ public class Board extends JComponent implements MouseListener {
                 setPieces(pieces, piecesCopy);
 
                 // Move piece to square and see if it results in check.
-                p.playMove(arr[0], arr[1], pieces);
+                p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, false);
                 this.checkControlledSquaresW();
 
                 if(!blackKingInCheck)
@@ -344,6 +344,29 @@ public class Board extends JComponent implements MouseListener {
         this.checkControlledSquaresW();
         this.checkControlledSquaresB();
     }
+
+    public void cleanUpHashMapW(){
+        ArrayList<Piece> toDelete = new ArrayList<Piece>();
+
+        for(Piece p : piecesW.keySet())
+            if(p.getSide() == ' ')
+                toDelete.add(p);
+
+        for(Piece p : toDelete)
+            piecesW.remove(p);
+    }
+
+    public void cleanUpHashMapB(){
+        ArrayList<Piece> toDelete = new ArrayList<Piece>();
+
+        for(Piece p : piecesB.keySet())
+            if(p.getSide() == ' ')
+                toDelete.add(p);
+
+        for(Piece p : toDelete)
+            piecesB.remove(p);
+    }
+
 
 
 
@@ -436,13 +459,13 @@ public class Board extends JComponent implements MouseListener {
     public void whiteMove(int i, int j){
         // Go through possible moves for that piece and check for legal moves
         if (this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
-            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces);
-
-            piecesW.remove(pieces[prevCoords[0]][prevCoords[1]]);
-            piecesW.put(pieces[i][j], new ArrayList<int[]>()); // Set the value to an empty ArrayList.
+            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, true);
 
             // Update controlled squares
             this.updateControlledSquares();
+
+            // Remove empty pieces in HashMap piecesW
+            this.cleanUpHashMapW();
 
             // A few changes to make.
             pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
@@ -463,13 +486,13 @@ public class Board extends JComponent implements MouseListener {
     public void blackMove(int i, int j){
         // Go through possible moves for that piece and check for legal moves
         if (this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
-            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces);
-
-            piecesB.remove(pieces[prevCoords[0]][prevCoords[1]]); // Remove previous piece from HashMap
-            piecesB.put(pieces[i][j], new ArrayList<int[]>()); // Set the value to an empty ArrayList.
+            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, true);
 
             // Update controlled squares
             this.updateControlledSquares();
+
+            // Clean up empty pieces in HashMap piecesB
+            this.cleanUpHashMapB();
 
             pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
             mostRecentPieceMov[0] = i;
@@ -503,6 +526,19 @@ public class Board extends JComponent implements MouseListener {
                     g.setColor(CHECK_COLOR);
                     g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
                 }
+
+
+                /** DEBUGGING ONLY **/
+                if(squaresControlledW[i][j]){
+                    g.setColor(new Color(0, 0, 255, 50));
+                    g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
+                }
+
+                if(squaresControlledB[i][j]){
+                    g.setColor(new Color(255, 0, 0, 50));
+                    g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
+                }
+
             }
         }
 
@@ -566,8 +602,15 @@ public class Board extends JComponent implements MouseListener {
                     if (i == prevCoords[0] && j == prevCoords[1]) {
                         squares[i][j].deselectSquare();
                     } else {
-                        if(myTurn) whiteMove(i, j);
-                        else blackMove(i, j);
+                        System.out.println(curPiece);
+                        Notation.updateMoves(i, j, curPiece);
+
+                        if(myTurn){
+                            whiteMove(i, j);
+                        } else {
+                            blackMove(i, j);
+                            Notation.updateNumTurns(); // Black always ends the turn
+                        }
                     }
 
                     // Reset
@@ -597,7 +640,8 @@ public class Board extends JComponent implements MouseListener {
             repaint();
         }
 
-        /*for(Piece p : piecesW.keySet()) {
+        /*
+        for(Piece p : piecesW.keySet()) {
             System.out.print(p);
             for(int arr[] : piecesW.get(p))
                 System.out.print("    (" + arr[0] + ", " + arr[1] + ") ");
