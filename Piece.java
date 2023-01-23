@@ -303,11 +303,11 @@ public class Piece {
                         if(pieces[1][this.gridY].side == ' ' && pieces[2][this.gridY].side == ' ' && pieces[3][this.gridY].side == ' ')
                             // Not in check
                             if(!squaresControlledW[4][this.gridY] && !squaresControlledW[1][this.gridY] && !squaresControlledW[2][this.gridY] && !squaresControlledW[3][this.gridY])
-                                isLegal = true;
+                                return true;
                     }
                 }
                 else if(Math.abs(toX - this.gridX) <= 1 && Math.abs(toY - this.gridY) <= 1 && !squaresControlledW[toX][toY])
-                    isLegal = true;
+                    return true;
             break;
 
             case "wq":
@@ -331,7 +331,7 @@ public class Piece {
      * @param piecesW - the piecesW HashMap in Board.java.
      * @param piecesB - the piecesB HashMap in Board.java.
      * @param updateHashMap - Whether to actually manipulate the HashMap or not, depends on if we're checking illegal
-     *                        moves or it we're simulating an actual move.
+     *                        moves or if we're simulating an actual move.
      * **/
     public void playMove(int i, int j, Piece[][] pieces, HashMap<Piece, ArrayList<int[]>> piecesW, HashMap<Piece, ArrayList<int[]>> piecesB, boolean updateHashMap) {
         // En passant
