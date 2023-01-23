@@ -335,14 +335,14 @@ public class Board extends JComponent implements MouseListener {
      * Combined usage of checking possible squares and getting possible moves for all sides.
      * **/
     public void updateControlledSquares(){
+        this.checkControlledSquaresW();
+        this.checkControlledSquaresB();
+
         this.getPossibleMovesW();
         this.getPossibleMovesB();
 
         this.removeIllegalMovesW();
         this.removeIllegalMovesB();
-
-        this.checkControlledSquaresW();
-        this.checkControlledSquaresB();
     }
 
     public void cleanUpHashMapW(){
@@ -529,7 +529,7 @@ public class Board extends JComponent implements MouseListener {
 
 
                 /** DEBUGGING ONLY **/
-                if(squaresControlledW[i][j]){
+                /*if(squaresControlledW[i][j]){
                     g.setColor(new Color(0, 0, 255, 50));
                     g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
                 }
@@ -537,7 +537,7 @@ public class Board extends JComponent implements MouseListener {
                 if(squaresControlledB[i][j]){
                     g.setColor(new Color(255, 0, 0, 50));
                     g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
-                }
+                }*/
 
             }
         }
