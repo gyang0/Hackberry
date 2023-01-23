@@ -16,7 +16,6 @@
  * TODO: save games to PGN file format
  * TODO: if two knights can move to the same square, then the notation should reflect that.
  * TODO: en passant should work.
- * TODO: kings should be able to capture a piece that's threatening them.
  *
  * Note to self - how about assigning a value to each square depending on how valuable it is? Then compare the score of
  * the squares controlled for both, and use minimax on that.
