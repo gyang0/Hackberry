@@ -330,7 +330,6 @@ public class Board extends JComponent implements MouseListener {
         }
     }
 
-
     /**
      * Combined usage of checking possible squares and getting possible moves for all sides.
      * **/
@@ -366,8 +365,6 @@ public class Board extends JComponent implements MouseListener {
         for(Piece p : toDelete)
             piecesB.remove(p);
     }
-
-
 
 
     /**
@@ -428,19 +425,19 @@ public class Board extends JComponent implements MouseListener {
             case 0:
                 pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wr" : "br", promoOption.side);
                 done = true;
-                break;
+            break;
             case 1:
                 pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wn" : "bn", promoOption.side);
                 done = true;
-                break;
+            break;
             case 2:
                 pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wb" : "bb", promoOption.side);
                 done = true;
-                break;
+            break;
             case 3:
                 pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wq" : "bq", promoOption.side);
                 done = true;
-                break;
+            break;
         }
 
         if(done) {
@@ -459,6 +456,7 @@ public class Board extends JComponent implements MouseListener {
     public void whiteMove(int i, int j){
         // Go through possible moves for that piece and check for legal moves
         if (this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
+            System.out.println(prevCoords[0] + ", " + prevCoords[1] + "    " + i + ", " + j);
             pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, true);
 
             // Update controlled squares
@@ -648,6 +646,8 @@ public class Board extends JComponent implements MouseListener {
             System.out.println();
         }
         System.out.println();*/
+
+        System.out.println(mostRecentPieceMov[0] + " " + mostRecentPieceMov[1]);
     }
 
     @Override
