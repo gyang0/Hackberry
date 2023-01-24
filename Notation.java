@@ -45,7 +45,7 @@ public class Notation {
     public static void updateMoves(int toX, int toY, Piece curPiece){
         PrintWriter output = null;
         try {
-            output = new PrintWriter(new FileOutputStream("scores.txt", true));
+            output = new PrintWriter(new FileOutputStream("games.txt", true));
 
         } catch (FileNotFoundException e) {
             System.out.println("Couldn't open games.txt.");
