@@ -58,20 +58,20 @@ public class Piece {
 
     public void paint(Graphics g){
         if(!this.type.equals("")){
-            ImageIcon img = null;
-
-            if(this.type.equals("wp")) img = WHITE_PAWN_IMG;
-            else if(this.type.equals("wr")) img = WHITE_ROOK_IMG;
-            else if(this.type.equals("wn")) img = WHITE_KNIGHT_IMG;
-            else if(this.type.equals("wb")) img = WHITE_BISHOP_IMG;
-            else if(this.type.equals("wq")) img = WHITE_QUEEN_IMG;
-            else if(this.type.equals("wk")) img = WHITE_KING_IMG;
-            else if(this.type.equals("bp")) img = BLACK_PAWN_IMG;
-            else if(this.type.equals("br")) img = BLACK_ROOK_IMG;
-            else if(this.type.equals("bn")) img = BLACK_KNIGHT_IMG;
-            else if(this.type.equals("bb")) img = BLACK_BISHOP_IMG;
-            else if(this.type.equals("bq")) img = BLACK_QUEEN_IMG;
-            else img = BLACK_KING_IMG;
+            ImageIcon img = switch (this.type) {
+                case "wp" -> WHITE_PAWN_IMG;
+                case "wr" -> WHITE_ROOK_IMG;
+                case "wn" -> WHITE_KNIGHT_IMG;
+                case "wb" -> WHITE_BISHOP_IMG;
+                case "wq" -> WHITE_QUEEN_IMG;
+                case "wk" -> WHITE_KING_IMG;
+                case "bp" -> BLACK_PAWN_IMG;
+                case "br" -> BLACK_ROOK_IMG;
+                case "bn" -> BLACK_KNIGHT_IMG;
+                case "bb" -> BLACK_BISHOP_IMG;
+                case "bq" -> BLACK_QUEEN_IMG;
+                default -> BLACK_KING_IMG;
+            };
 
             Image i = img.getImage();
             g.drawImage(i, this.x, this.y, SQUARE_WIDTH, SQUARE_WIDTH, null);
@@ -168,10 +168,6 @@ public class Piece {
     }
 
     public boolean legalMove(int toX, int toY, Piece[][] pieces, int[] mostRecentPieceMov, boolean[][] squaresControlledW, boolean[][] squaresControlledB){
-        // Can't skip a move
-        if(toX == this.x && toY == this.y)
-            return false;
-
         // Can't capture pieces on its own side
         if(pieces[toX][toY].side == this.side)
             return false;
@@ -184,15 +180,15 @@ public class Piece {
         switch(this.type){
             case "wp":
                 // If the move is diagonal
-                if((toX == this.gridX - 1 || toX == this.gridX + 1) && toY == this.gridY - 1){
-                    if(toX == this.gridX - 1 && pieces[toX][toY].side == 'b') isLegal = true;
-                    else if(toX == this.gridX + 1 && pieces[toX][toY].side == 'b') isLegal = true;
+                if(Math.abs(this.gridX - toX) == 1 && toY == this.gridY - 1){
+                    // Normal capture
+                    if(pieces[toX][toY].side == 'b') isLegal = true;
 
                     // En passant
-                    if(toY == this.gridY - 1 && Math.abs(toX - this.gridX) == 1 && pieces[toX][toY].side == ' ' && pieces[toX][toY + 1].type.equals("bp") && pieces[toX][toY + 1].numMoves == 1) {
-                        if(mostRecentPieceMov[0] == toX && mostRecentPieceMov[1] == toY + 1) {
+                    if(pieces[toX][toY].side == ' ' && pieces[toX][toY + 1].type.equals("bp")) {
+                        //if(mostRecentPieceMov[0] == toX && mostRecentPieceMov[1] == toY + 1) {
                             isLegal = true;
-                        }
+                        //}
                     }
                 }
 
@@ -207,15 +203,14 @@ public class Piece {
 
             case "bp":
                 // If the move is diagonal
-                if(toX == this.gridX - 1 || toX == this.gridX + 1){
-                    if(toX == this.gridX - 1 && toY == this.gridY + 1 && pieces[toX][toY].side == 'w') isLegal = true;
-                    else if(toX == this.gridX + 1 && toY == this.gridY + 1 && pieces[toX][toY].side == 'w') isLegal = true;
+                if(Math.abs(this.gridX - toX) == 1 && toY == this.gridY + 1){
+                    if(pieces[toX][toY].side == 'w') isLegal = true;
 
                     // En passant
-                    if(toY == this.gridY + 1 && Math.abs(toX - this.gridX) == 1 && pieces[toX][toY].side == ' ' && pieces[toX][toY - 1].type.equals("wp") && pieces[toX][toY - 1].numMoves == 1) {
-                        if(mostRecentPieceMov[0] == toX && mostRecentPieceMov[1] == toY - 1) {
-                            isLegal = true;
-                        }
+                    if(pieces[toX][toY].side == ' ' && pieces[toX][toY - 1].type.equals("wp")) {
+                        //if(mostRecentPieceMov[0] == toX && mostRecentPieceMov[1] == toY + 1) {
+                        isLegal = true;
+                        //}
                     }
                 }
 
@@ -422,18 +417,18 @@ public class Piece {
     }
 
     // Images
-    private final ImageIcon WHITE_PAWN_IMG = new ImageIcon("src/imgs/white_pawn.png");
-    private final ImageIcon WHITE_ROOK_IMG = new ImageIcon("src/imgs/white_rook.png");
-    private final ImageIcon WHITE_KNIGHT_IMG = new ImageIcon("src/imgs/white_knight.png");
-    private final ImageIcon WHITE_BISHOP_IMG = new ImageIcon("src/imgs/white_bishop.png");
-    private final ImageIcon WHITE_QUEEN_IMG = new ImageIcon("src/imgs/white_queen.png");
-    private final ImageIcon WHITE_KING_IMG = new ImageIcon("src/imgs/white_king.png");
+    private final ImageIcon WHITE_PAWN_IMG = new ImageIcon("imgs/white_pawn.png");
+    private final ImageIcon WHITE_ROOK_IMG = new ImageIcon("imgs/white_rook.png");
+    private final ImageIcon WHITE_KNIGHT_IMG = new ImageIcon("imgs/white_knight.png");
+    private final ImageIcon WHITE_BISHOP_IMG = new ImageIcon("imgs/white_bishop.png");
+    private final ImageIcon WHITE_QUEEN_IMG = new ImageIcon("imgs/white_queen.png");
+    private final ImageIcon WHITE_KING_IMG = new ImageIcon("imgs/white_king.png");
 
-    private final ImageIcon BLACK_PAWN_IMG = new ImageIcon("src/imgs/black_pawn.png");
-    private final ImageIcon BLACK_ROOK_IMG = new ImageIcon("src/imgs/black_rook.png");
-    private final ImageIcon BLACK_KNIGHT_IMG = new ImageIcon("src/imgs/black_knight.png");
-    private final ImageIcon BLACK_BISHOP_IMG = new ImageIcon("src/imgs/black_bishop.png");
-    private final ImageIcon BLACK_QUEEN_IMG = new ImageIcon("src/imgs/black_queen.png");
-    private final ImageIcon BLACK_KING_IMG = new ImageIcon("src/imgs/black_king.png");
+    private final ImageIcon BLACK_PAWN_IMG = new ImageIcon("imgs/black_pawn.png");
+    private final ImageIcon BLACK_ROOK_IMG = new ImageIcon("imgs/black_rook.png");
+    private final ImageIcon BLACK_KNIGHT_IMG = new ImageIcon("imgs/black_knight.png");
+    private final ImageIcon BLACK_BISHOP_IMG = new ImageIcon("imgs/black_bishop.png");
+    private final ImageIcon BLACK_QUEEN_IMG = new ImageIcon("imgs/black_queen.png");
+    private final ImageIcon BLACK_KING_IMG = new ImageIcon("imgs/black_king.png");
 
 }
