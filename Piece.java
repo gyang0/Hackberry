@@ -180,25 +180,27 @@ public class Piece {
         switch(this.type){
             case "wp":
                 // If the move is diagonal
-                if(Math.abs(this.gridX - toX) == 1 && toY == this.gridY - 1){
-                    // Normal capture
-                    if(pieces[toX][toY].side == 'b') isLegal = true;
+                if(Math.abs(this.gridX - toX) == 1 && this.gridY - 1 == toY){
+                    // A normal capture
+                    if(pieces[toX][toY].getSide() == 'b')
+                        return true;
 
                     // En passant
-                    if(pieces[toX][toY].side == ' ' && pieces[toX][toY + 1].type.equals("bp")) {
-                        //if(mostRecentPieceMov[0] == toX && mostRecentPieceMov[1] == toY + 1) {
-                            isLegal = true;
-                        //}
+                    else if(pieces[toX][toY].getSide() == ' '){
+                        if(pieces[toX][toY + 1].getType().equals("bp")){
+                            if(mostRecentPieceMov[0] == toX && mostRecentPieceMov[1] == toY + 1)
+                                return true;
+                        }
                     }
                 }
 
-                // If the pawn hasn't moved yet
-                if(this.gridY == 6){
-                    if(this.gridX == toX && toY == 5 && pieces[toX][toY].side == ' ') isLegal = true;
-                    if(this.gridX == toX && toY == 4 && pieces[toX][toY].side == ' ' && pieces[toX][toY + 1].side == ' ') isLegal = true;
-                }
+                // Normal forward movement
+                if(this.gridX == toX && pieces[toX][toY].side == ' '){
+                    if(this.gridY == toY + 1) return true;
 
-                else if(toX == this.gridX && toY == this.gridY - 1 && pieces[toX][toY].side == ' ') isLegal = true;
+                    // If the pawn hasn't moved yet, it can move 2 spaces.
+                    else if(this.numMoves == 0 && toY == this.gridY - 2 && pieces[toX][toY + 1].side == ' ') return true;
+                }
             break;
 
             case "bp":
