@@ -13,14 +13,13 @@
  * @version January 22, 2023
  * **/
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 
 public class Notation {
     private static int numTurns = 1;
-    File file = new File("src/games.txt");
+    private static String fileName = "games.txt";
 
     public static void updateNumTurns(){ numTurns++; }
 
@@ -30,31 +29,46 @@ public class Notation {
     }
 
     public static String gridify(int toX, int toY){
-
         return (char)(toX + 97) + "" + (char)(8 - toY + 48) + "";
     }
 
     public static String getNotation(int toX, int toY, Piece curPiece){
+        String result = "";
+
         // White always starts a new turn
         if(curPiece.getSide() == 'w')
-            return numTurns + ". " + Notation.pieceToStr(curPiece.getType()) + gridify(toX, toY) + " ";
-        else
-            return Notation.pieceToStr(curPiece.getType()) + gridify(toX, toY) + " ";
+            result = numTurns + ". ";
+
+        return result + Notation.pieceToStr(curPiece.getType()) + gridify(toX, toY) + " ";
+    }
+
+    public static void clearFile(){
+        try {
+            PrintWriter output = new PrintWriter(fileName);
+
+            // Replace the file contents with a blank string.
+            output.print("");
+            output.close();
+
+        } catch (FileNotFoundException e) {
+            System.out.println("Couldn't open " + fileName + ".");
+            System.exit(0);
+        }
+
     }
 
     public static void updateMoves(int toX, int toY, Piece curPiece){
         PrintWriter output = null;
         try {
-            output = new PrintWriter(new FileOutputStream("games.txt", true));
+            output = new PrintWriter(new FileOutputStream(fileName, true));
 
         } catch (FileNotFoundException e) {
-            System.out.println("Couldn't open games.txt.");
+            System.out.println("Couldn't open " + fileName + ".");
             System.exit(0);
         }
 
         // Writes the message to the file
-        System.out.println(Notation.getNotation(toX, toY, curPiece));
-        output.println(Notation.getNotation(toX, toY, curPiece));
+        output.print(Notation.getNotation(toX, toY, curPiece));
         output.close();
     }
 }
