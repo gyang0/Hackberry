@@ -214,8 +214,7 @@ public class Board extends JComponent implements MouseListener {
      * **/
     public void getPossibleMovesW(){
         // Reset
-        for(Piece p : piecesW.keySet()) piecesW.put(p, new ArrayList<int[]>());
-        Piece prev = new Piece(0, 0, "", ' ');
+        piecesW.replaceAll((p, v) -> new ArrayList<int[]>());
 
         // For every black piece
         for(Piece p : piecesW.keySet()){
@@ -240,7 +239,7 @@ public class Board extends JComponent implements MouseListener {
      * **/
     public void getPossibleMovesB(){
         // Reset
-        for(Piece p : piecesB.keySet()) piecesB.put(p, new ArrayList<int[]>());
+        piecesB.replaceAll((p, v) -> new ArrayList<int[]>());
 
         // For every black piece
         for(Piece p : piecesB.keySet()){
@@ -382,6 +381,7 @@ public class Board extends JComponent implements MouseListener {
 
         // Add mouse listener
         addMouseListener(this);
+        Notation.clearFile();
     }
 
 
@@ -454,9 +454,10 @@ public class Board extends JComponent implements MouseListener {
      * @param j - The column number of the square to move to.
      * **/
     public void whiteMove(int i, int j){
+        this.updateControlledSquares();
+
         // Go through possible moves for that piece and check for legal moves
         if (this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
-            System.out.println(prevCoords[0] + ", " + prevCoords[1] + "    " + i + ", " + j);
             pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, true);
 
             // Update controlled squares
@@ -467,9 +468,12 @@ public class Board extends JComponent implements MouseListener {
 
             // A few changes to make.
             pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
+            pieces[prevCoords[0]][prevCoords[1]].numMoves = 0;
             mostRecentPieceMov[0] = i;
             mostRecentPieceMov[1] = j;
             myTurn = !myTurn;
+
+            System.out.println("mostRecentPieceMov set to " + mostRecentPieceMov[0] + ", " + mostRecentPieceMov[1]);
         }
         squares[prevCoords[0]][prevCoords[1]].deselectSquare();
     }
@@ -482,6 +486,8 @@ public class Board extends JComponent implements MouseListener {
      * @param j - The column number of the square to move to.
      * **/
     public void blackMove(int i, int j){
+        this.updateControlledSquares();
+
         // Go through possible moves for that piece and check for legal moves
         if (this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
             pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, true);
@@ -493,9 +499,12 @@ public class Board extends JComponent implements MouseListener {
             this.cleanUpHashMapB();
 
             pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
+            pieces[prevCoords[0]][prevCoords[1]].numMoves = 0;
             mostRecentPieceMov[0] = i;
             mostRecentPieceMov[1] = j;
             myTurn = !myTurn;
+
+            System.out.println("mostRecentPieceMov set to " + mostRecentPieceMov[0] + ", " + mostRecentPieceMov[1]);
         }
         squares[prevCoords[0]][prevCoords[1]].deselectSquare();
     }
@@ -600,7 +609,6 @@ public class Board extends JComponent implements MouseListener {
                     if (i == prevCoords[0] && j == prevCoords[1]) {
                         squares[i][j].deselectSquare();
                     } else {
-                        System.out.println(curPiece);
                         Notation.updateMoves(i, j, curPiece);
 
                         if(myTurn){
@@ -633,21 +641,17 @@ public class Board extends JComponent implements MouseListener {
 
                     numClicks++;
                 }
+
+            }
+            else {
+                System.out.println(mostRecentPieceMov[0] + " " + mostRecentPieceMov[1]);
             }
 
             repaint();
-        }
 
-        /*
-        for(Piece p : piecesW.keySet()) {
-            System.out.print(p);
-            for(int arr[] : piecesW.get(p))
-                System.out.print("    (" + arr[0] + ", " + arr[1] + ") ");
-            System.out.println();
-        }
-        System.out.println();*/
 
-        System.out.println(mostRecentPieceMov[0] + " " + mostRecentPieceMov[1]);
+
+        }
     }
 
     @Override
