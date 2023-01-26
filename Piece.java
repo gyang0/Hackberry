@@ -188,7 +188,7 @@ public class Piece {
                     // En passant
                     else if(pieces[toX][toY].getSide() == ' '){
                         if(pieces[toX][toY + 1].getType().equals("bp")){
-                            if(mostRecentPieceMov[0] == toX && mostRecentPieceMov[1] == toY + 1)
+                            if(mostRecentPieceMov[0] == toX && mostRecentPieceMov[1] == toY + 1 && pieces[toX][toY + 1].numMoves == 1)
                                 return true;
                         }
                     }
@@ -205,24 +205,27 @@ public class Piece {
 
             case "bp":
                 // If the move is diagonal
-                if(Math.abs(this.gridX - toX) == 1 && toY == this.gridY + 1){
-                    if(pieces[toX][toY].side == 'w') isLegal = true;
+                if(Math.abs(this.gridX - toX) == 1 && this.gridY + 1 == toY){
+                    // A normal capture
+                    if(pieces[toX][toY].getSide() == 'w')
+                        return true;
 
-                    // En passant
-                    if(pieces[toX][toY].side == ' ' && pieces[toX][toY - 1].type.equals("wp")) {
-                        //if(mostRecentPieceMov[0] == toX && mostRecentPieceMov[1] == toY + 1) {
-                        isLegal = true;
-                        //}
+                        // En passant
+                    else if(pieces[toX][toY].getSide() == ' '){
+                        if(pieces[toX][toY - 1].getType().equals("wp")){
+                            if(mostRecentPieceMov[0] == toX && mostRecentPieceMov[1] == toY - 1 && pieces[toX][toY - 1].numMoves == 1)
+                                return true;
+                        }
                     }
                 }
 
-                // If the pawn hasn't moved yet
-                if(this.gridY == 1){
-                    if(this.gridX == toX && toY == 2 && pieces[toX][toY].side == ' ') isLegal = true;
-                    if(this.gridX == toX && toY == 3 && pieces[toX][toY].side == ' ' && pieces[toX][toY - 1].side == ' ') isLegal = true;
-                }
+                // Normal forward movement
+                if(this.gridX == toX && pieces[toX][toY].side == ' '){
+                    if(this.gridY + 1 == toY) return true;
 
-                else if(toX == this.gridX && toY == this.gridY + 1 && pieces[toX][toY].side == ' ') isLegal = true;
+                        // If the pawn hasn't moved yet, it can move 2 spaces.
+                    else if(this.numMoves == 0 && this.gridY + 2 == toY && pieces[toX][toY - 1].side == ' ') return true;
+                }
             break;
 
             case "wn":
