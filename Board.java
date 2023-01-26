@@ -1,5 +1,8 @@
 /**
- * Draws the entire board, combining the Piece.java and Square.java
+ * Draws the entire board, combining the Piece.java and Square.java.
+ *
+ * @author Gene Yang
+ * @version January 26, 2023
  * **/
 
 import javax.swing.*;
@@ -22,8 +25,8 @@ public class Board extends JComponent implements MouseListener {
     };
 
     // The squares controlled by each side
-    private boolean squaresControlledW[][];
-    private boolean squaresControlledB[][];
+    private boolean[][] squaresControlledW;
+    private boolean[][] squaresControlledB;
 
     // Just stores the positions of the pieces. (HashMap does the rest, below.)
     private Piece[][] pieces;
@@ -130,6 +133,20 @@ public class Board extends JComponent implements MouseListener {
     }
 
     /**
+     * Populates an array of Pieces to the same values as another array specified. (copy)
+     *
+     * @param from - The array of Piece objects to copy
+     * @param to - The array of piece objects to copy to.
+     * **/
+    public void setPieces(Piece[][] from, Piece[][] to){
+        for(int r = 0; r < NUM_SQUARES; r++) {
+            for (int c = 0; c < NUM_SQUARES; c++) {
+                to[r][c].setPiece(r, c, from[r][c].getType(), from[r][c].getSide());
+            }
+        }
+    }
+
+    /**
      * Checks the squares controlled by the white side.
      * **/
     public void checkControlledSquaresW(){
@@ -140,6 +157,7 @@ public class Board extends JComponent implements MouseListener {
 
         blackKingInCheck = false;
         Piece prev = new Piece(0, 0, "", ' ');
+        int[] mostRecentPieceMovCopy = new int[2];
 
         // For every black piece
         for(Piece p : piecesW.keySet()){
@@ -153,8 +171,12 @@ public class Board extends JComponent implements MouseListener {
                     prev.setPiece(pos1, pos2, pieces[pos1][pos2].getType(), pieces[pos1][pos2].getSide());
                     pieces[pos1][pos2].setPiece(pos1, pos2, "bp", 'b');
 
+                    // Copy of most recent piece's move
+                    mostRecentPieceMovCopy[0] = pos1;
+                    mostRecentPieceMovCopy[1] = pos2;
+
                     // Can make a capture (if necessary) at that position.
-                    if(p.legalMove(pos1, pos2, pieces, mostRecentPieceMov, squaresControlledW, squaresControlledB)){
+                    if(p.legalMove(pos1, pos2, pieces, mostRecentPieceMovCopy, squaresControlledW, squaresControlledB)){
                         squaresControlledW[pos1][pos2] = true;
 
                         // If the piece at that position is a king, it's in check.
@@ -162,6 +184,7 @@ public class Board extends JComponent implements MouseListener {
                             blackKingInCheck = true;
                     }
 
+                    // Reset
                     pieces[pos1][pos2].setPiece(pos1, pos2, prev.getType(), prev.getSide());
                 }
             }
@@ -180,6 +203,7 @@ public class Board extends JComponent implements MouseListener {
 
         whiteKingInCheck = false;
         Piece prev = new Piece(0, 0, "", ' ');
+        int[] mostRecentPieceMovCopy = new int[2];
 
         // For every black piece
         for(Piece p : piecesB.keySet()){
@@ -192,6 +216,10 @@ public class Board extends JComponent implements MouseListener {
                     // Then we see if that piece can be captured.
                     prev.setPiece(pos1, pos2, pieces[pos1][pos2].getType(), pieces[pos1][pos2].getSide());
                     pieces[pos1][pos2].setPiece(pos1, pos2, "wp", 'w');
+
+                    // Copy of most recent piece's move
+                    mostRecentPieceMovCopy[0] = pos1;
+                    mostRecentPieceMovCopy[1] = pos2;
 
                     // Can make a capture (if necessary) at that position.
                     if(p.legalMove(pos1, pos2, pieces, mostRecentPieceMov, squaresControlledW, squaresControlledB)){
@@ -258,22 +286,6 @@ public class Board extends JComponent implements MouseListener {
             piecesB.put(p, possibleMoves);
         }
     }
-
-
-    /**
-     * Populates an array of Pieces to the same values as another array specified. (copy)
-     *
-     * @param from - The array of Piece objects to copy
-     * @param to - The array of piece objects to copy to.
-     * **/
-    public void setPieces(Piece[][] from, Piece[][] to){
-        for(int r = 0; r < NUM_SQUARES; r++) {
-            for (int c = 0; c < NUM_SQUARES; c++) {
-                to[r][c].setPiece(r, c, from[r][c].getType(), from[r][c].getSide());
-            }
-        }
-    }
-
 
     /**
      * Removes the white pieces' moves that result in the white king being put in check.
@@ -454,14 +466,11 @@ public class Board extends JComponent implements MouseListener {
      * @param j - The column number of the square to move to.
      * **/
     public void whiteMove(int i, int j){
-        this.updateControlledSquares();
-
         // Go through possible moves for that piece and check for legal moves
         if (this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
-            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, true);
+            Notation.updateMoves(i, j, pieces[prevCoords[0]][prevCoords[1]]);
 
-            // Update controlled squares
-            this.updateControlledSquares();
+            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, true);
 
             // Remove empty pieces in HashMap piecesW
             this.cleanUpHashMapW();
@@ -472,8 +481,6 @@ public class Board extends JComponent implements MouseListener {
             mostRecentPieceMov[0] = i;
             mostRecentPieceMov[1] = j;
             myTurn = !myTurn;
-
-            System.out.println("mostRecentPieceMov set to " + mostRecentPieceMov[0] + ", " + mostRecentPieceMov[1]);
         }
         squares[prevCoords[0]][prevCoords[1]].deselectSquare();
     }
@@ -486,14 +493,11 @@ public class Board extends JComponent implements MouseListener {
      * @param j - The column number of the square to move to.
      * **/
     public void blackMove(int i, int j){
-        this.updateControlledSquares();
-
         // Go through possible moves for that piece and check for legal moves
         if (this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
-            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, true);
+            Notation.updateMoves(i, j, pieces[prevCoords[0]][prevCoords[1]]);
 
-            // Update controlled squares
-            this.updateControlledSquares();
+            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, true);
 
             // Clean up empty pieces in HashMap piecesB
             this.cleanUpHashMapB();
@@ -503,8 +507,6 @@ public class Board extends JComponent implements MouseListener {
             mostRecentPieceMov[0] = i;
             mostRecentPieceMov[1] = j;
             myTurn = !myTurn;
-
-            System.out.println("mostRecentPieceMov set to " + mostRecentPieceMov[0] + ", " + mostRecentPieceMov[1]);
         }
         squares[prevCoords[0]][prevCoords[1]].deselectSquare();
     }
@@ -609,7 +611,7 @@ public class Board extends JComponent implements MouseListener {
                     if (i == prevCoords[0] && j == prevCoords[1]) {
                         squares[i][j].deselectSquare();
                     } else {
-                        Notation.updateMoves(i, j, curPiece);
+                        this.updateControlledSquares();
 
                         if(myTurn){
                             whiteMove(i, j);
@@ -617,6 +619,9 @@ public class Board extends JComponent implements MouseListener {
                             blackMove(i, j);
                             Notation.updateNumTurns(); // Black always ends the turn
                         }
+
+                        // Update controlled squares
+                        this.updateControlledSquares();
                     }
 
                     // Reset
@@ -643,14 +648,7 @@ public class Board extends JComponent implements MouseListener {
                 }
 
             }
-            else {
-                System.out.println(mostRecentPieceMov[0] + " " + mostRecentPieceMov[1]);
-            }
-
             repaint();
-
-
-
         }
     }
 
