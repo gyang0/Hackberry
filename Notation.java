@@ -16,10 +16,12 @@
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 
 public class Notation {
     private static int numTurns = 1;
     private static String fileName = "games.txt";
+    private static ArrayList<String> PGNMoves = new ArrayList<String>();
 
     public static void updateNumTurns(){ numTurns++; }
 
@@ -33,13 +35,7 @@ public class Notation {
     }
 
     public static String getNotation(int toX, int toY, Piece curPiece){
-        String result = "";
-
-        // White always starts a new turn
-        if(curPiece.getSide() == 'w')
-            result = numTurns + ". ";
-
-        return result + Notation.pieceToStr(curPiece.getType()) + gridify(toX, toY) + " ";
+        return Notation.pieceToStr(curPiece.getType()) + gridify(toX, toY);
     }
 
     public static void clearFile(){
@@ -54,10 +50,9 @@ public class Notation {
             System.out.println("Couldn't open " + fileName + ".");
             System.exit(0);
         }
-
     }
 
-    public static void updateMoves(int toX, int toY, Piece curPiece){
+    public static void updateFile(){
         PrintWriter output = null;
         try {
             output = new PrintWriter(new FileOutputStream(fileName, true));
@@ -67,8 +62,20 @@ public class Notation {
             System.exit(0);
         }
 
-        // Writes the message to the file
-        output.print(Notation.getNotation(toX, toY, curPiece));
+        // Writes the PGN to the file
+        for(int i = 0; i < PGNMoves.size(); i++){
+            // Move number
+            if(i % 2 == 0)
+                output.print(i/2 + ". ");
+
+            // Move that was played
+            output.print(PGNMoves.get(i) + " ");
+        }
+
         output.close();
+    }
+
+    public static void updateMoves(int toX, int toY, Piece curPiece){
+        PGNMoves.add(Notation.getNotation(toX, toY, curPiece));
     }
 }
