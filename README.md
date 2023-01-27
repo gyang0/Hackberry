@@ -3,8 +3,6 @@
 ## About
 Basic Chess Program, more details to come.
 
-*Note to self: everything should be in src folder.*
-
 <br>
 
 ## History
