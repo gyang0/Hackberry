@@ -1,16 +1,14 @@
-
 /** Milestones
  * Jan 4, 2023 - Successfully recreated the Opera Game (Paul Morphy vs Duke of Brunswick & Count Isouard, 1858).
  * Jan 8, 2023 - All legal moves are now recognized (hopefully), including: En passant, castling, checks, promotion, etc.
  * Jan 26, 2023 - Optimizing to program is done. All legal moves are recognized as well. ~500K -> ~65K iterations.
  * **/
 
-
 /**
  * This is where most of the stuff will take place.
  * All methods will be combined to set turns, make moves, etc.
  *
- * AI is being implemented.
+ * AI is currently being implemented.
  *
  * TODO: Javadoc comments
  * TODO: Different side toggle
@@ -28,13 +26,12 @@
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.HashMap;
 
 /**
  * Chess piece images from https://commons.wikimedia.org/wiki/Category:PNG_chess_pieces/Standard_transparent
  *
  * @author Gene Yang
- * @version Jan. 26, 2023
+ * @version Jan. 27, 2023
  **/
 
 public class Hackberry {
