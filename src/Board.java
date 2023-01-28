@@ -24,6 +24,25 @@ public class Board extends JComponent implements MouseListener {
             {"wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr"}
     };
 
+    // Gives a score to each board (center squares > edge squares).
+    private int boardPositionValues[][] = {
+            {1, 1, 1, 1, 1, 1, 1, 1},
+            {1, 3, 3, 3, 3, 3, 3, 1},
+            {1, 3, 4, 4, 4, 4, 3, 1},
+            {1, 3, 4, 5, 5, 4, 3, 1},
+            {1, 3, 4, 5, 5, 4, 3, 1},
+            {1, 3, 4, 4, 4, 4, 3, 1},
+            {1, 3, 3, 3, 3, 3, 3, 1},
+            {1, 1, 1, 1, 1, 1, 1, 1}
+    };
+
+    // AI
+    private HackberryAI hackberryAI;
+
+    // User's side
+    private char userSide = 'w';
+
+
     // The squares controlled by each side
     private boolean[][] squaresControlledW;
     private boolean[][] squaresControlledB;
@@ -342,6 +361,25 @@ public class Board extends JComponent implements MouseListener {
     }
 
     /**
+     * Gives a score to each piece, depending on its base score, mobility, and position.
+     */
+    public void givePieceScores(){
+        for(Piece p : piecesW.keySet()){
+            double baseScore = p.getBaseValue();
+            double mobilityScore = (piecesW.get(p).size()) * 0.05;
+            double positionScore = boardPositionValues[p.getGridX()][p.getGridY()] * 0.01;
+            p.setValue(baseScore + mobilityScore + positionScore);
+        }
+
+        for(Piece p : piecesB.keySet()){
+            double baseScore = p.getBaseValue();
+            double mobilityScore = (piecesB.get(p).size()) * 0.05;
+            double positionScore = boardPositionValues[p.getGridX()][p.getGridY()] * 0.01;
+            p.setValue(baseScore + mobilityScore + positionScore);
+        }
+    }
+
+    /**
      * Combined usage of checking possible squares and getting possible moves for all sides.
      * **/
     public void updateControlledSquares(){
@@ -353,6 +391,8 @@ public class Board extends JComponent implements MouseListener {
 
         this.removeIllegalMovesW();
         this.removeIllegalMovesB();
+
+        this.givePieceScores();
     }
 
     public void cleanUpHashMapW(){
@@ -390,6 +430,9 @@ public class Board extends JComponent implements MouseListener {
         this.initPieces();
 
         this.updateControlledSquares();
+
+        // AI
+        hackberryAI = new HackberryAI(userSide == 'w' ? 'b' : 'w', 3);
 
         // Add mouse listener
         addMouseListener(this);
@@ -589,6 +632,8 @@ public class Board extends JComponent implements MouseListener {
         // Centering text
         FontMetrics f = g.getFontMetrics();
         g.drawString(message, 300 - (f.stringWidth(message)/2), 550);
+
+        g.drawString("Board evaluation: " + (int)(hackberryAI.boardEval(piecesW, piecesB) * 1000)/1000.0, 270, 570);
     }
 
     /* Mouse events */
@@ -650,6 +695,12 @@ public class Board extends JComponent implements MouseListener {
             }
             repaint();
         }
+
+
+
+        for(Piece p : piecesW.keySet())
+            System.out.println(p + "    " + p.getValue());
+        System.out.println();
     }
 
     @Override
