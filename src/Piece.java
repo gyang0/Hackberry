@@ -11,6 +11,9 @@ public class Piece {
     private String type;
     private char side;
 
+    private double baseValue; // Fixed value for each piece
+    private double value; // Changeable value depending on the position
+
     public int numMoves = 0;
 
     // this.x and this.y are the displaying coordinates.
@@ -25,6 +28,21 @@ public class Piece {
     private final int X_OFFSET = 100;
     private final int Y_OFFSET = 100;
 
+    public double assignValue(){
+        if(this.type.equals("")) return 0;
+
+        switch(this.type.charAt(1)){
+            case 'p': return 1;
+            case 'r': return 5;
+            case 'n': return 3;
+            case 'b': return 3.5;
+            case 'q': return 10;
+            case 'k': return 1000;
+        }
+
+        return 0;
+    }
+
     public Piece(int i, int j, String type, char side){
         this.x = i * SQUARE_WIDTH + X_OFFSET;
         this.y = j * SQUARE_WIDTH + Y_OFFSET;
@@ -34,6 +52,9 @@ public class Piece {
 
         this.type = type;
         this.side = side;
+
+        this.baseValue = this.assignValue();
+        this.value = this.baseValue;
     }
 
     public void setPiece(int x, int y, String type, char side){
@@ -46,15 +67,16 @@ public class Piece {
         this.type = type;
         this.side = side;
     }
+    public void setValue(double value){ this.value = value; }
 
     public int getGridX(){ return this.gridX; }
     public int getGridY(){ return this.gridY; }
-
     public String getType(){
         return this.type;
     }
-
     public char getSide(){ return this.side; }
+    public double getValue(){ return this.value; }
+    public double getBaseValue(){ return this.baseValue; }
 
     public void paint(Graphics g){
         if(!this.type.equals("")){
