@@ -365,16 +365,16 @@ public class Board extends JComponent implements MouseListener {
      */
     public void givePieceScores(){
         for(Piece p : piecesW.keySet()){
-            double baseScore = p.getBaseValue();
-            double mobilityScore = (piecesW.get(p).size()) * 0.05;
-            double positionScore = boardPositionValues[p.getGridX()][p.getGridY()] * 0.01;
+            double baseScore = p.getBaseValue() * Piece.BASE_VAL_WEIGHT;
+            double mobilityScore = (piecesW.get(p).size()) * Piece.MOBILITY_WEIGHT;
+            double positionScore = boardPositionValues[p.getGridX()][p.getGridY()] * Piece.POSITION_WEIGHT;
             p.setValue(baseScore + mobilityScore + positionScore);
         }
 
         for(Piece p : piecesB.keySet()){
-            double baseScore = p.getBaseValue();
-            double mobilityScore = (piecesB.get(p).size()) * 0.01;
-            double positionScore = boardPositionValues[p.getGridX()][p.getGridY()] * 0.001;
+            double baseScore = p.getBaseValue() * Piece.BASE_VAL_WEIGHT;
+            double mobilityScore = (piecesB.get(p).size()) * Piece.MOBILITY_WEIGHT;
+            double positionScore = boardPositionValues[p.getGridX()][p.getGridY()] * Piece.POSITION_WEIGHT;
             p.setValue(baseScore + mobilityScore + positionScore);
         }
     }
@@ -399,7 +399,7 @@ public class Board extends JComponent implements MouseListener {
         ArrayList<Piece> toDelete = new ArrayList<Piece>();
 
         for(Piece p : piecesW.keySet())
-            if(p.getSide() == ' ')
+            if(p.getSide() != 'w')
                 toDelete.add(p);
 
         for(Piece p : toDelete)
@@ -410,7 +410,7 @@ public class Board extends JComponent implements MouseListener {
         ArrayList<Piece> toDelete = new ArrayList<Piece>();
 
         for(Piece p : piecesB.keySet())
-            if(p.getSide() == ' ')
+            if(p.getSide() != 'b')
                 toDelete.add(p);
 
         for(Piece p : toDelete)
@@ -430,6 +430,7 @@ public class Board extends JComponent implements MouseListener {
         this.initPieces();
 
         this.updateControlledSquares();
+        this.givePieceScores();
 
         // AI
         hackberryAI = new HackberryAI(userSide == 'w' ? 'b' : 'w', 3);
@@ -660,7 +661,8 @@ public class Board extends JComponent implements MouseListener {
                     if (i == prevCoords[0] && j == prevCoords[1]) {
                         squares[i][j].deselectSquare();
                     } else {
-                        this.updateControlledSquares();
+                        //this.updateControlledSquares();
+                        //this.givePieceScores();
 
                         if(myTurn){
                             whiteMove(i, j);
@@ -671,8 +673,9 @@ public class Board extends JComponent implements MouseListener {
 
                         // Update controlled squares
                         this.updateControlledSquares();
-
                         this.givePieceScores();
+                        this.cleanUpHashMapW(); // Organize HashMap
+                        this.cleanUpHashMapB(); // Organize HashMap
                     }
 
                     // Reset
