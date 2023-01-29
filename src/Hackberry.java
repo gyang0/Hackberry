@@ -4,6 +4,7 @@
  * Jan 26, 2023 - Optimizing to program is done. All legal moves are recognized as well. ~500K -> ~65K iterations.
  * **/
 
+
 /**
  * This is where most of the stuff will take place.
  * All methods will be combined to set turns, make moves, etc.
@@ -16,8 +17,8 @@
  * TODO: figure out file clearing
  * TODO: 50-move rule (no pawn moves or captures), stalemate, checkmate, draw by insufficient material
  * TODO: threefold repetition
- * TODO: migrate this.playMove to use returns instead of separate boolean.
  * TODO: Notation should only be updated after move is confirmed to be legal.
+ * TODO: fix board evaluation - capturing pieces results in a worse score for that side.
  *
  * Note to self - how about assigning a value to each square depending on how valuable it is? Then compare the score of
  * the squares controlled for both, and use minimax on that.
@@ -31,7 +32,7 @@ import java.awt.*;
  * Chess piece images from https://commons.wikimedia.org/wiki/Category:PNG_chess_pieces/Standard_transparent
  *
  * @author Gene Yang
- * @version Jan. 27, 2023
+ * @version Jan. 21, 2023
  **/
 
 public class Hackberry {
