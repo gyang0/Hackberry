@@ -373,8 +373,8 @@ public class Board extends JComponent implements MouseListener {
 
         for(Piece p : piecesB.keySet()){
             double baseScore = p.getBaseValue();
-            double mobilityScore = (piecesB.get(p).size()) * 0.05;
-            double positionScore = boardPositionValues[p.getGridX()][p.getGridY()] * 0.01;
+            double mobilityScore = (piecesB.get(p).size()) * 0.01;
+            double positionScore = boardPositionValues[p.getGridX()][p.getGridY()] * 0.001;
             p.setValue(baseScore + mobilityScore + positionScore);
         }
     }
@@ -520,6 +520,8 @@ public class Board extends JComponent implements MouseListener {
 
             // A few changes to make.
             pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
+            pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
+
             pieces[prevCoords[0]][prevCoords[1]].numMoves = 0;
             mostRecentPieceMov[0] = i;
             mostRecentPieceMov[1] = j;
@@ -546,6 +548,8 @@ public class Board extends JComponent implements MouseListener {
             this.cleanUpHashMapB();
 
             pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
+            pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
+
             pieces[prevCoords[0]][prevCoords[1]].numMoves = 0;
             mostRecentPieceMov[0] = i;
             mostRecentPieceMov[1] = j;
@@ -633,7 +637,7 @@ public class Board extends JComponent implements MouseListener {
         FontMetrics f = g.getFontMetrics();
         g.drawString(message, 300 - (f.stringWidth(message)/2), 550);
 
-        g.drawString("Board evaluation: " + (int)(hackberryAI.boardEval(piecesW, piecesB) * 1000)/1000.0, 270, 570);
+        g.drawString("Board evaluation: " + (int)(hackberryAI.boardEval(piecesW, piecesB) * 100000)/100000.0, 270, 570);
     }
 
     /* Mouse events */
@@ -667,6 +671,8 @@ public class Board extends JComponent implements MouseListener {
 
                         // Update controlled squares
                         this.updateControlledSquares();
+
+                        this.givePieceScores();
                     }
 
                     // Reset
@@ -695,12 +701,6 @@ public class Board extends JComponent implements MouseListener {
             }
             repaint();
         }
-
-
-
-        for(Piece p : piecesW.keySet())
-            System.out.println(p + "    " + p.getValue());
-        System.out.println();
     }
 
     @Override
