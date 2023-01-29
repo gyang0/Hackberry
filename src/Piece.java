@@ -68,6 +68,7 @@ public class Piece {
         this.side = side;
     }
     public void setValue(double value){ this.value = value; }
+    public void setBaseValue(double baseValue){ this.baseValue = baseValue; }
 
     public int getGridX(){ return this.gridX; }
     public int getGridY(){ return this.gridY; }
@@ -198,7 +199,6 @@ public class Piece {
         if(toX == this.gridX && toY == this.gridY)
             return false;
 
-        boolean isLegal = false;
         switch(this.type){
             case "wp":
                 // If the move is diagonal
@@ -253,27 +253,27 @@ public class Piece {
             case "wn":
             case "bn":
                 if(Math.abs(toX - this.gridX) == 2 && Math.abs(toY - this.gridY) == 1)
-                    isLegal = true;
+                    return true;
                 else if(Math.abs(toX - this.gridX) == 1 && Math.abs(toY - this.gridY) == 2)
-                    isLegal = true;
+                    return true;
             break;
 
             case "wb":
             case "bb":
                 // Easy check
                 if(Math.abs(toX - this.gridX) != Math.abs(toY - this.gridY))
-                    isLegal = false;
-                else
-                   isLegal = this.bishopCheck(toX, toY, pieces);
+                    return false;
+                else if(this.bishopCheck(toX, toY, pieces))
+                   return true;
             break;
 
             case "wr":
             case "br":
                 // Easy check
                 if(toX != this.gridX && toY != this.gridY)
-                    isLegal = false;
-                else
-                   isLegal = this.rookCheck(toX, toY, pieces);
+                    return false;
+                else if(this.rookCheck(toX, toY, pieces))
+                   return true;
             break;
 
             case "wk":
@@ -285,7 +285,7 @@ public class Piece {
                         if(pieces[5][this.gridY].side == ' ' && pieces[6][this.gridY].side == ' ')
                             // Not in check
                             if(!squaresControlledB[4][this.gridY] && !squaresControlledB[5][this.gridY] && !squaresControlledB[6][this.gridY])
-                               isLegal = true;
+                               return true;
                     }
                 }
 
@@ -297,11 +297,11 @@ public class Piece {
                         if(pieces[1][this.gridY].side == ' ' && pieces[2][this.gridY].side == ' ' && pieces[3][this.gridY].side == ' ')
                             // Not in check
                             if(!squaresControlledB[4][this.gridY] && !squaresControlledB[1][this.gridY] && !squaresControlledB[2][this.gridY] && !squaresControlledB[3][this.gridY])
-                                isLegal = true;
+                                return true;
                     }
                 }
                 else if(Math.abs(toX - this.gridX) <= 1 && Math.abs(toY - this.gridY) <= 1 && !squaresControlledB[toX][toY])
-                    isLegal = true;
+                    return true;
             break;
 
             case "bk":
@@ -313,7 +313,7 @@ public class Piece {
                         if(pieces[5][this.gridY].side == ' ' && pieces[6][this.gridY].side == ' ')
                             // Not in check
                             if(!squaresControlledW[4][this.gridY] && !squaresControlledW[5][this.gridY] && !squaresControlledW[6][this.gridY])
-                                isLegal = true;
+                                return true;
                     }
                 }
 
@@ -335,14 +335,12 @@ public class Piece {
             case "wq":
             case "bq":
                 // Queen is a rook and bishop combined.
-                if(Math.abs(toX - this.gridX) != Math.abs(toY - this.gridY)) isLegal = false;
-                if(toX != this.gridX && toY != this.gridY) isLegal = false;
-
-                isLegal = bishopCheck(toX, toY, pieces) || rookCheck(toX, toY, pieces);
+                if(bishopCheck(toX, toY, pieces) || rookCheck(toX, toY, pieces))
+                    return true;
             break;
         }
 
-        return isLegal;
+        return false;
     }
 
     /**
