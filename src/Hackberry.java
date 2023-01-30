@@ -1,8 +1,10 @@
+
 /** Milestones
  * Jan 4, 2023 - Successfully recreated the Opera Game (Paul Morphy vs Duke of Brunswick & Count Isouard, 1858).
  * Jan 8, 2023 - All legal moves are now recognized (hopefully), including: En passant, castling, checks, promotion, etc.
  * Jan 26, 2023 - Optimizing to program is done. All legal moves are recognized as well. ~500K -> ~65K iterations.
  * **/
+
 
 /**
  * This is where most of the stuff will take place.
@@ -12,11 +14,11 @@
  *
  * TODO: Javadoc comments
  * TODO: Different side toggle
- * TODO: If two knights can move to the same square, then the notation should reflect that.
+ * TODO: if two knights can move to the same square, then the notation should reflect that.
  * TODO: 50-move rule (no pawn moves or captures), stalemate, checkmate, draw by insufficient material
- * TODO: Threefold repetition
+ * TODO: threefold repetition
  * TODO: Notation should only be updated after move is confirmed to be legal.
- * TODO: Pawn values should increase with every step taken.
+ * TODO: pawn values should increase with every step taken.
  *
  * Note to self - how about assigning a value to each square depending on how valuable it is? Then compare the score of
  * the squares controlled for both, and use minimax on that.
@@ -31,7 +33,7 @@ import java.util.HashMap;
  * Chess piece images from https://commons.wikimedia.org/wiki/Category:PNG_chess_pieces/Standard_transparent
  *
  * @author Gene Yang
- * @version Jan. 29, 2023
+ * @version Jan. 30, 2023
  **/
 
 public class Hackberry {
