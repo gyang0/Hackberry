@@ -16,14 +16,14 @@ public class PromoOptions {
     private final int X_OFFSET = 100;
     private final int Y_OFFSET = 100;
 
-    private final ImageIcon WHITE_ROOK_IMG = new ImageIcon("src/imgs/white_rook.png");
-    private final ImageIcon WHITE_KNIGHT_IMG = new ImageIcon("src/imgs/white_knight.png");
-    private final ImageIcon WHITE_BISHOP_IMG = new ImageIcon("src/imgs/white_bishop.png");
-    private final ImageIcon WHITE_QUEEN_IMG = new ImageIcon("src/imgs/white_queen.png");
-    private final ImageIcon BLACK_ROOK_IMG = new ImageIcon("src/imgs/black_rook.png");
-    private final ImageIcon BLACK_KNIGHT_IMG = new ImageIcon("src/imgs/black_knight.png");
-    private final ImageIcon BLACK_BISHOP_IMG = new ImageIcon("src/imgs/black_bishop.png");
-    private final ImageIcon BLACK_QUEEN_IMG = new ImageIcon("src/imgs/black_queen.png");
+    private final ImageIcon WHITE_ROOK_IMG = new ImageIcon("imgs/white_rook.png");
+    private final ImageIcon WHITE_KNIGHT_IMG = new ImageIcon("imgs/white_knight.png");
+    private final ImageIcon WHITE_BISHOP_IMG = new ImageIcon("imgs/white_bishop.png");
+    private final ImageIcon WHITE_QUEEN_IMG = new ImageIcon("imgs/white_queen.png");
+    private final ImageIcon BLACK_ROOK_IMG = new ImageIcon("imgs/black_rook.png");
+    private final ImageIcon BLACK_KNIGHT_IMG = new ImageIcon("imgs/black_knight.png");
+    private final ImageIcon BLACK_BISHOP_IMG = new ImageIcon("imgs/black_bishop.png");
+    private final ImageIcon BLACK_QUEEN_IMG = new ImageIcon("imgs/black_queen.png");
 
     private PromoOptionBtn btn1 = new PromoOptionBtn(0, 0, 0);
     private PromoOptionBtn btn2 = new PromoOptionBtn(0, 0, 0);
