@@ -447,18 +447,18 @@ public class Piece {
     }
 
     // Images
-    private final ImageIcon WHITE_PAWN_IMG = new ImageIcon("src/imgs/white_pawn.png");
-    private final ImageIcon WHITE_ROOK_IMG = new ImageIcon("src/imgs/white_rook.png");
-    private final ImageIcon WHITE_KNIGHT_IMG = new ImageIcon("src/imgs/white_knight.png");
-    private final ImageIcon WHITE_BISHOP_IMG = new ImageIcon("src/imgs/white_bishop.png");
-    private final ImageIcon WHITE_QUEEN_IMG = new ImageIcon("src/imgs/white_queen.png");
-    private final ImageIcon WHITE_KING_IMG = new ImageIcon("src/imgs/white_king.png");
+    private final ImageIcon WHITE_PAWN_IMG = new ImageIcon("imgs/white_pawn.png");
+    private final ImageIcon WHITE_ROOK_IMG = new ImageIcon("imgs/white_rook.png");
+    private final ImageIcon WHITE_KNIGHT_IMG = new ImageIcon("imgs/white_knight.png");
+    private final ImageIcon WHITE_BISHOP_IMG = new ImageIcon("imgs/white_bishop.png");
+    private final ImageIcon WHITE_QUEEN_IMG = new ImageIcon("imgs/white_queen.png");
+    private final ImageIcon WHITE_KING_IMG = new ImageIcon("imgs/white_king.png");
 
-    private final ImageIcon BLACK_PAWN_IMG = new ImageIcon("src/imgs/black_pawn.png");
-    private final ImageIcon BLACK_ROOK_IMG = new ImageIcon("src/imgs/black_rook.png");
-    private final ImageIcon BLACK_KNIGHT_IMG = new ImageIcon("src/imgs/black_knight.png");
-    private final ImageIcon BLACK_BISHOP_IMG = new ImageIcon("src/imgs/black_bishop.png");
-    private final ImageIcon BLACK_QUEEN_IMG = new ImageIcon("src/imgs/black_queen.png");
-    private final ImageIcon BLACK_KING_IMG = new ImageIcon("src/imgs/black_king.png");
+    private final ImageIcon BLACK_PAWN_IMG = new ImageIcon("imgs/black_pawn.png");
+    private final ImageIcon BLACK_ROOK_IMG = new ImageIcon("imgs/black_rook.png");
+    private final ImageIcon BLACK_KNIGHT_IMG = new ImageIcon("imgs/black_knight.png");
+    private final ImageIcon BLACK_BISHOP_IMG = new ImageIcon("imgs/black_bishop.png");
+    private final ImageIcon BLACK_QUEEN_IMG = new ImageIcon("imgs/black_queen.png");
+    private final ImageIcon BLACK_KING_IMG = new ImageIcon("imgs/black_king.png");
 
 }
