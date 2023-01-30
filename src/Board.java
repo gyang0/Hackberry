@@ -523,10 +523,10 @@ public class Board extends JComponent implements MouseListener {
             pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
             pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
 
+            //myTurn = !myTurn;
             pieces[prevCoords[0]][prevCoords[1]].numMoves = 0;
             mostRecentPieceMov[0] = i;
             mostRecentPieceMov[1] = j;
-            myTurn = !myTurn;
         }
         squares[prevCoords[0]][prevCoords[1]].deselectSquare();
     }
@@ -544,6 +544,7 @@ public class Board extends JComponent implements MouseListener {
             Notation.updateMoves(i, j, pieces[prevCoords[0]][prevCoords[1]]);
 
             pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, true);
+            //hackberryAI.makeMove(pieces, piecesW, piecesB);
 
             // Clean up empty pieces in HashMap piecesB
             this.cleanUpHashMapB();
@@ -551,10 +552,10 @@ public class Board extends JComponent implements MouseListener {
             pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
             pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
 
+            //myTurn = !myTurn;
             pieces[prevCoords[0]][prevCoords[1]].numMoves = 0;
             mostRecentPieceMov[0] = i;
             mostRecentPieceMov[1] = j;
-            myTurn = !myTurn;
         }
         squares[prevCoords[0]][prevCoords[1]].deselectSquare();
     }
@@ -666,10 +667,11 @@ public class Board extends JComponent implements MouseListener {
 
                         if(myTurn){
                             whiteMove(i, j);
-                        } else {
+                            hackberryAI.makeMove(pieces, piecesW, piecesB);
+                        }/* else {
                             blackMove(i, j);
                             Notation.updateNumTurns(); // Black always ends the turn
-                        }
+                        }*/
 
                         // Update controlled squares
                         this.updateControlledSquares();
