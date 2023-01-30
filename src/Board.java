@@ -320,7 +320,7 @@ public class Board extends JComponent implements MouseListener {
                 setPieces(pieces, piecesCopy);
 
                 // Move piece to square and see if it results in check.
-                p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, false);
+                p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, prevCoords, false);
                 this.checkControlledSquaresB();
 
                 if(!whiteKingInCheck)
@@ -347,7 +347,7 @@ public class Board extends JComponent implements MouseListener {
                 setPieces(pieces, piecesCopy);
 
                 // Move piece to square and see if it results in check.
-                p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, false);
+                p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, prevCoords, false);
                 this.checkControlledSquaresW();
 
                 if(!blackKingInCheck)
@@ -514,7 +514,7 @@ public class Board extends JComponent implements MouseListener {
         if (this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
             Notation.updateMoves(i, j, pieces[prevCoords[0]][prevCoords[1]]);
 
-            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, true);
+            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, prevCoords, true);
 
             // Remove empty pieces in HashMap piecesW
             this.cleanUpHashMapW();
@@ -543,7 +543,7 @@ public class Board extends JComponent implements MouseListener {
         if (this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
             Notation.updateMoves(i, j, pieces[prevCoords[0]][prevCoords[1]]);
 
-            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, true);
+            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, prevCoords, true);
             //hackberryAI.makeMove(pieces, piecesW, piecesB);
 
             // Clean up empty pieces in HashMap piecesB
@@ -667,7 +667,13 @@ public class Board extends JComponent implements MouseListener {
 
                         if(myTurn){
                             whiteMove(i, j);
-                            hackberryAI.makeMove(pieces, piecesW, piecesB);
+
+                            this.updateControlledSquares();
+                            this.givePieceScores();
+                            this.cleanUpHashMapW(); // Organize HashMap
+                            this.cleanUpHashMapB(); // Organize HashMap
+
+                            hackberryAI.makeMove(pieces, piecesW, piecesB, prevCoords);
                         }/* else {
                             blackMove(i, j);
                             Notation.updateNumTurns(); // Black always ends the turn
