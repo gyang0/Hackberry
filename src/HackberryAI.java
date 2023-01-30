@@ -39,7 +39,7 @@ public class HackberryAI {
     // Create a new Board object, play through the moves, etc.
 
     // Something to play the moves
-    public void makeMove(Piece[][] pieces, HashMap<Piece, ArrayList<int[]>> piecesW, HashMap<Piece, ArrayList<int[]>> piecesB){
+    public void makeMove(Piece[][] pieces, HashMap<Piece, ArrayList<int[]>> piecesW, HashMap<Piece, ArrayList<int[]>> piecesB, int[] prevCoords){
         if(this.side == 'w'){
 
             // Choose first possible move
@@ -48,7 +48,10 @@ public class HackberryAI {
 
                     int randIndex = (int)(Math.random() * piecesW.get(p).size());
                     int[] arr = piecesW.get(p).get(randIndex);
-                    p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, true);
+
+                    prevCoords = arr;
+
+                    p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, prevCoords, true);
                     return;
                 }
             }
@@ -63,7 +66,10 @@ public class HackberryAI {
 
                     int randIndex = (int)(Math.random() * piecesB.get(p).size());
                     int[] arr = piecesB.get(p).get(randIndex);
-                    p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, true);
+
+                    prevCoords = arr;
+
+                    p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, prevCoords, true);
                     return;
                 }
             }
