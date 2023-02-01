@@ -16,9 +16,11 @@
  * TODO: Different side toggle
  * TODO: if two knights can move to the same square, then the notation should reflect that.
  * TODO: 50-move rule (no pawn moves or captures), stalemate, checkmate, draw by insufficient material
- * TODO: threefold repetition
+ * TODO: threefold repetition (this should check the HashMaps, not the board)
  * TODO: Notation should only be updated after move is confirmed to be legal.
  * TODO: pawn values should increase with every step taken.
+ * TODO: bugfix, kings can capture each other???
+ * TODO: test castling on AI
  *
  * Note to self - how about assigning a value to each square depending on how valuable it is? Then compare the score of
  * the squares controlled for both, and use minimax on that.
@@ -33,7 +35,7 @@ import java.util.HashMap;
  * Chess piece images from https://commons.wikimedia.org/wiki/Category:PNG_chess_pieces/Standard_transparent
  *
  * @author Gene Yang
- * @version Jan. 30, 2023
+ * @version Jan. 29, 2023
  **/
 
 public class Hackberry {
@@ -50,13 +52,6 @@ public class Hackberry {
         board = new Board();
         window.add(board, BorderLayout.CENTER);
         window.setVisible(true);
-        /*
-        HashMap<Piece, String> myMap = new HashMap<Piece, String>();
-        Piece myPiece = new Piece(3, 3, "pawn", 'w');
-        myMap.put(myPiece, "Hello world");
-
-        System.out.println(myMap.get(myPiece));
-        System.out.println(myMap.get(new Piece(3, 3, "pawn", 'w')));*/
     }
 
     public static void main(String[] args) {
