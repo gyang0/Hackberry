@@ -36,13 +36,12 @@ public class HackberryAI {
     }
 
     // Minimax search goes here
-    // Create a new Board object, play through the moves, etc.
 
     // Something to play the moves
     public void makeMove(Piece[][] pieces, HashMap<Piece, ArrayList<int[]>> piecesW, HashMap<Piece, ArrayList<int[]>> piecesB, int[] prevCoords){
         if(this.side == 'w'){
 
-            // Choose first possible move
+            // Choose a random move
             for(Piece p : piecesW.keySet()){
                 if(piecesW.get(p).size() > 0){
 
@@ -60,7 +59,7 @@ public class HackberryAI {
 
         else if(this.side == 'b'){
 
-            // Choose first possible move
+            // Choose a random move
             for(Piece p : piecesB.keySet()){
                 if(piecesB.get(p).size() > 0){
 
