@@ -433,8 +433,10 @@ public class Piece {
         pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, "", ' ');
 
         // Set numMoves
+        if(updateHashMap){
         pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
         pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
+        }
     }
 
     @Override
