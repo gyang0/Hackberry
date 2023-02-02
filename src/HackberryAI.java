@@ -35,9 +35,9 @@ public class HackberryAI {
         return whiteScore - blackScore;
     }
 
-    // Minimax search goes here
-
-    // Something to play the moves
+    // Actual AI goes here
+    // Find the 5 moves that offer the best position
+    //
     public void makeMove(Piece[][] pieces, HashMap<Piece, ArrayList<int[]>> piecesW, HashMap<Piece, ArrayList<int[]>> piecesB, int[] prevCoords){
         if(this.side == 'w'){
 
