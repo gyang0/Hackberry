@@ -648,6 +648,10 @@ public class Board extends JComponent implements MouseListener {
         if(showPromoOptions){
             int choice = promoOption.handleMouseInteractions(e.getX(), e.getY());
             promotePawn(choice);
+            hackberryAI.makeMove(pieces, piecesW, piecesB, prevCoords);
+
+            repaint();
+            return;
         }
         else {
             // Did we click a valid square?
