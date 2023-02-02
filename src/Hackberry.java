@@ -1,4 +1,3 @@
-
 /** Milestones
  * Jan 4, 2023 - Successfully recreated the Opera Game (Paul Morphy vs Duke of Brunswick & Count Isouard, 1858).
  * Jan 8, 2023 - All legal moves are now recognized (hopefully), including: En passant, castling, checks, promotion, etc.
@@ -14,22 +13,19 @@
  *
  * TODO: Javadoc comments
  * TODO: Different side toggle
- * TODO: if two knights can move to the same square, then the notation should reflect that.
+ * TODO: if two knights can move to the same square, then the notation should reflect that. (same for pawns, rooks, queens, bishops)
  * TODO: 50-move rule (no pawn moves or captures), stalemate, checkmate, draw by insufficient material
  * TODO: threefold repetition (this should check the HashMaps, not the board)
  * TODO: Notation should only be updated after move is confirmed to be legal.
  * TODO: pawn values should increase with every step taken.
  * TODO: bugfix, kings can capture each other???
  * TODO: test castling on AI
- *
- * Note to self - how about assigning a value to each square depending on how valuable it is? Then compare the score of
- * the squares controlled for both, and use minimax on that.
- * Program should also keep track of how many pieces on one side control a specific square, then determine a winner.
+ * TODO: en passant doesn't work with the AI, again.
+ * TODO: should force user to promote piece no matter what
  * **/
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.HashMap;
 
 /**
  * Chess piece images from https://commons.wikimedia.org/wiki/Category:PNG_chess_pieces/Standard_transparent
