@@ -586,10 +586,10 @@ public class Board extends JComponent implements MouseListener {
 
 
                 /** DEBUGGING ONLY **/
-                if(squaresControlledW[i][j]){
+                /*if(squaresControlledW[i][j]){
                     g.setColor(new Color(0, 0, 255, 50));
                     g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
-                }
+                }*/
 
                 /*if(squaresControlledB[i][j]){
                     g.setColor(new Color(255, 0, 0, 50));
