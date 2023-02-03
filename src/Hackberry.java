@@ -18,10 +18,8 @@
  * TODO: threefold repetition (this should check the HashMaps, not the board)
  * TODO: Notation should only be updated after move is confirmed to be legal.
  * TODO: pawn values should increase with every step taken.
- * TODO: bugfix, kings can capture each other???
  * TODO: test castling on AI
  * TODO: en passant doesn't work with the AI, again.
- * TODO: should force user to promote piece no matter what
  * **/
 
 import javax.swing.*;

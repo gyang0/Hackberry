@@ -523,7 +523,7 @@ public class Board extends JComponent implements MouseListener {
             pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
             pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
 
-            //myTurn = !myTurn;
+            myTurn = !myTurn;
             pieces[prevCoords[0]][prevCoords[1]].numMoves = 0;
             mostRecentPieceMov[0] = i;
             mostRecentPieceMov[1] = j;
@@ -552,14 +552,13 @@ public class Board extends JComponent implements MouseListener {
             pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
             pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
 
-            //myTurn = !myTurn;
+            myTurn = !myTurn;
             pieces[prevCoords[0]][prevCoords[1]].numMoves = 0;
             mostRecentPieceMov[0] = i;
             mostRecentPieceMov[1] = j;
         }
         squares[prevCoords[0]][prevCoords[1]].deselectSquare();
     }
-
 
     @Override
     public void paintComponent(Graphics g) {
@@ -590,9 +589,9 @@ public class Board extends JComponent implements MouseListener {
                 /*if(squaresControlledW[i][j]){
                     g.setColor(new Color(0, 0, 255, 50));
                     g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
-                }
+                }*/
 
-                if(squaresControlledB[i][j]){
+                /*if(squaresControlledB[i][j]){
                     g.setColor(new Color(255, 0, 0, 50));
                     g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
                 }*/
@@ -648,7 +647,9 @@ public class Board extends JComponent implements MouseListener {
         if(showPromoOptions){
             int choice = promoOption.handleMouseInteractions(e.getX(), e.getY());
             promotePawn(choice);
-            hackberryAI.makeMove(pieces, piecesW, piecesB, prevCoords);
+
+            if(!showPromoOptions)
+                hackberryAI.makeMove(pieces, piecesW, piecesB, prevCoords);
 
             repaint();
             return;
@@ -673,19 +674,19 @@ public class Board extends JComponent implements MouseListener {
                             whiteMove(i, j);
 
                             this.updateControlledSquares();
-                            this.givePieceScores();
+                            //this.givePieceScores();
                             this.cleanUpHashMapW(); // Organize HashMap
                             this.cleanUpHashMapB(); // Organize HashMap
 
-                            hackberryAI.makeMove(pieces, piecesW, piecesB, prevCoords);
-                        }/* else {
+                            //hackberryAI.makeMove(pieces, piecesW, piecesB, prevCoords);
+                        } else {
                             blackMove(i, j);
                             Notation.updateNumTurns(); // Black always ends the turn
-                        }*/
+                        }
 
                         // Update controlled squares
                         this.updateControlledSquares();
-                        this.givePieceScores();
+                        //this.givePieceScores();
                         this.cleanUpHashMapW(); // Organize HashMap
                         this.cleanUpHashMapB(); // Organize HashMap
                     }

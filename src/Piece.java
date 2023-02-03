@@ -27,6 +27,7 @@ public class Piece {
     private final int SQUARE_WIDTH = 50;
     private final int X_OFFSET = 100;
     private final int Y_OFFSET = 100;
+    private final int NUM_SQUARES = 8;
 
     // For assigning scores to pieces
     public static final double BASE_VAL_WEIGHT = 0.90; // % base value
@@ -111,6 +112,7 @@ public class Piece {
      *
      * @param toX - The x-position of the square the rook is trying to move to.
      * @param toY - The y-position of the square the rook is trying to move to.
+     * @param pieces - Array of pieces used in game.
      * @return - True if move is legal, false if otherwise.
      * **/
     public boolean rookCheck(int toX, int toY, Piece[][] pieces){
@@ -157,6 +159,7 @@ public class Piece {
      *
      * @param toX - The x-position of the square the rook is trying to move to.
      * @param toY - The y-position of the square the rook is trying to move to.
+     * @param pieces - Array of pieces used in game.
      * @return - True if move is legal, false if otherwise.
      * **/
     public boolean bishopCheck(int toX, int toY, Piece[][] pieces){
@@ -193,6 +196,30 @@ public class Piece {
         if(xPos == toX && yPos == toY) return true;
 
         return false;
+    }
+
+    /**
+     * Checks if there are any kings nearby, helps remove illegal moves resulting in a king moving next to a king.
+     * @param toX - The x-position of the square we're trying to move to.
+     * @param toY - The y-position of the square we're trying to move to.
+     * @param pieces - Array of pieces used in game.
+     * @return True if there's a king within 1 square of (toX, toY), not including the square (toX, toY).
+     */
+    public boolean noKingNearby(int toX, int toY, Piece[][] pieces){
+        String oppositeSide = (this.type.equals("wk") ? "bk": "wk");
+
+        for(int dx = -1; dx <= 1; dx++){
+            for(int dy = -1; dy <= 1; dy++){
+                // Out-of-bounds
+                if(toX + dx < 0 || toX + dx >= NUM_SQUARES || toY + dy < 0 || toY + dy >= NUM_SQUARES)
+                    continue;
+
+                if(pieces[toX + dx][toY + dy].getType().equals(oppositeSide))
+                    return false;
+            }
+        }
+
+        return true;
     }
 
     public boolean legalMove(int toX, int toY, Piece[][] pieces, int[] mostRecentPieceMov, boolean[][] squaresControlledW, boolean[][] squaresControlledB){
@@ -305,8 +332,12 @@ public class Piece {
                                 return true;
                     }
                 }
-                else if(Math.abs(toX - this.gridX) <= 1 && Math.abs(toY - this.gridY) <= 1 && !squaresControlledB[toX][toY])
-                    return true;
+                else if(Math.abs(toX - this.gridX) <= 1 && Math.abs(toY - this.gridY) <= 1 && !squaresControlledB[toX][toY]) {
+                    // Because of the way controlled squares are defined (if the piece can capture other pieces),
+                    // extra conditions are needed for kings facing each other.
+                    if(noKingNearby(toX, toY, pieces)) return true;
+                    else return false;
+                }
             break;
 
             case "bk":
@@ -333,8 +364,12 @@ public class Piece {
                                 return true;
                     }
                 }
-                else if(Math.abs(toX - this.gridX) <= 1 && Math.abs(toY - this.gridY) <= 1 && !squaresControlledW[toX][toY])
-                    return true;
+                else if(Math.abs(toX - this.gridX) <= 1 && Math.abs(toY - this.gridY) <= 1 && !squaresControlledW[toX][toY]) {
+                    // Because of the way controlled squares are defined (if the piece can capture other pieces),
+                    // extra conditions are needed for kings facing each other.
+                    if(noKingNearby(toX, toY, pieces)) return true;
+                    else return false;
+                }
             break;
 
             case "wq":
