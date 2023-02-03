@@ -1,464 +1,734 @@
+/**
+ * Draws the entire board, combining the Piece.java and Square.java.
+ *
+ * @author Gene Yang
+ * @version January 26, 2023
+ * **/
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-/**
- * Individual pieces on the chessboard
- * **/
+public class Board extends JComponent implements MouseListener {
+    private String boardState[][] = {
+            {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
+            {"bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"},
+            {"", "", "", "", "", "", "", ""},
+            {"", "", "", "", "", "", "", ""},
+            {"", "", "", "", "", "", "", ""},
+            {"", "", "", "", "", "", "", ""},
+            {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
+            {"wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr"}
+    };
 
-public class Piece {
-    private String type;
-    private char side;
+    // Gives a score to each board (center squares > edge squares).
+    private int boardPositionValues[][] = {
+            {1, 1, 1, 1, 1, 1, 1, 1},
+            {1, 3, 3, 3, 3, 3, 3, 1},
+            {1, 3, 4, 4, 4, 4, 3, 1},
+            {1, 3, 4, 5, 5, 4, 3, 1},
+            {1, 3, 4, 5, 5, 4, 3, 1},
+            {1, 3, 4, 4, 4, 4, 3, 1},
+            {1, 3, 3, 3, 3, 3, 3, 1},
+            {1, 1, 1, 1, 1, 1, 1, 1}
+    };
 
-    private double baseValue; // Fixed value for each piece
-    private double value; // Changeable value depending on the position
+    // AI
+    private HackberryAI hackberryAI;
 
-    public int numMoves = 0;
+    // User's side
+    private char userSide = 'w';
 
-    // this.x and this.y are the displaying coordinates.
-    private int x;
-    private int y;
 
-    // this.gridX and this.gridY are the grid-type coordinates ( Like (0, 1), (1, 1), etc.).
-    private int gridX;
-    private int gridY;
+    // The squares controlled by each side
+    private boolean[][] squaresControlledW;
+    private boolean[][] squaresControlledB;
 
+    // Just stores the positions of the pieces. (HashMap does the rest, below.)
+    private Piece[][] pieces;
+    private Square[][] squares;
+
+    // HashMap of the pieces for each side and where they can move to.
+    private HashMap<Piece, ArrayList<int[]>> piecesW;
+    private HashMap<Piece, ArrayList<int[]>> piecesB;
+
+    private final int NUM_SQUARES = 8;
     private final int SQUARE_WIDTH = 50;
     private final int X_OFFSET = 100;
     private final int Y_OFFSET = 100;
+    private final Color WHITE = new Color(184,139,74);
+    private final Color BLACK = new Color(227,193,111);
+    private final Color OPAQUE_GRAY = new Color(100, 100, 100, 100);
+    private final Color CHECK_COLOR = new Color(255, 0, 0, 100);
 
-    // For assigning scores to pieces
-    public static final double BASE_VAL_WEIGHT = 0.90; // % base value
-    public static final double MOBILITY_WEIGHT = 0.07; // % mobility
-    public static final double POSITION_WEIGHT = 0.03; // % board position
+    private int numClicks = 0;
+    private int[] prevCoords = {-1, -1};
 
-    public double assignValue(){
-        if(this.type.equals("")) return 0;
+    // First two indices hold the x and y position of white's move.
+    // Third and fourth indices hold the x and y position of black's move.
+    private int[] mostRecentPieceMov = {-1, -1};
 
-        switch(this.type.charAt(1)){
-            case 'p': return 1;
-            case 'r': return 5;
-            case 'n': return 3;
-            case 'b': return 3.5;
-            case 'q': return 10;
-            case 'k': return 1000;
-        }
+    private Piece curPiece = new Piece(0, 0, "", ' '); // Currently selected piece
 
-        return 0;
-    }
+    private boolean myTurn = true;
 
-    public Piece(int i, int j, String type, char side){
-        this.x = i * SQUARE_WIDTH + X_OFFSET;
-        this.y = j * SQUARE_WIDTH + Y_OFFSET;
+    PromoOptions promoOption = new PromoOptions(0, 0, ' ');
+    private boolean showPromoOptions = false;
+    private int promoX;
+    private int promoY;
 
-        this.gridX = i;
-        this.gridY = j;
+    public boolean whiteKingInCheck = false;
+    public boolean blackKingInCheck = false;
 
-        this.type = type;
-        this.side = side;
 
-        this.baseValue = this.assignValue();
-        this.value = this.baseValue;
-    }
+    Font MSG_FONT = new Font("serif", Font.BOLD, 20);
+    private String message = "";
 
-    public void setPiece(int x, int y, String type, char side){
-        this.x = x * SQUARE_WIDTH + X_OFFSET;
-        this.y = y * SQUARE_WIDTH + Y_OFFSET;
-
-        this.gridX = x;
-        this.gridY = y;
-
-        this.type = type;
-        this.side = side;
-    }
-    public void setValue(double value){ this.value = value; }
-    public void setBaseValue(double baseValue){ this.baseValue = baseValue; }
-
-    public int getGridX(){ return this.gridX; }
-    public int getGridY(){ return this.gridY; }
-    public String getType(){
-        return this.type;
-    }
-    public char getSide(){ return this.side; }
-    public double getValue(){ return this.value; }
-    public double getBaseValue(){ return this.baseValue; }
-
-    public void paint(Graphics g){
-        if(!this.type.equals("")){
-            ImageIcon img = switch (this.type) {
-                case "wp" -> WHITE_PAWN_IMG;
-                case "wr" -> WHITE_ROOK_IMG;
-                case "wn" -> WHITE_KNIGHT_IMG;
-                case "wb" -> WHITE_BISHOP_IMG;
-                case "wq" -> WHITE_QUEEN_IMG;
-                case "wk" -> WHITE_KING_IMG;
-                case "bp" -> BLACK_PAWN_IMG;
-                case "br" -> BLACK_ROOK_IMG;
-                case "bn" -> BLACK_KNIGHT_IMG;
-                case "bb" -> BLACK_BISHOP_IMG;
-                case "bq" -> BLACK_QUEEN_IMG;
-                default -> BLACK_KING_IMG;
-            };
-
-            Image i = img.getImage();
-            g.drawImage(i, this.x, this.y, SQUARE_WIDTH, SQUARE_WIDTH, null);
-        }
-    }
+    // For testing illegal moves in this.removeIllegalMovesW and this.removeIllegalMovesB.
+    Piece[][] piecesCopy = new Piece[NUM_SQUARES][NUM_SQUARES];
 
     /**
-     * Checks if a move is legal for a rook.
+     * Shows a message to the user for help and also for debugging purposes.
      *
-     * @param toX - The x-position of the square the rook is trying to move to.
-     * @param toY - The y-position of the square the rook is trying to move to.
-     * @return - True if move is legal, false if otherwise.
+     * @param msg - The message to display.
      * **/
-    public boolean rookCheck(int toX, int toY, Piece[][] pieces){
-        int xPos = this.gridX,
-            yPos = this.gridY;
-
-        // Vertical
-        if(this.gridX == toX){
-            if(toY > this.gridY){
-                while(yPos < toY){
-                    if(pieces[xPos][yPos].side != ' ' && yPos != this.gridY) break;
-                    yPos++;
-                }
-            } else if(toY < this.gridY){
-                while(yPos > toY){
-                    if(pieces[xPos][yPos].side != ' ' && yPos != this.gridY) break;
-                    yPos--;
-                }
-            }
-        }
-
-        // Horizontal
-        if(toY == this.gridY){
-            if(toX > this.gridX) {
-                while (xPos < toX) {
-                    if (pieces[xPos][yPos].side != ' ' && xPos != this.gridX) break;
-                    xPos++;
-                }
-            } else if(toX < this.gridX){
-                while (xPos > toX) {
-                    if (pieces[xPos][yPos].side != ' ' && xPos != this.gridX) break;
-                    xPos--;
-                }
-            }
-        }
-
-        if(xPos == toX && yPos == toY) return true;
-
-        return false;
+    public void setMessage(String msg){
+        message = msg;
+        repaint();
     }
 
     /**
-     * Checks if a move is legal for a bishop.
+     * Fills in the squares array with Square objects.
+     * **/
+    public void initSquares() {
+        squares = new Square[NUM_SQUARES][NUM_SQUARES];
+        squaresControlledW = new boolean[NUM_SQUARES][NUM_SQUARES];
+        squaresControlledB = new boolean[NUM_SQUARES][NUM_SQUARES];
+
+        boolean flag = true;
+
+        for (int i = 0; i < NUM_SQUARES; i++) {
+            for (int j = 0; j < NUM_SQUARES; j++) {
+                if (flag) squares[i][j] = new Square(i, j, SQUARE_WIDTH, WHITE);
+                else squares[i][j] = new Square(i, j, SQUARE_WIDTH, BLACK);
+
+                // Carrying on the color if at the end of the column
+                if (j != NUM_SQUARES - 1)
+                    flag = !flag;
+
+                // Setting the squares controlled
+                squaresControlledW[i][j] = false;
+                squaresControlledB[i][j] = false;
+            }
+        }
+    }
+
+    /**
+     * Fills in the pieces array with Piece objects, and also puts pieces into piecesW and piecesB.
+     * **/
+    public void initPieces(){
+        pieces = new Piece[NUM_SQUARES][NUM_SQUARES];
+
+        for(int i = 0; i < NUM_SQUARES; i++){
+            for(int j = 0; j < NUM_SQUARES; j++){
+                // Copy array
+                piecesCopy[i][j] = new Piece(i, j, "", ' ');
+
+                if(!boardState[i][j].equals("")){
+                    pieces[j][i] = new Piece(j, i, boardState[i][j], boardState[i][j].charAt(0));
+
+                    // Reversed coordinates for display
+                    if(boardState[i][j].charAt(0) == 'w')
+                        piecesW.put(pieces[j][i], new ArrayList<int[]>());
+                    else
+                        piecesB.put(pieces[j][i], new ArrayList<int[]>());
+                } else
+                    pieces[j][i] = new Piece(j, i, "", ' ');
+            }
+        }
+    }
+
+    /**
+     * Populates an array of Pieces to the same values as another array specified. (copy)
      *
-     * @param toX - The x-position of the square the rook is trying to move to.
-     * @param toY - The y-position of the square the rook is trying to move to.
-     * @return - True if move is legal, false if otherwise.
+     * @param from - The array of Piece objects to copy
+     * @param to - The array of piece objects to copy to.
      * **/
-    public boolean bishopCheck(int toX, int toY, Piece[][] pieces){
-        int xPos = this.gridX,
-            yPos = this.gridY;
+    public void setPieces(Piece[][] from, Piece[][] to){
+        for(int r = 0; r < NUM_SQUARES; r++) {
+            for (int c = 0; c < NUM_SQUARES; c++) {
+                to[r][c].setPiece(r, c, from[r][c].getType(), from[r][c].getSide());
+            }
+        }
+    }
 
-        // While loop time
-        if(toX > this.gridX && toY > this.gridY){
-            while(toX > xPos && toY > yPos){
-                if(pieces[xPos][yPos].side != ' ' && xPos != this.gridX && yPos != this.gridY) break;
-                xPos++;
-                yPos++;
-            }
-        } else if(toX < this.gridX && toY > this.gridY){
-            while(toX < xPos && toY > yPos){
-                if(pieces[xPos][yPos].side != ' ' && xPos != this.gridX && yPos != this.gridY) break;
-                xPos--;
-                yPos++;
-            }
-        } else if(toX > this.gridX && toY < this.gridY){
-            while(toX > xPos && toY < yPos){
-                if(pieces[xPos][yPos].side != ' ' && xPos != this.gridX && yPos != this.gridY) break;
-                xPos++;
-                yPos--;
-            }
-        } else if(toX < this.gridX && toY < this.gridY){
-            while(toX < xPos && toY < yPos){
-                if(pieces[xPos][yPos].side != ' ' && xPos != this.gridX && yPos != this.gridY) break;
-                xPos--;
-                yPos--;
+    /**
+     * Checks the squares controlled by the white side.
+     * **/
+    public void checkControlledSquaresW(){
+        // Reset
+        for(int i = 0; i < NUM_SQUARES; i++)
+            for(int j = 0; j < NUM_SQUARES; j++)
+                squaresControlledW[i][j] = false;
+
+        blackKingInCheck = false;
+        Piece prev = new Piece(0, 0, "", ' ');
+        int[] mostRecentPieceMovCopy = new int[2];
+
+        // For every black piece
+        for(Piece p : piecesW.keySet()){
+            // For every square on the board
+            for(int pos1 = 0; pos1 < NUM_SQUARES; pos1++){
+                for(int pos2 = 0; pos2 < NUM_SQUARES; pos2++){
+
+                    // Having control over that square:
+                    // For testing purposes, we set the piece of an opposite side at that square.
+                    // Then we see if that piece can be captured.
+                    prev.setPiece(pos1, pos2, pieces[pos1][pos2].getType(), pieces[pos1][pos2].getSide());
+                    pieces[pos1][pos2].setPiece(pos1, pos2, "bp", 'b');
+
+                    // Copy of most recent piece's move
+                    mostRecentPieceMovCopy[0] = pos1;
+                    mostRecentPieceMovCopy[1] = pos2;
+
+                    // Can make a capture (if necessary) at that position.
+                    if(p.legalMove(pos1, pos2, pieces, mostRecentPieceMovCopy, squaresControlledW, squaresControlledB)){
+                        squaresControlledW[pos1][pos2] = true;
+
+                        // If the piece at that position is a king, it's in check.
+                        if(prev.getType().equals("bk"))
+                            blackKingInCheck = true;
+                    }
+
+                    // Reset
+                    pieces[pos1][pos2].setPiece(pos1, pos2, prev.getType(), prev.getSide());
+                }
             }
         }
 
-        if(xPos == toX && yPos == toY) return true;
-
-        return false;
     }
 
-    public boolean legalMove(int toX, int toY, Piece[][] pieces, int[] mostRecentPieceMov, boolean[][] squaresControlledW, boolean[][] squaresControlledB){
-        // Can't capture pieces on its own side
-        if(pieces[toX][toY].side == this.side)
-            return false;
+    /**
+     * Checks the squares controlled by the black side.
+     * **/
+    public void checkControlledSquaresB(){
+        // Reset
+        for(int i = 0; i < NUM_SQUARES; i++)
+            for(int j = 0; j < NUM_SQUARES; j++)
+                squaresControlledB[i][j] = false;
 
-        // Can't move to same square
-        if(toX == this.gridX && toY == this.gridY)
-            return false;
+        whiteKingInCheck = false;
+        Piece prev = new Piece(0, 0, "", ' ');
+        int[] mostRecentPieceMovCopy = new int[2];
 
-        switch(this.type){
-            case "wp":
-                // If the move is diagonal
-                if(Math.abs(this.gridX - toX) == 1 && this.gridY - 1 == toY){
-                    // A normal capture
-                    if(pieces[toX][toY].getSide() == 'b')
-                        return true;
+        // For every black piece
+        for(Piece p : piecesB.keySet()){
+            // For every square on the board
+            for(int pos1 = 0; pos1 < NUM_SQUARES; pos1++){
+                for(int pos2 = 0; pos2 < NUM_SQUARES; pos2++){
 
-                    // En passant
-                    else if(pieces[toX][toY].getSide() == ' '){
-                        if(pieces[toX][toY + 1].getType().equals("bp")){
-                            if(mostRecentPieceMov[0] == toX && mostRecentPieceMov[1] == toY + 1 && pieces[toX][toY + 1].numMoves == 1)
-                                return true;
-                        }
+                    // Having control over that square:
+                    // For testing purposes, we set the piece of an opposite side at that square.
+                    // Then we see if that piece can be captured.
+                    prev.setPiece(pos1, pos2, pieces[pos1][pos2].getType(), pieces[pos1][pos2].getSide());
+                    pieces[pos1][pos2].setPiece(pos1, pos2, "wp", 'w');
+
+                    // Copy of most recent piece's move
+                    mostRecentPieceMovCopy[0] = pos1;
+                    mostRecentPieceMovCopy[1] = pos2;
+
+                    // Can make a capture (if necessary) at that position.
+                    if(p.legalMove(pos1, pos2, pieces, mostRecentPieceMov, squaresControlledW, squaresControlledB)){
+                        squaresControlledB[pos1][pos2] = true;
+
+                        // If the piece at that position is a king, it's in check.
+                        if(prev.getType().equals("wk"))
+                            whiteKingInCheck = true;
+                    }
+
+                    pieces[pos1][pos2].setPiece(pos1, pos2, prev.getType(), prev.getSide());
+                }
+            }
+        }
+
+    }
+
+    /**
+     * Updates the positions every white piece can move to.
+     * **/
+    public void getPossibleMovesW(){
+        // Reset
+        piecesW.replaceAll((p, v) -> new ArrayList<int[]>());
+
+        // For every black piece
+        for(Piece p : piecesW.keySet()){
+            ArrayList<int[]> possibleMoves = new ArrayList<int[]>();
+
+            // For every square on the board
+            for(int pos1 = 0; pos1 < NUM_SQUARES; pos1++){
+                for(int pos2 = 0; pos2 < NUM_SQUARES; pos2++){
+                    // Can move to that square
+                    if(p.legalMove(pos1, pos2, pieces, mostRecentPieceMov, squaresControlledW, squaresControlledB)){
+                        possibleMoves.add(new int[]{pos1,pos2});
                     }
                 }
+            }
 
-                // Normal forward movement
-                if(this.gridX == toX && pieces[toX][toY].side == ' '){
-                    if(this.gridY == toY + 1) return true;
+            piecesW.put(p, possibleMoves);
+        }
+    }
 
-                    // If the pawn hasn't moved yet, it can move 2 spaces.
-                    else if(this.numMoves == 0 && toY == this.gridY - 2 && pieces[toX][toY + 1].side == ' ') return true;
-                }
-            break;
+    /**
+     * Updates the positions every black piece can move to.
+     * **/
+    public void getPossibleMovesB(){
+        // Reset
+        piecesB.replaceAll((p, v) -> new ArrayList<int[]>());
 
-            case "bp":
-                // If the move is diagonal
-                if(Math.abs(this.gridX - toX) == 1 && this.gridY + 1 == toY){
-                    // A normal capture
-                    if(pieces[toX][toY].getSide() == 'w')
-                        return true;
+        // For every black piece
+        for(Piece p : piecesB.keySet()){
+            ArrayList<int[]> possibleMoves = new ArrayList<int[]>();
 
-                        // En passant
-                    else if(pieces[toX][toY].getSide() == ' '){
-                        if(pieces[toX][toY - 1].getType().equals("wp")){
-                            if(mostRecentPieceMov[0] == toX && mostRecentPieceMov[1] == toY - 1 && pieces[toX][toY - 1].numMoves == 1)
-                                return true;
-                        }
+            // For every square on the board
+            for(int pos1 = 0; pos1 < NUM_SQUARES; pos1++){
+                for(int pos2 = 0; pos2 < NUM_SQUARES; pos2++){
+                    // Can move to that square
+                    if(p.legalMove(pos1, pos2, pieces, mostRecentPieceMov, squaresControlledW, squaresControlledB)){
+                        possibleMoves.add(new int[]{pos1,pos2});
                     }
                 }
+            }
 
-                // Normal forward movement
-                if(this.gridX == toX && pieces[toX][toY].side == ' '){
-                    if(this.gridY + 1 == toY) return true;
+            piecesB.put(p, possibleMoves);
+        }
+    }
 
-                        // If the pawn hasn't moved yet, it can move 2 spaces.
-                    else if(this.numMoves == 0 && this.gridY + 2 == toY && pieces[toX][toY - 1].side == ' ') return true;
-                }
-            break;
+    /**
+     * Removes the white pieces' moves that result in the white king being put in check.
+     * **/
+    public void removeIllegalMovesW(){
+        for(Piece p : piecesW.keySet()){
 
-            case "wn":
-            case "bn":
-                if(Math.abs(toX - this.gridX) == 2 && Math.abs(toY - this.gridY) == 1)
+            ArrayList<int[]> moves = new ArrayList<int[]>();
+
+            // Go through the possible listed moves
+            for(int[] arr : piecesW.get(p)){
+                // Copy of board state before move
+                setPieces(pieces, piecesCopy);
+
+                // Move piece to square and see if it results in check.
+                p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, prevCoords, false);
+                this.checkControlledSquaresB();
+
+                if(!whiteKingInCheck)
+                    moves.add(arr);
+
+                setPieces(piecesCopy, pieces);
+            }
+
+            piecesW.put(p, moves);
+        }
+    }
+
+    /**
+     * Removes the black pieces' moves that result in the black king being put in check.
+     * **/
+    public void removeIllegalMovesB(){
+        for(Piece p : piecesB.keySet()){
+
+            ArrayList<int[]> moves = new ArrayList<int[]>();
+
+            // Go through the possible listed moves
+            for(int[] arr : piecesB.get(p)){
+                // Copy array
+                setPieces(pieces, piecesCopy);
+
+                // Move piece to square and see if it results in check.
+                p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, prevCoords, false);
+                this.checkControlledSquaresW();
+
+                if(!blackKingInCheck)
+                    moves.add(arr);
+
+                setPieces(piecesCopy, pieces);
+            }
+
+            piecesB.put(p, moves);
+        }
+    }
+
+    /**
+     * Gives a score to each piece, depending on its base score, mobility, and position.
+     */
+    public void givePieceScores(){
+        for(Piece p : piecesW.keySet()){
+            double baseScore = p.getBaseValue() * Piece.BASE_VAL_WEIGHT;
+            double mobilityScore = (piecesW.get(p).size()) * Piece.MOBILITY_WEIGHT;
+            double positionScore = boardPositionValues[p.getGridX()][p.getGridY()] * Piece.POSITION_WEIGHT;
+            p.setValue(baseScore + mobilityScore + positionScore);
+        }
+
+        for(Piece p : piecesB.keySet()){
+            double baseScore = p.getBaseValue() * Piece.BASE_VAL_WEIGHT;
+            double mobilityScore = (piecesB.get(p).size()) * Piece.MOBILITY_WEIGHT;
+            double positionScore = boardPositionValues[p.getGridX()][p.getGridY()] * Piece.POSITION_WEIGHT;
+            p.setValue(baseScore + mobilityScore + positionScore);
+        }
+    }
+
+    /**
+     * Combined usage of checking possible squares and getting possible moves for all sides.
+     * **/
+    public void updateControlledSquares(){
+        this.checkControlledSquaresW();
+        this.checkControlledSquaresB();
+
+        this.getPossibleMovesW();
+        this.getPossibleMovesB();
+
+        this.removeIllegalMovesW();
+        this.removeIllegalMovesB();
+
+        this.givePieceScores();
+    }
+
+    public void cleanUpHashMapW(){
+        ArrayList<Piece> toDelete = new ArrayList<Piece>();
+
+        for(Piece p : piecesW.keySet())
+            if(p.getSide() != 'w')
+                toDelete.add(p);
+
+        for(Piece p : toDelete)
+            piecesW.remove(p);
+    }
+
+    public void cleanUpHashMapB(){
+        ArrayList<Piece> toDelete = new ArrayList<Piece>();
+
+        for(Piece p : piecesB.keySet())
+            if(p.getSide() != 'b')
+                toDelete.add(p);
+
+        for(Piece p : toDelete)
+            piecesB.remove(p);
+    }
+
+
+    /**
+     * Constructor for Board class.
+     * Adds the mouse listener and initializes the squares and pieces.
+     * **/
+    public Board(){
+        piecesW = new HashMap<Piece, ArrayList<int[]>>();
+        piecesB = new HashMap<Piece, ArrayList<int[]>>();
+
+        this.initSquares();
+        this.initPieces();
+
+        this.updateControlledSquares();
+        this.givePieceScores();
+
+        // AI
+        hackberryAI = new HackberryAI(userSide == 'w' ? 'b' : 'w', 3);
+
+        // Add mouse listener
+        addMouseListener(this);
+        Notation.clearFile();
+    }
+
+
+    /**
+     * Checks the specific piece's corresponding ArrayList to see if a move is legal.
+     *
+     * @param fromX - row number of the current piece.
+     * @param fromY - column number of the current piece.
+     * @param toX - row number of square to move to.
+     * @param toY - column number of square to move to.
+     * **/
+    public boolean canMoveTo(int fromX, int fromY, int toX, int toY){
+        if(curPiece.getSide() == 'w'){
+            if(piecesW.get(pieces[fromX][fromY]) == null) return false;
+
+            for(int[] arr : piecesW.get(pieces[fromX][fromY])){
+                if(arr[0] == toX && arr[1] == toY)
                     return true;
-                else if(Math.abs(toX - this.gridX) == 1 && Math.abs(toY - this.gridY) == 2)
+            }
+
+        } else if(curPiece.getSide() == 'b'){
+            if(piecesB.get(pieces[fromX][fromY]) == null) return false;
+
+            for(int[] arr : piecesB.get(pieces[fromX][fromY])){
+                if(arr[0] == toX && arr[1] == toY)
                     return true;
-            break;
-
-            case "wb":
-            case "bb":
-                // Easy check
-                if(Math.abs(toX - this.gridX) != Math.abs(toY - this.gridY))
-                    return false;
-                else if(this.bishopCheck(toX, toY, pieces))
-                   return true;
-            break;
-
-            case "wr":
-            case "br":
-                // Easy check
-                if(toX != this.gridX && toY != this.gridY)
-                    return false;
-                else if(this.rookCheck(toX, toY, pieces))
-                   return true;
-            break;
-
-            case "wk":
-                // Kingside castling
-                if(this.numMoves == 0 && toX == 6 && toY == this.gridY){
-                    // Rook hasn't moved
-                    if(pieces[7][this.gridY].getType().equals("wr") && pieces[7][this.gridY].numMoves == 0){
-                        // All spaces cleared
-                        if(pieces[5][this.gridY].side == ' ' && pieces[6][this.gridY].side == ' ')
-                            // Not in check
-                            if(!squaresControlledB[4][this.gridY] && !squaresControlledB[5][this.gridY] && !squaresControlledB[6][this.gridY])
-                               return true;
-                    }
-                }
-
-                // Queenside castling
-                else if(this.numMoves == 0 && toX == 2 && toY == this.gridY){
-                    // Rook hasn't moved
-                    if(pieces[0][this.gridY].getType().equals("wr") && pieces[0][this.gridY].numMoves == 0){
-                        // All spaces cleared
-                        if(pieces[1][this.gridY].side == ' ' && pieces[2][this.gridY].side == ' ' && pieces[3][this.gridY].side == ' ')
-                            // Not in check
-                            if(!squaresControlledB[4][this.gridY] && !squaresControlledB[1][this.gridY] && !squaresControlledB[2][this.gridY] && !squaresControlledB[3][this.gridY])
-                                return true;
-                    }
-                }
-                else if(Math.abs(toX - this.gridX) <= 1 && Math.abs(toY - this.gridY) <= 1 && !squaresControlledB[toX][toY])
-                    return true;
-            break;
-
-            case "bk":
-                // Kingside castling
-                if(this.numMoves == 0 && toX == 6 && toY == this.gridY){
-                    // Rook hasn't moved
-                    if(pieces[7][this.gridY].getType().equals("br") && pieces[7][this.gridY].numMoves == 0){
-                        // All spaces cleared
-                        if(pieces[5][this.gridY].side == ' ' && pieces[6][this.gridY].side == ' ')
-                            // Not in check
-                            if(!squaresControlledW[4][this.gridY] && !squaresControlledW[5][this.gridY] && !squaresControlledW[6][this.gridY])
-                                return true;
-                    }
-                }
-
-                // Queenside castling
-                else if(this.numMoves == 0 && toX == 2 && toY == this.gridY){
-                    // Rook hasn't moved
-                    if(pieces[0][this.gridY].getType().equals("br") && pieces[0][this.gridY].numMoves == 0){
-                        // All spaces cleared
-                        if(pieces[1][this.gridY].side == ' ' && pieces[2][this.gridY].side == ' ' && pieces[3][this.gridY].side == ' ')
-                            // Not in check
-                            if(!squaresControlledW[4][this.gridY] && !squaresControlledW[1][this.gridY] && !squaresControlledW[2][this.gridY] && !squaresControlledW[3][this.gridY])
-                                return true;
-                    }
-                }
-                else if(Math.abs(toX - this.gridX) <= 1 && Math.abs(toY - this.gridY) <= 1 && !squaresControlledW[toX][toY])
-                    return true;
-            break;
-
-            case "wq":
-            case "bq":
-                // Queen is a rook and bishop combined.
-                if(bishopCheck(toX, toY, pieces) || rookCheck(toX, toY, pieces))
-                    return true;
-            break;
+            }
         }
 
         return false;
     }
 
     /**
-     * Plays out the move on the board and checks for special moves (en passant, castling, etc.)
-     * @param i - Row number of square to move to.
-     * @param j - Column number of square to move to.
-     * @param pieces - Array of Piece objects in the board.
-     * @param piecesW - the piecesW HashMap in Board.java.
-     * @param piecesB - the piecesB HashMap in Board.java.
-     * @param updateHashMap - Whether to actually manipulate the HashMap or not, depends on if we're checking illegal
-     *                        moves or if we're simulating an actual move.
+     * Replaces a pawn with the user's choice piece for promotion.
+     *
+     * @param choice - The ID of the piece for the promotion option (0 - rook, 1 - knight, etc.)
      * **/
-    public void playMove(int i, int j, Piece[][] pieces, HashMap<Piece, ArrayList<int[]>> piecesW, HashMap<Piece, ArrayList<int[]>> piecesB, boolean updateHashMap) {
-        // En passant
-        // The target pawn must have moved in the last move, moved two squares up, and be next to the current pawn.
-        if (this.type.equals("wp") && j == this.gridY - 1 && Math.abs(i - this.gridX) == 1 && pieces[i][j].getSide() == ' ') {
-            pieces[i][j].setPiece(i, j, this.type, this.side);
-            pieces[i][j + 1].setPiece(i, j + 1, "", ' ');
-        } else if (this.type.equals("bp") && j == this.gridY + 1 && Math.abs(i - this.gridX) == 1 && pieces[i][j].getSide() == ' ') {
-            pieces[i][j].setPiece(i, j, this.type, this.side);
-            pieces[i][j - 1].setPiece(i, j - 1, "", ' ');
+    public void promotePawn(int choice){
+        boolean done = false;
+        switch(choice){
+            case 0:
+                pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wr" : "br", promoOption.side);
+                done = true;
+            break;
+            case 1:
+                pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wn" : "bn", promoOption.side);
+                done = true;
+            break;
+            case 2:
+                pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wb" : "bb", promoOption.side);
+                done = true;
+            break;
+            case 3:
+                pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wq" : "bq", promoOption.side);
+                done = true;
+            break;
         }
 
-        // Castling - white, kingside & queenside
-        else if (this.type.equals("wk") && this.numMoves == 0) {
-            if (i == 6 && pieces[7][7].getType().equals("wr") && pieces[7][7].numMoves == 0) {
-                pieces[5][7].setPiece(5, 7, "wr", 'w');
-                pieces[6][7].setPiece(6, 7, "wk", 'w');
-                pieces[7][7].setPiece(7, 7, "", ' ');
-
-                // Put pieces in HashMap
-                if (updateHashMap) {
-                    piecesW.put(pieces[6][7], new ArrayList<int[]>());
-                    piecesW.put(pieces[5][7], new ArrayList<int[]>());
-                }
-
-            } else if (i == 2 && pieces[0][7].getType().equals("wr") && pieces[0][7].numMoves == 0) {
-                pieces[3][7].setPiece(3, 7, "wr", 'w');
-                pieces[2][7].setPiece(2, 7, "wk", 'w');
-                pieces[0][7].setPiece(0, 7, "", ' ');
-
-                // Put pieces in HashMap
-                if (updateHashMap) {
-                    piecesW.put(pieces[3][7], new ArrayList<int[]>());
-                    piecesW.put(pieces[2][7], new ArrayList<int[]>());
-                }
-
-            }
+        if(done) {
+            showPromoOptions = false;
+            this.updateControlledSquares();
+            repaint();
         }
-        // Castling - black, kingside & queenside
-        else if (this.type.equals("bk") && this.numMoves == 0) {
-            if (i == 6 && pieces[7][0].getType().equals("br") && pieces[7][0].numMoves == 0) {
-                pieces[5][0].setPiece(5, 0, "br", 'b');
-                pieces[6][0].setPiece(6, 0, "bk", 'b');
-                pieces[7][0].setPiece(7, 0, "", ' ');
+    }
 
-                // Put pieces in HashMap
-                if (updateHashMap) {
-                    piecesB.put(pieces[5][0], new ArrayList<int[]>());
-                    piecesB.put(pieces[6][0], new ArrayList<int[]>());
-                }
+    /**
+     * Makes a move for the white side.
+     *
+     * @param i - The row number of the square to move to.
+     * @param j - The column number of the square to move to.
+     * **/
+    public void whiteMove(int i, int j){
+        // Go through possible moves for that piece and check for legal moves
+        if (this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
+            Notation.updateMoves(i, j, pieces[prevCoords[0]][prevCoords[1]]);
 
-            } else if (i == 2 && pieces[0][0].getType().equals("br") && pieces[0][0].numMoves == 0) {
-                pieces[3][0].setPiece(3, 0, "br", 'b');
-                pieces[2][0].setPiece(2, 0, "bk", 'b');
-                pieces[0][0].setPiece(0, 0, "", ' ');
+            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, prevCoords, true);
 
-                // Put pieces in HashMap
-                if (updateHashMap) {
-                    piecesB.put(pieces[3][0], new ArrayList<int[]>());
-                    piecesB.put(pieces[2][0], new ArrayList<int[]>());
-                }
+            // Remove empty pieces in HashMap piecesW
+            this.cleanUpHashMapW();
 
-            }
+            // A few changes to make.
+            pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
+            pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
+
+            myTurn = !myTurn;
+            pieces[prevCoords[0]][prevCoords[1]].numMoves = 0;
+            mostRecentPieceMov[0] = i;
+            mostRecentPieceMov[1] = j;
         }
+        squares[prevCoords[0]][prevCoords[1]].deselectSquare();
+    }
 
-        // Other pieces
-        pieces[i][j].setPiece(i, j, this.type, this.side);
-        if (updateHashMap) {
-            if (this.side == 'w') piecesW.put(pieces[i][j], new ArrayList<int[]>());
-            else if (this.side == 'b') piecesB.put(pieces[i][j], new ArrayList<int[]>());
+
+    /**
+     * Makes a move for the black side.
+     *
+     * @param i - The row number of the square to move to.
+     * @param j - The column number of the square to move to.
+     * **/
+    public void blackMove(int i, int j){
+        // Go through possible moves for that piece and check for legal moves
+        if (this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
+            Notation.updateMoves(i, j, pieces[prevCoords[0]][prevCoords[1]]);
+
+            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, prevCoords, true);
+            //hackberryAI.makeMove(pieces, piecesW, piecesB);
+
+            // Clean up empty pieces in HashMap piecesB
+            this.cleanUpHashMapB();
+
+            pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
+            pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
+
+            myTurn = !myTurn;
+            pieces[prevCoords[0]][prevCoords[1]].numMoves = 0;
+            mostRecentPieceMov[0] = i;
+            mostRecentPieceMov[1] = j;
         }
-
-        pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, "", ' ');
+        squares[prevCoords[0]][prevCoords[1]].deselectSquare();
     }
 
     @Override
-    public boolean equals(Object o){
-        if(o == null || o.getClass() != this.getClass())
-            return false; // Thanks Luke
+    public void paintComponent(Graphics g) {
+        // Board outline
+        g.setColor(BLACK);
+        g.fillRoundRect(X_OFFSET - 10, Y_OFFSET - 10, NUM_SQUARES*SQUARE_WIDTH + 20, NUM_SQUARES*SQUARE_WIDTH + 20, 3, 3);
 
-        Piece p = (Piece) o;
-        return (this.getGridX() == p.getGridX() && this.getGridY() == p.getGridY() && this.getType().equals(p.getType()) && this.side == p.side);
+        for (int i = 0; i < NUM_SQUARES; i++){
+            for (int j = 0; j < NUM_SQUARES; j++) {
+                squares[i][j].paint(g);
+
+                // Selected a piece
+                if(prevCoords[0] != -1 && prevCoords[1] != -1){
+                    if(this.canMoveTo(prevCoords[0], prevCoords[1], i, j)){
+                        g.setColor(OPAQUE_GRAY);
+                        g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
+                    }
+                }
+
+                // King in check.
+                if((blackKingInCheck && pieces[i][j].getType().equals("bk")) || (whiteKingInCheck && pieces[i][j].getType().equals("wk"))){
+                    g.setColor(CHECK_COLOR);
+                    g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
+                }
+
+
+                /** DEBUGGING ONLY **/
+                /*if(squaresControlledW[i][j]){
+                    g.setColor(new Color(0, 0, 255, 50));
+                    g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
+                }*/
+
+                /*if(squaresControlledB[i][j]){
+                    g.setColor(new Color(255, 0, 0, 50));
+                    g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
+                }*/
+
+            }
+        }
+
+
+        // Piece images
+        for(Piece p : piecesW.keySet())
+            p.paint(g);
+        for(Piece p : piecesB.keySet())
+            p.paint(g);
+
+
+        // Search for a pawn on the back rank
+        for(int i = 0; i < NUM_SQUARES; i++){
+            if(pieces[i][0].getType().equals("wp")){
+                promoOption.setPos(i, 0, pieces[i][0].getSide());
+                this.showPromoOptions = true;
+                promoX = i;
+                promoY = 0;
+            } else if(pieces[i][NUM_SQUARES - 1].getType().equals("bp")){
+                promoOption.setPos(i, NUM_SQUARES - 1, pieces[i][NUM_SQUARES - 1].getSide());
+                this.showPromoOptions = true;
+                promoX = i;
+                promoY = NUM_SQUARES - 1;
+            }
+        }
+
+        // Opaque color scheme for better focus when promoting
+        if(this.showPromoOptions){
+            g.setColor(OPAQUE_GRAY);
+            g.fillRoundRect(X_OFFSET - 10, Y_OFFSET - 10, NUM_SQUARES*SQUARE_WIDTH + 20, NUM_SQUARES*SQUARE_WIDTH + 20, 3, 3);
+
+            promoOption.paint(g);
+        }
+
+        // Message
+        g.setColor(Color.BLACK);
+        g.setFont(MSG_FONT);
+
+        // Centering text
+        FontMetrics f = g.getFontMetrics();
+        g.drawString(message, 300 - (f.stringWidth(message)/2), 550);
+
+        g.drawString("Board evaluation: " + (int)(hackberryAI.boardEval(piecesW, piecesB) * 100000)/100000.0, 270, 570);
+    }
+
+    /* Mouse events */
+    @Override
+    public void mouseClicked(MouseEvent e){
+        if(showPromoOptions){
+            int choice = promoOption.handleMouseInteractions(e.getX(), e.getY());
+            promotePawn(choice);
+
+            if(!showPromoOptions)
+                hackberryAI.makeMove(pieces, piecesW, piecesB, prevCoords);
+
+            repaint();
+            return;
+        }
+        else {
+            // Did we click a valid square?
+            if (e.getX() >= X_OFFSET && e.getX() <= X_OFFSET + NUM_SQUARES * SQUARE_WIDTH &&
+                    e.getY() >= Y_OFFSET && e.getY() <= Y_OFFSET + NUM_SQUARES * SQUARE_WIDTH) {
+                int i = (e.getX() - X_OFFSET) / SQUARE_WIDTH; // Taking advantage of integer division.
+                int j = (e.getY() - Y_OFFSET) / SQUARE_WIDTH; // Used for quick square collisions.
+
+                // Second click (move)
+                if(numClicks == 1){
+                    // Clicked same square (deselect)
+                    if (i == prevCoords[0] && j == prevCoords[1]) {
+                        squares[i][j].deselectSquare();
+                    } else {
+                        //this.updateControlledSquares();
+                        //this.givePieceScores();
+
+                        if(myTurn){
+                            whiteMove(i, j);
+
+                            this.updateControlledSquares();
+                            //this.givePieceScores();
+                            this.cleanUpHashMapW(); // Organize HashMap
+                            this.cleanUpHashMapB(); // Organize HashMap
+
+                            //hackberryAI.makeMove(pieces, piecesW, piecesB, prevCoords);
+                        } else {
+                            blackMove(i, j);
+                            Notation.updateNumTurns(); // Black always ends the turn
+                        }
+
+                        // Update controlled squares
+                        this.updateControlledSquares();
+                        //this.givePieceScores();
+                        this.cleanUpHashMapW(); // Organize HashMap
+                        this.cleanUpHashMapB(); // Organize HashMap
+                    }
+
+                    // Reset
+                    squares[i][j].deselectSquare();
+                    prevCoords[0] = -1;
+                    prevCoords[1] = -1;
+                    numClicks = 0;
+                }
+
+                // First click (choice)
+                else if(numClicks == 0){
+                    // Chose a movable piece
+                    if((myTurn && pieces[i][j].getSide() != 'w') || (!myTurn && pieces[i][j].getSide() != 'b'))
+                        return;
+
+                    // Currently selected piece
+                    curPiece.setPiece(i, j, pieces[i][j].getType(), pieces[i][j].getSide());
+                    squares[i][j].selectSquare();
+
+                    prevCoords[0] = i;
+                    prevCoords[1] = j;
+
+                    numClicks++;
+                }
+
+            }
+            repaint();
+        }
     }
 
     @Override
-    public String toString(){
-        return "[ " + "(" + this.gridX + ", " + this.gridY + ") " + this.getType() + " " + this.getSide() + " ]";
-    }
+    public void mousePressed(MouseEvent e){}
 
-    // Images
-    private final ImageIcon WHITE_PAWN_IMG = new ImageIcon("imgs/white_pawn.png");
-    private final ImageIcon WHITE_ROOK_IMG = new ImageIcon("imgs/white_rook.png");
-    private final ImageIcon WHITE_KNIGHT_IMG = new ImageIcon("imgs/white_knight.png");
-    private final ImageIcon WHITE_BISHOP_IMG = new ImageIcon("imgs/white_bishop.png");
-    private final ImageIcon WHITE_QUEEN_IMG = new ImageIcon("imgs/white_queen.png");
-    private final ImageIcon WHITE_KING_IMG = new ImageIcon("imgs/white_king.png");
+    @Override
+    public void mouseReleased(MouseEvent e){}
 
-    private final ImageIcon BLACK_PAWN_IMG = new ImageIcon("imgs/black_pawn.png");
-    private final ImageIcon BLACK_ROOK_IMG = new ImageIcon("imgs/black_rook.png");
-    private final ImageIcon BLACK_KNIGHT_IMG = new ImageIcon("imgs/black_knight.png");
-    private final ImageIcon BLACK_BISHOP_IMG = new ImageIcon("imgs/black_bishop.png");
-    private final ImageIcon BLACK_QUEEN_IMG = new ImageIcon("imgs/black_queen.png");
-    private final ImageIcon BLACK_KING_IMG = new ImageIcon("imgs/black_king.png");
+    @Override
+    public void mouseEntered(MouseEvent e) {}
+
+    @Override
+    public void mouseExited(MouseEvent e) {}
 
 }
