@@ -18,8 +18,8 @@
  * TODO: threefold repetition (this should check the HashMaps, not the board)
  * TODO: Notation should only be updated after move is confirmed to be legal.
  * TODO: pawn values should increase with every step taken.
- * TODO: test castling on AI
- * TODO: en passant doesn't work with the AI, again.
+ * TODO: promotion for AI
+ * TODO: AI moves should take place AFTER user promotes.
  * **/
 
 import javax.swing.*;
@@ -29,7 +29,7 @@ import java.awt.*;
  * Chess piece images from https://commons.wikimedia.org/wiki/Category:PNG_chess_pieces/Standard_transparent
  *
  * @author Gene Yang
- * @version Jan. 29, 2023
+ * @version Feb. 4, 2023
  **/
 
 public class Hackberry {
