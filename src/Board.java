@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Board extends JComponent implements MouseListener {
-    private String boardState[][] = {
+    /*private String boardState[][] = {
             {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
             {"bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"},
             {"", "", "", "", "", "", "", ""},
@@ -22,6 +22,17 @@ public class Board extends JComponent implements MouseListener {
             {"", "", "", "", "", "", "", ""},
             {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
             {"wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr"}
+    };*/
+
+    private String boardState[][] = {
+            {"", "", "", "", "", "", "", ""},
+            {"", "", "", "", "wp", "", "", ""},
+            {"", "", "", "", "", "", "", ""},
+            {"", "", "", "", "", "", "", ""},
+            {"", "", "", "", "", "", "", ""},
+            {"", "", "", "", "", "", "", ""},
+            {"", "", "", "", "bp", "", "bp", ""},
+            {"", "", "", "", "", "", "", ""}
     };
 
     // Gives a score to each board (center squares > edge squares).
@@ -523,7 +534,7 @@ public class Board extends JComponent implements MouseListener {
             pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
             pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
 
-            myTurn = !myTurn;
+            //myTurn = !myTurn;
             pieces[prevCoords[0]][prevCoords[1]].numMoves = 0;
             mostRecentPieceMov[0] = i;
             mostRecentPieceMov[1] = j;
@@ -552,7 +563,7 @@ public class Board extends JComponent implements MouseListener {
             pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
             pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
 
-            myTurn = !myTurn;
+            //myTurn = !myTurn;
             pieces[prevCoords[0]][prevCoords[1]].numMoves = 0;
             mostRecentPieceMov[0] = i;
             mostRecentPieceMov[1] = j;
@@ -595,6 +606,7 @@ public class Board extends JComponent implements MouseListener {
                     g.setColor(new Color(255, 0, 0, 50));
                     g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
                 }*/
+                g.drawString(String.valueOf(pieces[i][j].numMoves), i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET);
 
             }
         }
@@ -609,12 +621,12 @@ public class Board extends JComponent implements MouseListener {
 
         // Search for a pawn on the back rank
         for(int i = 0; i < NUM_SQUARES; i++){
-            if(pieces[i][0].getType().equals("wp")){
+            if(pieces[i][0].getType().equals("wp") && this.userSide == 'w'){
                 promoOption.setPos(i, 0, pieces[i][0].getSide());
                 this.showPromoOptions = true;
                 promoX = i;
                 promoY = 0;
-            } else if(pieces[i][NUM_SQUARES - 1].getType().equals("bp")){
+            } else if(pieces[i][NUM_SQUARES - 1].getType().equals("bp") && this.userSide == 'b'){
                 promoOption.setPos(i, NUM_SQUARES - 1, pieces[i][NUM_SQUARES - 1].getSide());
                 this.showPromoOptions = true;
                 promoX = i;
@@ -644,16 +656,23 @@ public class Board extends JComponent implements MouseListener {
     /* Mouse events */
     @Override
     public void mouseClicked(MouseEvent e){
+        boolean justPromoted = false;
         if(showPromoOptions){
             int choice = promoOption.handleMouseInteractions(e.getX(), e.getY());
             promotePawn(choice);
 
-            if(!showPromoOptions)
-                hackberryAI.makeMove(pieces, piecesW, piecesB, prevCoords);
+            justPromoted = true;
 
             repaint();
             return;
         }
+
+        if(justPromoted){
+            hackberryAI.makeMove(pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
+            justPromoted = false;
+            return;
+        }
+
         else {
             // Did we click a valid square?
             if (e.getX() >= X_OFFSET && e.getX() <= X_OFFSET + NUM_SQUARES * SQUARE_WIDTH &&
@@ -670,7 +689,7 @@ public class Board extends JComponent implements MouseListener {
                         //this.updateControlledSquares();
                         //this.givePieceScores();
 
-                        if(myTurn){
+                        //if(myTurn){
                             whiteMove(i, j);
 
                             this.updateControlledSquares();
@@ -678,24 +697,24 @@ public class Board extends JComponent implements MouseListener {
                             this.cleanUpHashMapW(); // Organize HashMap
                             this.cleanUpHashMapB(); // Organize HashMap
 
-                            //hackberryAI.makeMove(pieces, piecesW, piecesB, prevCoords);
-                        } else {
+                            //hackberryAI.makeMove(pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
+                        /*} else {
                             blackMove(i, j);
                             Notation.updateNumTurns(); // Black always ends the turn
-                        }
+                        }*/
 
                         // Update controlled squares
-                        this.updateControlledSquares();
+                        //this.updateControlledSquares();
                         //this.givePieceScores();
-                        this.cleanUpHashMapW(); // Organize HashMap
-                        this.cleanUpHashMapB(); // Organize HashMap
+                        //this.cleanUpHashMapW(); // Organize HashMap
+                        //this.cleanUpHashMapB(); // Organize HashMap
                     }
 
                     // Reset
                     squares[i][j].deselectSquare();
                     prevCoords[0] = -1;
                     prevCoords[1] = -1;
-                    numClicks = 0;
+                    numClicks++;
                 }
 
                 // First click (choice)
@@ -715,6 +734,20 @@ public class Board extends JComponent implements MouseListener {
                 }
 
             }
+            repaint();
+        }
+
+        if(numClicks == 2) {
+            hackberryAI.makeMove(pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
+
+            // Update controlled squares
+            this.updateControlledSquares();
+            //this.givePieceScores();
+            this.cleanUpHashMapW(); // Organize HashMap
+            this.cleanUpHashMapB(); // Organize HashMap
+
+            numClicks = 0;
+
             repaint();
         }
     }
