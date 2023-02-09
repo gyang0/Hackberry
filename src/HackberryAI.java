@@ -83,6 +83,7 @@ public class HackberryAI {
 
                     mostRecentPieceMov[0] = arr[0];
                     mostRecentPieceMov[1] = arr[1];
+                    Notation.updateMoves(arr[0], arr[1], p);
                     return;
                 }
             }
@@ -111,6 +112,7 @@ public class HackberryAI {
 
                     mostRecentPieceMov[0] = arr[0];
                     mostRecentPieceMov[1] = arr[1];
+                    Notation.updateMoves(arr[0], arr[1], p);
                     return;
                 }
             }
