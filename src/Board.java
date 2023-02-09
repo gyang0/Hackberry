@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Board extends JComponent implements MouseListener {
-    /*private String boardState[][] = {
+    private String boardState[][] = {
             {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
             {"bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"},
             {"", "", "", "", "", "", "", ""},
@@ -22,9 +22,9 @@ public class Board extends JComponent implements MouseListener {
             {"", "", "", "", "", "", "", ""},
             {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
             {"wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr"}
-    };*/
+    };
 
-    private String boardState[][] = {
+    /*private String boardState[][] = {
             {"", "", "", "", "", "", "", ""},
             {"", "", "", "", "wp", "", "", ""},
             {"", "", "", "", "", "", "", ""},
@@ -33,7 +33,7 @@ public class Board extends JComponent implements MouseListener {
             {"", "", "", "", "", "", "", ""},
             {"", "", "", "", "bp", "", "bp", ""},
             {"", "", "", "", "", "", "", ""}
-    };
+    };*/
 
     // Gives a score to each board (center squares > edge squares).
     private int boardPositionValues[][] = {
@@ -656,20 +656,13 @@ public class Board extends JComponent implements MouseListener {
     /* Mouse events */
     @Override
     public void mouseClicked(MouseEvent e){
-        boolean justPromoted = false;
         if(showPromoOptions){
             int choice = promoOption.handleMouseInteractions(e.getX(), e.getY());
             promotePawn(choice);
 
-            justPromoted = true;
+            hackberryAI.makeMove(pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
 
             repaint();
-            return;
-        }
-
-        if(justPromoted){
-            hackberryAI.makeMove(pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
-            justPromoted = false;
             return;
         }
 
@@ -686,28 +679,14 @@ public class Board extends JComponent implements MouseListener {
                     if (i == prevCoords[0] && j == prevCoords[1]) {
                         squares[i][j].deselectSquare();
                     } else {
-                        //this.updateControlledSquares();
+                        whiteMove(i, j);
+
+                        this.updateControlledSquares();
                         //this.givePieceScores();
+                        this.cleanUpHashMapW(); // Organize HashMap
+                        this.cleanUpHashMapB(); // Organize HashMap
 
-                        //if(myTurn){
-                            whiteMove(i, j);
-
-                            this.updateControlledSquares();
-                            //this.givePieceScores();
-                            this.cleanUpHashMapW(); // Organize HashMap
-                            this.cleanUpHashMapB(); // Organize HashMap
-
-                            //hackberryAI.makeMove(pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
-                        /*} else {
-                            blackMove(i, j);
-                            Notation.updateNumTurns(); // Black always ends the turn
-                        }*/
-
-                        // Update controlled squares
-                        //this.updateControlledSquares();
-                        //this.givePieceScores();
-                        //this.cleanUpHashMapW(); // Organize HashMap
-                        //this.cleanUpHashMapB(); // Organize HashMap
+                        Notation.updateMoves(i, j, curPiece);
                     }
 
                     // Reset
