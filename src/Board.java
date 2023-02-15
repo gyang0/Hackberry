@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Board extends JComponent implements MouseListener {
-    private String boardState[][] = {
+    /*private String boardState[][] = {
             {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
             {"bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"},
             {"", "", "", "", "", "", "", ""},
@@ -22,9 +22,9 @@ public class Board extends JComponent implements MouseListener {
             {"", "", "", "", "", "", "", ""},
             {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
             {"wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr"}
-    };
+    };*/
 
-    /*private String boardState[][] = {
+    private String boardState[][] = {
             {"", "", "", "", "", "", "", ""},
             {"", "", "", "", "wp", "", "", ""},
             {"", "", "", "", "", "", "", ""},
@@ -33,7 +33,7 @@ public class Board extends JComponent implements MouseListener {
             {"", "", "", "", "", "", "", ""},
             {"", "", "", "", "bp", "", "bp", ""},
             {"", "", "", "", "", "", "", ""}
-    };*/
+    };
 
     // Gives a score to each board (center squares > edge squares).
     private int boardPositionValues[][] = {
@@ -482,6 +482,27 @@ public class Board extends JComponent implements MouseListener {
     }
 
     /**
+     * Checks if promotion is possible at the current board state.
+     * Updates boolean showPromoOptions.
+     * */
+    public void checkPromotion(){
+        // Search for a pawn on the back rank
+        for(int i = 0; i < NUM_SQUARES; i++){
+            if(pieces[i][0].getType().equals("wp") && this.userSide == 'w'){
+                promoOption.setPos(i, 0, pieces[i][0].getSide());
+                this.showPromoOptions = true;
+                promoX = i;
+                promoY = 0;
+            } else if(pieces[i][NUM_SQUARES - 1].getType().equals("bp") && this.userSide == 'b'){
+                promoOption.setPos(i, NUM_SQUARES - 1, pieces[i][NUM_SQUARES - 1].getSide());
+                this.showPromoOptions = true;
+                promoX = i;
+                promoY = NUM_SQUARES - 1;
+            }
+        }
+    }
+
+    /**
      * Replaces a pawn with the user's choice piece for promotion.
      *
      * @param choice - The ID of the piece for the promotion option (0 - rook, 1 - knight, etc.)
@@ -522,8 +543,7 @@ public class Board extends JComponent implements MouseListener {
      * **/
     public void whiteMove(int i, int j){
         // Go through possible moves for that piece and check for legal moves
-        if (this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
-            Notation.updateMoves(i, j, pieces[prevCoords[0]][prevCoords[1]]);
+        Notation.updateMoves(i, j, pieces[prevCoords[0]][prevCoords[1]]);
 
             pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, prevCoords, true);
 
@@ -538,7 +558,6 @@ public class Board extends JComponent implements MouseListener {
             pieces[prevCoords[0]][prevCoords[1]].numMoves = 0;
             mostRecentPieceMov[0] = i;
             mostRecentPieceMov[1] = j;
-        }
         squares[prevCoords[0]][prevCoords[1]].deselectSquare();
     }
 
@@ -550,9 +569,8 @@ public class Board extends JComponent implements MouseListener {
      * @param j - The column number of the square to move to.
      * **/
     public void blackMove(int i, int j){
-        // Go through possible moves for that piece and check for legal moves
-        if (this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
-            Notation.updateMoves(i, j, pieces[prevCoords[0]][prevCoords[1]]);
+
+        Notation.updateMoves(i, j, pieces[prevCoords[0]][prevCoords[1]]);
 
             pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, prevCoords, true);
             //hackberryAI.makeMove(pieces, piecesW, piecesB);
@@ -567,7 +585,7 @@ public class Board extends JComponent implements MouseListener {
             pieces[prevCoords[0]][prevCoords[1]].numMoves = 0;
             mostRecentPieceMov[0] = i;
             mostRecentPieceMov[1] = j;
-        }
+
         squares[prevCoords[0]][prevCoords[1]].deselectSquare();
     }
 
@@ -618,24 +636,8 @@ public class Board extends JComponent implements MouseListener {
         for(Piece p : piecesB.keySet())
             p.paint(g);
 
-
-        // Search for a pawn on the back rank
-        for(int i = 0; i < NUM_SQUARES; i++){
-            if(pieces[i][0].getType().equals("wp") && this.userSide == 'w'){
-                promoOption.setPos(i, 0, pieces[i][0].getSide());
-                this.showPromoOptions = true;
-                promoX = i;
-                promoY = 0;
-            } else if(pieces[i][NUM_SQUARES - 1].getType().equals("bp") && this.userSide == 'b'){
-                promoOption.setPos(i, NUM_SQUARES - 1, pieces[i][NUM_SQUARES - 1].getSide());
-                this.showPromoOptions = true;
-                promoX = i;
-                promoY = NUM_SQUARES - 1;
-            }
-        }
-
         // Opaque color scheme for better focus when promoting
-        if(this.showPromoOptions){
+        if(showPromoOptions){
             g.setColor(OPAQUE_GRAY);
             g.fillRoundRect(X_OFFSET - 10, Y_OFFSET - 10, NUM_SQUARES*SQUARE_WIDTH + 20, NUM_SQUARES*SQUARE_WIDTH + 20, 3, 3);
 
@@ -673,31 +675,8 @@ public class Board extends JComponent implements MouseListener {
                 int i = (e.getX() - X_OFFSET) / SQUARE_WIDTH; // Taking advantage of integer division.
                 int j = (e.getY() - Y_OFFSET) / SQUARE_WIDTH; // Used for quick square collisions.
 
-                // Second click (move)
-                if(numClicks == 1){
-                    // Clicked same square (deselect)
-                    if (i == prevCoords[0] && j == prevCoords[1]) {
-                        squares[i][j].deselectSquare();
-                    } else {
-                        whiteMove(i, j);
-
-                        this.updateControlledSquares();
-                        //this.givePieceScores();
-                        this.cleanUpHashMapW(); // Organize HashMap
-                        this.cleanUpHashMapB(); // Organize HashMap
-
-                        Notation.updateMoves(i, j, curPiece);
-                    }
-
-                    // Reset
-                    squares[i][j].deselectSquare();
-                    prevCoords[0] = -1;
-                    prevCoords[1] = -1;
-                    numClicks++;
-                }
-
                 // First click (choice)
-                else if(numClicks == 0){
+                if(numClicks == 0){
                     // Chose a movable piece
                     if((myTurn && pieces[i][j].getSide() != 'w') || (!myTurn && pieces[i][j].getSide() != 'b'))
                         return;
@@ -712,6 +691,44 @@ public class Board extends JComponent implements MouseListener {
                     numClicks++;
                 }
 
+                // Second click (move)
+                else if(numClicks == 1){
+                    // Clicked same square (deselect)
+                    if (i == prevCoords[0] && j == prevCoords[1]) {
+                        squares[i][j].deselectSquare();
+                        numClicks = 0;
+                        prevCoords[0] = -1; prevCoords[1] = -1;
+                        repaint();
+                        return;
+                    } else {
+                        // Go through possible moves for that piece and check for legal moves
+                        if(this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
+                            whiteMove(i, j);
+
+                            this.updateControlledSquares();
+                            this.givePieceScores();
+                            this.cleanUpHashMapW(); // Organize HashMap
+                            this.cleanUpHashMapB(); // Organize HashMap
+
+                            this.checkPromotion();
+                            if(showPromoOptions){
+                                repaint();
+                                numClicks = 0;
+                                return;
+                            }
+
+                            Notation.updateMoves(i, j, curPiece);
+                        }
+                        else return;
+
+                    }
+
+                    // Reset
+                    squares[i][j].deselectSquare();
+                    prevCoords[0] = -1;
+                    prevCoords[1] = -1;
+                    numClicks++;
+                }
             }
             repaint();
         }
@@ -721,7 +738,7 @@ public class Board extends JComponent implements MouseListener {
 
             // Update controlled squares
             this.updateControlledSquares();
-            //this.givePieceScores();
+            this.givePieceScores();
             this.cleanUpHashMapW(); // Organize HashMap
             this.cleanUpHashMapB(); // Organize HashMap
 
