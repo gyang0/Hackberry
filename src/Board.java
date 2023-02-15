@@ -410,7 +410,7 @@ public class Board extends JComponent implements MouseListener {
         ArrayList<Piece> toDelete = new ArrayList<Piece>();
 
         for(Piece p : piecesW.keySet())
-            if(p.getSide() != 'w')
+            if(p.getSide() != 'w' || p.getType().equals(""))
                 toDelete.add(p);
 
         for(Piece p : toDelete)
@@ -421,7 +421,7 @@ public class Board extends JComponent implements MouseListener {
         ArrayList<Piece> toDelete = new ArrayList<Piece>();
 
         for(Piece p : piecesB.keySet())
-            if(p.getSide() != 'b')
+            if(p.getSide() != 'b' || p.getType().equals(""))
                 toDelete.add(p);
 
         for(Piece p : toDelete)
@@ -663,6 +663,12 @@ public class Board extends JComponent implements MouseListener {
             promotePawn(choice);
 
             hackberryAI.makeMove(pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
+
+            // Update controlled squares
+            this.updateControlledSquares();
+            this.givePieceScores();
+            this.cleanUpHashMapW(); // Organize HashMap
+            this.cleanUpHashMapB(); // Organize HashMap
 
             repaint();
             return;
