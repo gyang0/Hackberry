@@ -73,13 +73,11 @@ public class HackberryAI {
 
                     p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, prevCoords, true);
 
-
                     // Promotion
-                    if(arr[1] == 0 && p.getType().equals("wp")){
+                    if(arr[1] == 0 && pieces[arr[0]][arr[1]].getType().equals("wp")){
                         promotePawn(pieces, arr[0], arr[1]);
                         return;
                     }
-
 
                     mostRecentPieceMov[0] = arr[0];
                     mostRecentPieceMov[1] = arr[1];
@@ -101,10 +99,9 @@ public class HackberryAI {
                     prevCoords = arr;
 
                     p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, prevCoords, true);
-                    System.out.println(arr[0] + " " + arr[1]);
 
                     // Promotion
-                    if(arr[1] == NUM_SQUARES - 1 && p.getType().equals("bp")){
+                    if(arr[1] == NUM_SQUARES - 1 && pieces[arr[0]][arr[1]].getType().equals("bp")){
                         System.out.println("promotion possible - bp");
                         promotePawn(pieces, arr[0], arr[1]);
                         return;
@@ -112,7 +109,7 @@ public class HackberryAI {
 
                     mostRecentPieceMov[0] = arr[0];
                     mostRecentPieceMov[1] = arr[1];
-                    Notation.updateMoves(arr[0], arr[1], p);
+                    //Notation.updateMoves(arr[0], arr[1], p);
                     return;
                 }
             }
