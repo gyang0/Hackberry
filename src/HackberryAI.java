@@ -102,7 +102,6 @@ public class HackberryAI {
 
                     // Promotion
                     if(arr[1] == NUM_SQUARES - 1 && pieces[arr[0]][arr[1]].getType().equals("bp")){
-                        System.out.println("promotion possible - bp");
                         promotePawn(pieces, arr[0], arr[1]);
                         return;
                     }
