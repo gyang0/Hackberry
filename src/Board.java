@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Board extends JComponent implements MouseListener {
-    /*private String boardState[][] = {
+    private String boardState[][] = {
             {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
             {"bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"},
             {"", "", "", "", "", "", "", ""},
@@ -22,17 +22,6 @@ public class Board extends JComponent implements MouseListener {
             {"", "", "", "", "", "", "", ""},
             {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
             {"wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr"}
-    };*/
-
-    private String boardState[][] = {
-            {"", "", "", "", "", "", "", ""},
-            {"", "", "", "", "wp", "", "", ""},
-            {"", "", "", "", "", "", "", ""},
-            {"", "", "", "", "", "", "", ""},
-            {"", "", "", "", "", "", "", ""},
-            {"", "", "", "", "", "", "", ""},
-            {"", "", "", "", "bp", "", "bp", ""},
-            {"", "", "", "", "", "", "", ""}
     };
 
     // Gives a score to each board (center squares > edge squares).
@@ -100,6 +89,10 @@ public class Board extends JComponent implements MouseListener {
 
     // For testing illegal moves in this.removeIllegalMovesW and this.removeIllegalMovesB.
     Piece[][] piecesCopy = new Piece[NUM_SQUARES][NUM_SQUARES];
+
+    // Number of possible moves white or black can make.
+    private int possibleMovesW = 0;
+    private int possibleMovesB = 0;
 
     /**
      * Shows a message to the user for help and also for debugging purposes.
@@ -380,6 +373,8 @@ public class Board extends JComponent implements MouseListener {
             double mobilityScore = (piecesW.get(p).size()) * Piece.MOBILITY_WEIGHT;
             double positionScore = boardPositionValues[p.getGridX()][p.getGridY()] * Piece.POSITION_WEIGHT;
             p.setValue(baseScore + mobilityScore + positionScore);
+
+            possibleMovesW += piecesW.get(p).size();
         }
 
         for(Piece p : piecesB.keySet()){
@@ -387,6 +382,8 @@ public class Board extends JComponent implements MouseListener {
             double mobilityScore = (piecesB.get(p).size()) * Piece.MOBILITY_WEIGHT;
             double positionScore = boardPositionValues[p.getGridX()][p.getGridY()] * Piece.POSITION_WEIGHT;
             p.setValue(baseScore + mobilityScore + positionScore);
+
+            possibleMovesB += piecesB.get(p).size();
         }
     }
 
@@ -404,6 +401,16 @@ public class Board extends JComponent implements MouseListener {
         this.removeIllegalMovesB();
 
         this.givePieceScores();
+
+        if(possibleMovesW == 0 && myTurn){
+            if(whiteKingInCheck) this.setMessage("Checkmate - black wins.");
+            else this.setMessage("Stalemate - white has no legal moves.");
+        }
+
+        if(possibleMovesB == 0 && !myTurn){
+            if(blackKingInCheck) this.setMessage("Checkmate - white wins.");
+            else this.setMessage("Stalemate - black has no legal moves.");
+        }
     }
 
     public void cleanUpHashMapW(){
@@ -554,7 +561,7 @@ public class Board extends JComponent implements MouseListener {
             pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
             pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
 
-            //myTurn = !myTurn;
+            myTurn = !myTurn;
             pieces[prevCoords[0]][prevCoords[1]].numMoves = 0;
             mostRecentPieceMov[0] = i;
             mostRecentPieceMov[1] = j;
@@ -569,7 +576,6 @@ public class Board extends JComponent implements MouseListener {
      * @param j - The column number of the square to move to.
      * **/
     public void blackMove(int i, int j){
-
         Notation.updateMoves(i, j, pieces[prevCoords[0]][prevCoords[1]]);
 
             pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, prevCoords, true);
@@ -581,7 +587,7 @@ public class Board extends JComponent implements MouseListener {
             pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
             pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
 
-            //myTurn = !myTurn;
+            myTurn = !myTurn;
             pieces[prevCoords[0]][prevCoords[1]].numMoves = 0;
             mostRecentPieceMov[0] = i;
             mostRecentPieceMov[1] = j;
@@ -613,17 +619,6 @@ public class Board extends JComponent implements MouseListener {
                     g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
                 }
 
-
-                /** DEBUGGING ONLY **/
-                /*if(squaresControlledW[i][j]){
-                    g.setColor(new Color(0, 0, 255, 50));
-                    g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
-                }*/
-
-                /*if(squaresControlledB[i][j]){
-                    g.setColor(new Color(255, 0, 0, 50));
-                    g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
-                }*/
                 g.drawString(String.valueOf(pieces[i][j].numMoves), i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET);
 
             }
@@ -652,6 +647,7 @@ public class Board extends JComponent implements MouseListener {
         FontMetrics f = g.getFontMetrics();
         g.drawString(message, 300 - (f.stringWidth(message)/2), 550);
 
+        this.givePieceScores();
         g.drawString("Board evaluation: " + (int)(hackberryAI.boardEval(piecesW, piecesB) * 100000)/100000.0, 270, 570);
     }
 
@@ -663,6 +659,7 @@ public class Board extends JComponent implements MouseListener {
             promotePawn(choice);
 
             hackberryAI.makeMove(pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
+            myTurn = !myTurn;
 
             // Update controlled squares
             this.updateControlledSquares();
@@ -747,6 +744,8 @@ public class Board extends JComponent implements MouseListener {
             this.givePieceScores();
             this.cleanUpHashMapW(); // Organize HashMap
             this.cleanUpHashMapB(); // Organize HashMap
+
+            myTurn = !myTurn;
 
             numClicks = 0;
 
