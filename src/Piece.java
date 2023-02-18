@@ -72,6 +72,9 @@ public class Piece {
 
         this.type = type;
         this.side = side;
+
+        this.baseValue = this.assignValue();
+        this.value = this.baseValue;
     }
     public void setValue(double value){ this.value = value; }
     public void setBaseValue(double baseValue){ this.baseValue = baseValue; }
@@ -469,8 +472,8 @@ public class Piece {
 
         // Set numMoves
         if(updateHashMap){
-        pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
-        pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
+            pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
+            pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
         }
     }
 
