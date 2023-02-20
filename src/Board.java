@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Board extends JComponent implements MouseListener {
-    private String boardState[][] = {
+    /*private String boardState[][] = {
             {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
             {"bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"},
             {"", "", "", "", "", "", "", ""},
@@ -22,6 +22,17 @@ public class Board extends JComponent implements MouseListener {
             {"", "", "", "", "", "", "", ""},
             {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
             {"wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr"}
+    };*/
+
+    private String boardState[][] = {
+            {"", "", "", "", "", "", "", ""},
+            {"wp", "", "", "", "", "", "", ""},
+            {"", "", "", "", "", "", "", ""},
+            {"", "", "", "", "", "", "", ""},
+            {"", "", "", "", "", "", "", ""},
+            {"", "", "", "", "", "", "", ""},
+            {"", "bp", "", "", "", "", "", ""},
+            {"", "", "", "", "", "", "", ""}
     };
 
     // Gives a score to each board (center squares > edge squares).
@@ -657,6 +668,8 @@ public class Board extends JComponent implements MouseListener {
         if(showPromoOptions){
             int choice = promoOption.handleMouseInteractions(e.getX(), e.getY());
             promotePawn(choice);
+
+            if(choice == -1) return;
 
             hackberryAI.makeMove(pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
             myTurn = !myTurn;
