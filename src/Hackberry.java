@@ -1,7 +1,9 @@
+
 /** Milestones
  * Jan 4, 2023 - Successfully recreated the Opera Game (Paul Morphy vs Duke of Brunswick & Count Isouard, 1858).
  * Jan 8, 2023 - All legal moves are now recognized (hopefully), including: En passant, castling, checks, promotion, etc.
  * Jan 26, 2023 - Optimizing to program is done. All legal moves are recognized as well. ~500K -> ~65K iterations.
+ * Feb 20, 2023 - AI makes random moves. Includes promotion, en passant, and castling.
  * **/
 
 
@@ -18,6 +20,7 @@
  * TODO: threefold repetition (this should check the HashMaps, not the board)
  * TODO: Notation should only be updated after move is confirmed to be legal.
  * TODO: pawn values should increase with every step taken.
+ * TODO: AI should only make move after a promotion piece is chosen.
  * **/
 
 import javax.swing.*;
