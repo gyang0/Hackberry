@@ -20,7 +20,6 @@
  * TODO: threefold repetition (this should check the HashMaps, not the board)
  * TODO: Notation should only be updated after move is confirmed to be legal.
  * TODO: pawn values should increase with every step taken.
- * TODO: AI should only make move after a promotion piece is chosen.
  * **/
 
 import javax.swing.*;
@@ -30,7 +29,7 @@ import java.awt.*;
  * Chess piece images from https://commons.wikimedia.org/wiki/Category:PNG_chess_pieces/Standard_transparent
  *
  * @author Gene Yang
- * @version Feb. 4, 2023
+ * @version Feb. 21, 2023
  **/
 
 public class Hackberry {
