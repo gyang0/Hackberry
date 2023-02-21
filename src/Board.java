@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Board extends JComponent implements MouseListener {
-    /*private String boardState[][] = {
+    private String boardState[][] = {
             {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
             {"bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"},
             {"", "", "", "", "", "", "", ""},
@@ -22,30 +22,8 @@ public class Board extends JComponent implements MouseListener {
             {"", "", "", "", "", "", "", ""},
             {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
             {"wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr"}
-    };*/
-
-    private String boardState[][] = {
-            {"", "", "", "", "", "", "", ""},
-            {"wp", "", "", "", "", "", "", ""},
-            {"", "", "", "", "", "", "", ""},
-            {"", "", "", "", "", "", "", ""},
-            {"", "", "", "", "", "", "", ""},
-            {"", "", "", "", "", "", "", ""},
-            {"", "bp", "", "", "", "", "", ""},
-            {"", "", "", "", "", "", "", ""}
     };
 
-    // Gives a score to each board (center squares > edge squares).
-    private int boardPositionValues[][] = {
-            {1, 1, 1, 1, 1, 1, 1, 1},
-            {1, 3, 3, 3, 3, 3, 3, 1},
-            {1, 3, 4, 4, 4, 4, 3, 1},
-            {1, 3, 4, 5, 5, 4, 3, 1},
-            {1, 3, 4, 5, 5, 4, 3, 1},
-            {1, 3, 4, 4, 4, 4, 3, 1},
-            {1, 3, 3, 3, 3, 3, 3, 1},
-            {1, 1, 1, 1, 1, 1, 1, 1}
-    };
 
     // AI
     private HackberryAI hackberryAI;
@@ -100,10 +78,6 @@ public class Board extends JComponent implements MouseListener {
 
     // For testing illegal moves in this.removeIllegalMovesW and this.removeIllegalMovesB.
     Piece[][] piecesCopy = new Piece[NUM_SQUARES][NUM_SQUARES];
-
-    // Number of possible moves white or black can make.
-    private int possibleMovesW = 0;
-    private int possibleMovesB = 0;
 
     /**
      * Shows a message to the user for help and also for debugging purposes.
@@ -166,284 +140,9 @@ public class Board extends JComponent implements MouseListener {
         }
     }
 
-    /**
-     * Populates an array of Pieces to the same values as another array specified. (copy)
-     *
-     * @param from - The array of Piece objects to copy
-     * @param to - The array of piece objects to copy to.
-     * **/
-    public void setPieces(Piece[][] from, Piece[][] to){
-        for(int r = 0; r < NUM_SQUARES; r++) {
-            for (int c = 0; c < NUM_SQUARES; c++) {
-                to[r][c].setPiece(r, c, from[r][c].getType(), from[r][c].getSide());
-            }
-        }
-    }
-
-    /**
-     * Checks the squares controlled by the white side.
-     * **/
-    public void checkControlledSquaresW(){
-        // Reset
-        for(int i = 0; i < NUM_SQUARES; i++)
-            for(int j = 0; j < NUM_SQUARES; j++)
-                squaresControlledW[i][j] = false;
-
-        blackKingInCheck = false;
-        Piece prev = new Piece(0, 0, "", ' ');
-        int[] mostRecentPieceMovCopy = new int[2];
-
-        // For every black piece
-        for(Piece p : piecesW.keySet()){
-            // For every square on the board
-            for(int pos1 = 0; pos1 < NUM_SQUARES; pos1++){
-                for(int pos2 = 0; pos2 < NUM_SQUARES; pos2++){
-
-                    // Having control over that square:
-                    // For testing purposes, we set the piece of an opposite side at that square.
-                    // Then we see if that piece can be captured.
-                    prev.setPiece(pos1, pos2, pieces[pos1][pos2].getType(), pieces[pos1][pos2].getSide());
-                    pieces[pos1][pos2].setPiece(pos1, pos2, "bp", 'b');
-
-                    // Copy of most recent piece's move
-                    mostRecentPieceMovCopy[0] = pos1;
-                    mostRecentPieceMovCopy[1] = pos2;
-
-                    // Can make a capture (if necessary) at that position.
-                    if(p.legalMove(pos1, pos2, pieces, mostRecentPieceMovCopy, squaresControlledW, squaresControlledB)){
-                        squaresControlledW[pos1][pos2] = true;
-
-                        // If the piece at that position is a king, it's in check.
-                        if(prev.getType().equals("bk"))
-                            blackKingInCheck = true;
-                    }
-
-                    // Reset
-                    pieces[pos1][pos2].setPiece(pos1, pos2, prev.getType(), prev.getSide());
-                }
-            }
-        }
-
-    }
-
-    /**
-     * Checks the squares controlled by the black side.
-     * **/
-    public void checkControlledSquaresB(){
-        // Reset
-        for(int i = 0; i < NUM_SQUARES; i++)
-            for(int j = 0; j < NUM_SQUARES; j++)
-                squaresControlledB[i][j] = false;
-
-        whiteKingInCheck = false;
-        Piece prev = new Piece(0, 0, "", ' ');
-        int[] mostRecentPieceMovCopy = new int[2];
-
-        // For every black piece
-        for(Piece p : piecesB.keySet()){
-            // For every square on the board
-            for(int pos1 = 0; pos1 < NUM_SQUARES; pos1++){
-                for(int pos2 = 0; pos2 < NUM_SQUARES; pos2++){
-
-                    // Having control over that square:
-                    // For testing purposes, we set the piece of an opposite side at that square.
-                    // Then we see if that piece can be captured.
-                    prev.setPiece(pos1, pos2, pieces[pos1][pos2].getType(), pieces[pos1][pos2].getSide());
-                    pieces[pos1][pos2].setPiece(pos1, pos2, "wp", 'w');
-
-                    // Copy of most recent piece's move
-                    mostRecentPieceMovCopy[0] = pos1;
-                    mostRecentPieceMovCopy[1] = pos2;
-
-                    // Can make a capture (if necessary) at that position.
-                    if(p.legalMove(pos1, pos2, pieces, mostRecentPieceMov, squaresControlledW, squaresControlledB)){
-                        squaresControlledB[pos1][pos2] = true;
-
-                        // If the piece at that position is a king, it's in check.
-                        if(prev.getType().equals("wk"))
-                            whiteKingInCheck = true;
-                    }
-
-                    pieces[pos1][pos2].setPiece(pos1, pos2, prev.getType(), prev.getSide());
-                }
-            }
-        }
-
-    }
-
-    /**
-     * Updates the positions every white piece can move to.
-     * **/
-    public void getPossibleMovesW(){
-        // Reset
-        piecesW.replaceAll((p, v) -> new ArrayList<int[]>());
-
-        // For every black piece
-        for(Piece p : piecesW.keySet()){
-            ArrayList<int[]> possibleMoves = new ArrayList<int[]>();
-
-            // For every square on the board
-            for(int pos1 = 0; pos1 < NUM_SQUARES; pos1++){
-                for(int pos2 = 0; pos2 < NUM_SQUARES; pos2++){
-                    // Can move to that square
-                    if(p.legalMove(pos1, pos2, pieces, mostRecentPieceMov, squaresControlledW, squaresControlledB)){
-                        possibleMoves.add(new int[]{pos1,pos2});
-                    }
-                }
-            }
-
-            piecesW.put(p, possibleMoves);
-        }
-    }
-
-    /**
-     * Updates the positions every black piece can move to.
-     * **/
-    public void getPossibleMovesB(){
-        // Reset
-        piecesB.replaceAll((p, v) -> new ArrayList<int[]>());
-
-        // For every black piece
-        for(Piece p : piecesB.keySet()){
-            ArrayList<int[]> possibleMoves = new ArrayList<int[]>();
-
-            // For every square on the board
-            for(int pos1 = 0; pos1 < NUM_SQUARES; pos1++){
-                for(int pos2 = 0; pos2 < NUM_SQUARES; pos2++){
-                    // Can move to that square
-                    if(p.legalMove(pos1, pos2, pieces, mostRecentPieceMov, squaresControlledW, squaresControlledB)){
-                        possibleMoves.add(new int[]{pos1,pos2});
-                    }
-                }
-            }
-
-            piecesB.put(p, possibleMoves);
-        }
-    }
-
-    /**
-     * Removes the white pieces' moves that result in the white king being put in check.
-     * **/
-    public void removeIllegalMovesW(){
-        for(Piece p : piecesW.keySet()){
-
-            ArrayList<int[]> moves = new ArrayList<int[]>();
-
-            // Go through the possible listed moves
-            for(int[] arr : piecesW.get(p)){
-                // Copy of board state before move
-                setPieces(pieces, piecesCopy);
-
-                // Move piece to square and see if it results in check.
-                p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, prevCoords, false);
-                this.checkControlledSquaresB();
-
-                if(!whiteKingInCheck)
-                    moves.add(arr);
-
-                setPieces(piecesCopy, pieces);
-            }
-
-            piecesW.put(p, moves);
-        }
-    }
-
-    /**
-     * Removes the black pieces' moves that result in the black king being put in check.
-     * **/
-    public void removeIllegalMovesB(){
-        for(Piece p : piecesB.keySet()){
-
-            ArrayList<int[]> moves = new ArrayList<int[]>();
-
-            // Go through the possible listed moves
-            for(int[] arr : piecesB.get(p)){
-                // Copy array
-                setPieces(pieces, piecesCopy);
-
-                // Move piece to square and see if it results in check.
-                p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, prevCoords, false);
-                this.checkControlledSquaresW();
-
-                if(!blackKingInCheck)
-                    moves.add(arr);
-
-                setPieces(piecesCopy, pieces);
-            }
-
-            piecesB.put(p, moves);
-        }
-    }
-
-    /**
-     * Gives a score to each piece, depending on its base score, mobility, and position.
-     */
-    public void givePieceScores(){
-        for(Piece p : piecesW.keySet()){
-            double baseScore = p.getBaseValue() * Piece.BASE_VAL_WEIGHT;
-            double mobilityScore = (piecesW.get(p).size()) * Piece.MOBILITY_WEIGHT;
-            double positionScore = boardPositionValues[p.getGridX()][p.getGridY()] * Piece.POSITION_WEIGHT;
-            p.setValue(baseScore + mobilityScore + positionScore);
-
-            possibleMovesW += piecesW.get(p).size();
-        }
-
-        for(Piece p : piecesB.keySet()){
-            double baseScore = p.getBaseValue() * Piece.BASE_VAL_WEIGHT;
-            double mobilityScore = (piecesB.get(p).size()) * Piece.MOBILITY_WEIGHT;
-            double positionScore = boardPositionValues[p.getGridX()][p.getGridY()] * Piece.POSITION_WEIGHT;
-            p.setValue(baseScore + mobilityScore + positionScore);
-
-            possibleMovesB += piecesB.get(p).size();
-        }
-    }
-
-    /**
-     * Combined usage of checking possible squares and getting possible moves for all sides.
-     * **/
-    public void updateControlledSquares(){
-        this.checkControlledSquaresW();
-        this.checkControlledSquaresB();
-
-        this.getPossibleMovesW();
-        this.getPossibleMovesB();
-
-        this.removeIllegalMovesW();
-        this.removeIllegalMovesB();
-
-        this.givePieceScores();
-
-        if(possibleMovesW == 0 && myTurn){
-            if(whiteKingInCheck) this.setMessage("Checkmate - black wins.");
-            else this.setMessage("Stalemate - white has no legal moves.");
-        }
-
-        if(possibleMovesB == 0 && !myTurn){
-            if(blackKingInCheck) this.setMessage("Checkmate - white wins.");
-            else this.setMessage("Stalemate - black has no legal moves.");
-        }
-    }
-
-    public void cleanUpHashMapW(){
-        ArrayList<Piece> toDelete = new ArrayList<Piece>();
-
-        for(Piece p : piecesW.keySet())
-            if(p.getSide() != 'w' || p.getType().equals(""))
-                toDelete.add(p);
-
-        for(Piece p : toDelete)
-            piecesW.remove(p);
-    }
-
-    public void cleanUpHashMapB(){
-        ArrayList<Piece> toDelete = new ArrayList<Piece>();
-
-        for(Piece p : piecesB.keySet())
-            if(p.getSide() != 'b' || p.getType().equals(""))
-                toDelete.add(p);
-
-        for(Piece p : toDelete)
-            piecesB.remove(p);
+    public void update(){
+        BoardEval.setBoard(squaresControlledW, squaresControlledB, piecesW, piecesB, pieces, mostRecentPieceMov, prevCoords, myTurn);
+        BoardEval.updateControlledSquares();
     }
 
 
@@ -458,8 +157,7 @@ public class Board extends JComponent implements MouseListener {
         this.initSquares();
         this.initPieces();
 
-        this.updateControlledSquares();
-        this.givePieceScores();
+
 
         // AI
         hackberryAI = new HackberryAI(userSide == 'w' ? 'b' : 'w', 3);
@@ -467,6 +165,8 @@ public class Board extends JComponent implements MouseListener {
         // Add mouse listener
         addMouseListener(this);
         Notation.clearFile();
+
+        update();
     }
 
 
@@ -548,7 +248,7 @@ public class Board extends JComponent implements MouseListener {
 
         if(done) {
             showPromoOptions = false;
-            this.updateControlledSquares();
+            update();
             repaint();
         }
     }
@@ -563,19 +263,20 @@ public class Board extends JComponent implements MouseListener {
         // Go through possible moves for that piece and check for legal moves
         Notation.updateMoves(i, j, pieces[prevCoords[0]][prevCoords[1]]);
 
-            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, prevCoords, true);
+        pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, prevCoords, true);
 
-            // Remove empty pieces in HashMap piecesW
-            this.cleanUpHashMapW();
+        // Remove empty pieces in HashMap piecesW
+        BoardEval.cleanUpHashMapW();
+        //update();
 
-            // A few changes to make.
-            pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
-            pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
+        // A few changes to make.
+        pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
+        pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
 
-            myTurn = !myTurn;
-            pieces[prevCoords[0]][prevCoords[1]].numMoves = 0;
-            mostRecentPieceMov[0] = i;
-            mostRecentPieceMov[1] = j;
+        myTurn = !myTurn;
+        pieces[prevCoords[0]][prevCoords[1]].numMoves = 0;
+        mostRecentPieceMov[0] = i;
+        mostRecentPieceMov[1] = j;
         squares[prevCoords[0]][prevCoords[1]].deselectSquare();
     }
 
@@ -589,19 +290,20 @@ public class Board extends JComponent implements MouseListener {
     public void blackMove(int i, int j){
         Notation.updateMoves(i, j, pieces[prevCoords[0]][prevCoords[1]]);
 
-            pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, prevCoords, true);
-            //hackberryAI.makeMove(pieces, piecesW, piecesB);
+        pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, prevCoords, true);
+        //hackberryAI.makeMove(pieces, piecesW, piecesB);
 
-            // Clean up empty pieces in HashMap piecesB
-            this.cleanUpHashMapB();
+        // Clean up empty pieces in HashMap piecesB
+        BoardEval.cleanUpHashMapB();
+        //update();
 
-            pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
-            pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
+        pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
+        pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
 
-            myTurn = !myTurn;
-            pieces[prevCoords[0]][prevCoords[1]].numMoves = 0;
-            mostRecentPieceMov[0] = i;
-            mostRecentPieceMov[1] = j;
+        myTurn = !myTurn;
+        pieces[prevCoords[0]][prevCoords[1]].numMoves = 0;
+        mostRecentPieceMov[0] = i;
+        mostRecentPieceMov[1] = j;
 
         squares[prevCoords[0]][prevCoords[1]].deselectSquare();
     }
@@ -658,7 +360,7 @@ public class Board extends JComponent implements MouseListener {
         FontMetrics f = g.getFontMetrics();
         g.drawString(message, 300 - (f.stringWidth(message)/2), 550);
 
-        this.givePieceScores();
+        //this.givePieceScores();
         g.drawString("Board evaluation: " + (int)(hackberryAI.boardEval(piecesW, piecesB) * 100000)/100000.0, 270, 570);
     }
 
@@ -675,10 +377,11 @@ public class Board extends JComponent implements MouseListener {
             myTurn = !myTurn;
 
             // Update controlled squares
-            this.updateControlledSquares();
-            this.givePieceScores();
-            this.cleanUpHashMapW(); // Organize HashMap
-            this.cleanUpHashMapB(); // Organize HashMap
+//            this.updateControlledSquares();
+//            this.givePieceScores();
+//            this.cleanUpHashMapW(); // Organize HashMap
+//            this.cleanUpHashMapB(); // Organize HashMap
+            update();
 
             repaint();
             return;
@@ -721,10 +424,11 @@ public class Board extends JComponent implements MouseListener {
                         if(this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
                             whiteMove(i, j);
 
-                            this.updateControlledSquares();
-                            this.givePieceScores();
-                            this.cleanUpHashMapW(); // Organize HashMap
-                            this.cleanUpHashMapB(); // Organize HashMap
+//                            this.updateControlledSquares();
+//                            this.givePieceScores();
+//                            this.cleanUpHashMapW(); // Organize HashMap
+//                            this.cleanUpHashMapB(); // Organize HashMap
+                            update();
 
                             this.checkPromotion();
                             if(showPromoOptions){
@@ -753,10 +457,11 @@ public class Board extends JComponent implements MouseListener {
             hackberryAI.makeMove(pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
 
             // Update controlled squares
-            this.updateControlledSquares();
-            this.givePieceScores();
-            this.cleanUpHashMapW(); // Organize HashMap
-            this.cleanUpHashMapB(); // Organize HashMap
+//            this.updateControlledSquares();
+//            this.givePieceScores();
+//            this.cleanUpHashMapW(); // Organize HashMap
+//            this.cleanUpHashMapB(); // Organize HashMap
+            update();
 
             myTurn = !myTurn;
 
@@ -777,5 +482,4 @@ public class Board extends JComponent implements MouseListener {
 
     @Override
     public void mouseExited(MouseEvent e) {}
-
 }
