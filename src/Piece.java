@@ -49,6 +49,20 @@ public class Piece {
         return 0;
     }
 
+    public Piece(){
+        this.x = -1;
+        this.y = -1;
+
+        this.gridX = -1;
+        this.gridY = -1;
+
+        this.type = "";
+        this.side = ' ';
+
+        this.baseValue = -1;
+        this.value = -1;
+    }
+
     public Piece(int i, int j, String type, char side){
         this.x = i * SQUARE_WIDTH + X_OFFSET;
         this.y = j * SQUARE_WIDTH + Y_OFFSET;
