@@ -36,7 +36,8 @@ public class BoardEval {
 
     public static void setBoard(boolean[][] squaresControlledW, boolean[][] squaresControlledB,
                                 HashMap<Piece, ArrayList<int[]>> piecesW, HashMap<Piece, ArrayList<int[]>> piecesB,
-                                Piece[][] pieces, int[] mostRecentPieceMov, int[] prevCoords, boolean myTurn){
+                                Piece[][] pieces, Piece[][] piecesCopy, int[] mostRecentPieceMov, int[] prevCoords,
+                                boolean myTurn){
         BoardEval.squaresControlledW = squaresControlledW;
         BoardEval.squaresControlledB = squaresControlledB;
 
@@ -44,6 +45,7 @@ public class BoardEval {
         BoardEval.piecesB = piecesB;
 
         BoardEval.pieces = pieces;
+        BoardEval.piecesCopy = piecesCopy;
         BoardEval.mostRecentPieceMov = mostRecentPieceMov;
         BoardEval.prevCoords = prevCoords;
 
@@ -62,7 +64,7 @@ public class BoardEval {
     public static void setPieces(Piece[][] from, Piece[][] to){
         for(int r = 0; r < NUM_SQUARES; r++) {
             for (int c = 0; c < NUM_SQUARES; c++) {
-                to[r][c] = new Piece(r, c, from[r][c].getType(), from[r][c].getSide());
+                to[r][c].setPiece(r, c, from[r][c].getType(), from[r][c].getSide());
             }
         }
     }
@@ -304,17 +306,21 @@ public class BoardEval {
         BoardEval.cleanUpHashMapW();
         BoardEval.cleanUpHashMapB();
 
-        if(possibleMovesW == 0 && myTurn){
-            BoardEval.gameOver = true;
-        }
-
-        if(possibleMovesB == 0 && !myTurn){
-            BoardEval.gameOver = true;
-        }
+        // Checkmate or stalemate
+        if(possibleMovesW == 0 && myTurn) BoardEval.gameOver = true;
+        if(possibleMovesB == 0 && !myTurn) BoardEval.gameOver = true;
     }
 
     public static boolean gameOver(){
         return BoardEval.gameOver;
+    }
+
+    public static boolean whiteKingInCheck(){
+        return BoardEval.whiteKingInCheck;
+    }
+
+    public static boolean blackKingInCheck(){
+        return BoardEval.blackKingInCheck;
     }
 
     public static void cleanUpHashMapW(){
@@ -338,5 +344,19 @@ public class BoardEval {
         for(Piece p : toDelete)
             piecesB.remove(p);
     }
-}
 
+    // Something to evaluate the board state
+    public static double boardScore(){
+        // Sum of the relative values for each piece
+        double whiteScore = 0.0,
+                blackScore = 0.0;
+
+        for(Piece p : piecesW.keySet())
+            whiteScore += p.getValue();
+
+        for(Piece p : piecesB.keySet())
+            blackScore += p.getValue();
+
+        return whiteScore - blackScore;
+    }
+}
