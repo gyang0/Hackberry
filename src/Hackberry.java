@@ -1,12 +1,3 @@
-
-/** Milestones
- * Jan 4, 2023 - Successfully recreated the Opera Game (Paul Morphy vs Duke of Brunswick & Count Isouard, 1858).
- * Jan 8, 2023 - All legal moves are now recognized (hopefully), including: En passant, castling, checks, promotion, etc.
- * Jan 26, 2023 - Optimizing to program is done. All legal moves are recognized as well. ~500K -> ~65K iterations.
- * Feb 20, 2023 - AI makes random moves. Includes promotion, en passant, and castling.
- * **/
-
-
 /**
  * This is where most of the stuff will take place.
  * All methods will be combined to set turns, make moves, etc.
