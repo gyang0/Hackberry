@@ -24,21 +24,6 @@ public class HackberryAI {
         this.depth = depth;
     }
 
-    // Something to evaluate the board state
-    public double boardEval(HashMap<Piece, ArrayList<int[]>> piecesW, HashMap<Piece, ArrayList<int[]>> piecesB){
-        // Sum of the relative values for each piece
-        double whiteScore = 0.0,
-               blackScore = 0.0;
-
-        for(Piece p : piecesW.keySet())
-            whiteScore += p.getValue();
-
-        for(Piece p : piecesB.keySet())
-            blackScore += p.getValue();
-
-        return whiteScore - blackScore;
-    }
-
     public void promotePawn(Piece[][] pieces, int x, int y){
         int choice = (int)(Math.random() * 4);
 
