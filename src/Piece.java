@@ -505,6 +505,7 @@ public class Piece {
         return "[ " + "(" + this.gridX + ", " + this.gridY + ") " + this.getType() + " " + this.getSide() + " ]";
     }
 
+
     // Images
     private final ImageIcon WHITE_PAWN_IMG = new ImageIcon("src/imgs/white_pawn.png");
     private final ImageIcon WHITE_ROOK_IMG = new ImageIcon("src/imgs/white_rook.png");
