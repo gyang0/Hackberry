@@ -76,6 +76,7 @@ public class Board extends JComponent implements MouseListener {
 
     Font MSG_FONT = new Font("serif", Font.BOLD, 20);
     private String message = "";
+    private boolean gameOver = false;
 
     /**
      * Shows a message to the user for help and also for debugging purposes.
@@ -141,6 +142,30 @@ public class Board extends JComponent implements MouseListener {
     public void update(){
         BoardEval.setBoard(squaresControlledW, squaresControlledB, piecesW, piecesB, pieces, piecesCopy, mostRecentPieceMov, prevCoords, myTurn);
         BoardEval.updateControlledSquares();
+    }
+
+    public boolean checkGameOver(){
+        if(BoardEval.gameOver()) {
+            // Checkmate by black
+            if(BoardEval.whiteKingInCheck() && BoardEval.numPossibleMovesW() == 0 && myTurn)
+                setMessage("Game over - Black wins by checkmate.");
+
+            // Checkmate by white
+            if(BoardEval.blackKingInCheck() && BoardEval.numPossibleMovesB() == 0 && !myTurn)
+                setMessage("Game over - White wins by checkmate.");
+
+            // Stalemate by black
+            if(!BoardEval.whiteKingInCheck() && BoardEval.numPossibleMovesW() == 0 && myTurn)
+                setMessage("Game over - Stalemate.");
+
+            // Stalemate by white
+            if(!BoardEval.blackKingInCheck() && BoardEval.numPossibleMovesB() == 0 && !myTurn)
+                setMessage("Game over - Stalemate.");
+
+            this.gameOver = true;
+        }
+
+        return BoardEval.gameOver();
     }
 
 
@@ -361,17 +386,24 @@ public class Board extends JComponent implements MouseListener {
     /* Mouse events */
     @Override
     public void mouseClicked(MouseEvent e){
+        if(this.gameOver) // Ignore any interactions after the game.
+            return;
+
         if(showPromoOptions){
             int choice = promoOption.handleMouseInteractions(e.getX(), e.getY());
             promotePawn(choice);
 
             if(choice == -1) return;
 
+            // Update notation
+            Notation.updateMoves(promoX, promoY, pieces[promoX][promoY]);
+
             hackberryAI.makeMove(pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
             myTurn = !myTurn;
 
             // Update controlled squares
             update();
+            if(checkGameOver()) return;
 
             repaint();
             return;
@@ -400,6 +432,7 @@ public class Board extends JComponent implements MouseListener {
 
                             // Update controlled squares
                             update();
+                            if(checkGameOver()) return;
 
                             this.checkPromotion();
                             if(showPromoOptions){
@@ -445,11 +478,10 @@ public class Board extends JComponent implements MouseListener {
 
             // Update controlled squares
             update();
+            if(checkGameOver()) return;
 
             myTurn = !myTurn;
-
             numClicks = 0;
-
             repaint();
         }
     }
