@@ -43,9 +43,22 @@ public class HackberryAI {
         }
     }
 
+    /*
+    public boolean stillInOpening(){
+        for(int i = 0; i < OpeningBook.continuations.length; i++){
+            boolean matches = false;
+            for(int j = 0; j < PGN.length; j++)
+        }
+    }*/
+
     // Actual AI goes here
     // Find the 5 moves that offer the best position
     public void makeMove(Piece[][] pieces, int[] mostRecentPieceMov, HashMap<Piece, ArrayList<int[]>> piecesW, HashMap<Piece, ArrayList<int[]>> piecesB, int[] prevCoords){
+        /*if(this.stillInOpening()){
+            //playOpening();
+            return;
+        }*/
+
         if(this.side == 'w'){
             // Choose a random move
             for(Piece p : piecesW.keySet()){
@@ -56,17 +69,20 @@ public class HackberryAI {
 
                     prevCoords = arr;
 
+
+                    Notation.updateMoves(arr[0], arr[1], pieces[arr[0]][arr[1]]);
                     p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, prevCoords, true);
 
                     // Promotion
                     if(arr[1] == 0 && pieces[arr[0]][arr[1]].getType().equals("wp")){
+                        Notation.updateMoves(arr[0], arr[1], pieces[arr[0]][arr[1]]);
                         promotePawn(pieces, arr[0], arr[1]);
                         return;
                     }
 
                     mostRecentPieceMov[0] = arr[0];
                     mostRecentPieceMov[1] = arr[1];
-                    Notation.updateMoves(arr[0], arr[1], p);
+
                     return;
                 }
             }
@@ -83,17 +99,19 @@ public class HackberryAI {
 
                     prevCoords = arr;
 
+                    Notation.updateMoves(arr[0], arr[1], pieces[arr[0]][arr[1]]);
                     p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, prevCoords, true);
 
                     // Promotion
                     if(arr[1] == NUM_SQUARES - 1 && pieces[arr[0]][arr[1]].getType().equals("bp")){
+                        Notation.updateMoves(arr[0], arr[1], pieces[arr[0]][arr[1]]);
                         promotePawn(pieces, arr[0], arr[1]);
                         return;
                     }
 
                     mostRecentPieceMov[0] = arr[0];
                     mostRecentPieceMov[1] = arr[1];
-                    //Notation.updateMoves(arr[0], arr[1], p);
+
                     return;
                 }
             }
