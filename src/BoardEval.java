@@ -49,6 +49,8 @@ public class BoardEval {
         BoardEval.mostRecentPieceMov = mostRecentPieceMov;
         BoardEval.prevCoords = prevCoords;
 
+        BoardEval.possibleMovesW = 0;
+        BoardEval.possibleMovesB = 0;
         BoardEval.myTurn = myTurn;
 
         piecesCopy = new Piece[NUM_SQUARES][NUM_SQUARES];
@@ -294,7 +296,6 @@ public class BoardEval {
         BoardEval.checkControlledSquaresW();
         BoardEval.checkControlledSquaresB();
 
-        // TODO: Bug here, removes a first-rank pawn somehow.
         BoardEval.getPossibleMovesW();
         BoardEval.getPossibleMovesB();
 
@@ -322,6 +323,8 @@ public class BoardEval {
     public static boolean blackKingInCheck(){
         return BoardEval.blackKingInCheck;
     }
+    public static int numPossibleMovesW(){ return BoardEval.possibleMovesW; }
+    public static int numPossibleMovesB(){ return BoardEval.possibleMovesB; }
 
     public static void cleanUpHashMapW(){
         ArrayList<Piece> toDelete = new ArrayList<Piece>();
