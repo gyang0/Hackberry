@@ -21,7 +21,7 @@ import java.util.ArrayList;
 public class Notation {
     private static int numTurns = 1;
     private static String fileName = "games.txt";
-    private static ArrayList<String> PGNMoves = new ArrayList<String>();
+    public static ArrayList<String> PGNMoves = new ArrayList<String>();
 
     public static void updateNumTurns(){ numTurns++; }
 
