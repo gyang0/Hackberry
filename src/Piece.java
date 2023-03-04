@@ -77,6 +77,20 @@ public class Piece {
         this.value = this.baseValue;
     }
 
+    public Piece(Piece o){
+        this.x = o.x;
+        this.y = o.y;
+
+        this.gridX = o.gridX;
+        this.gridY = o.gridY;
+
+        this.type = o.type;
+        this.side = o.side;
+
+        this.baseValue = this.assignValue();
+        this.value = this.baseValue;
+    }
+
     public void setPiece(int x, int y, String type, char side){
         this.x = x * SQUARE_WIDTH + X_OFFSET;
         this.y = y * SQUARE_WIDTH + Y_OFFSET;
