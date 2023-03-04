@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Board extends JComponent implements MouseListener {
-    private String boardState[][] = {
+    /*private String boardState[][] = {
             {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
             {"bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"},
             {"", "", "", "", "", "", "", ""},
@@ -22,15 +22,20 @@ public class Board extends JComponent implements MouseListener {
             {"", "", "", "", "", "", "", ""},
             {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
             {"wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr"}
+    };*/
+    private String boardState[][] = {
+            {"", "", "", "", "", "", "", ""},
+            {"", "", "", "", "", "", "", ""},
+            {"wk", "wp", "", "", "", "", "", "br"},
+            {"", "", "", "", "", "", "", ""},
+            {"", "", "", "", "", "", "", ""},
+            {"", "", "", "", "", "", "", ""},
+            {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
+            {"wr", "wn", "wb", "wq", "", "wb", "wn", "wr"}
     };
 
-
-    // AI
-    private HackberryAI hackberryAI;
-
-    // User's side
-    private char userSide = 'w';
-
+    private HackberryAI hackberryAI; // AI
+    private char userSide = 'w'; // User's side
 
     // The squares controlled by each side
     private boolean[][] squaresControlledW;
@@ -56,6 +61,7 @@ public class Board extends JComponent implements MouseListener {
     private final Color BLACK = new Color(227,193,111);
     private final Color OPAQUE_GRAY = new Color(100, 100, 100, 100);
     private final Color CHECK_COLOR = new Color(255, 0, 0, 100);
+    private final Font MSG_FONT = new Font("serif", Font.BOLD, 20);
 
     private int numClicks = 0;
     private int[] prevCoords = {-1, -1};
@@ -73,8 +79,6 @@ public class Board extends JComponent implements MouseListener {
     private int promoX;
     private int promoY;
 
-
-    Font MSG_FONT = new Font("serif", Font.BOLD, 20);
     private String message = "";
     private boolean gameOver = false;
 
@@ -398,7 +402,7 @@ public class Board extends JComponent implements MouseListener {
             // Update notation
             Notation.updateMoves(promoX, promoY, pieces[promoX][promoY]);
 
-            hackberryAI.makeMove(pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
+            hackberryAI.makeMove(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
             myTurn = !myTurn;
 
             // Update controlled squares
@@ -415,6 +419,7 @@ public class Board extends JComponent implements MouseListener {
                     e.getY() >= Y_OFFSET && e.getY() <= Y_OFFSET + NUM_SQUARES * SQUARE_WIDTH) {
                 int i = (e.getX() - X_OFFSET) / SQUARE_WIDTH; // Taking advantage of integer division.
                 int j = (e.getY() - Y_OFFSET) / SQUARE_WIDTH; // Used for quick square collisions.
+
 
                 // Second click (move)
                 if(numClicks == 1){
@@ -449,8 +454,8 @@ public class Board extends JComponent implements MouseListener {
 
                     // Reset
                     squares[i][j].deselectSquare();
-                    prevCoords[0] = -1;
-                    prevCoords[1] = -1;
+                    //prevCoords[0] = -1;
+                    //prevCoords[1] = -1;
                     numClicks++;
                 }
                 // First click (choice)
@@ -473,8 +478,10 @@ public class Board extends JComponent implements MouseListener {
             repaint();
         }
 
+
         if(numClicks == 2) {
-            hackberryAI.makeMove(pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
+            //System.out.println(prevCoords[0] + " " + prevCoords[1]);
+            hackberryAI.makeMove(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
 
             // Update controlled squares
             update();
@@ -484,6 +491,10 @@ public class Board extends JComponent implements MouseListener {
             numClicks = 0;
             repaint();
         }
+
+        /*for(String s : Notation.PGNMoves){
+            System.out.println(s + " ");
+        }*/
     }
 
     @Override
