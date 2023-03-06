@@ -22,10 +22,11 @@
  * TODO: check if prevCoords in Board.java is useful or not.
  * TODO: AI doesn't recognize captures as being valuable.
  * TODO: AI making checks -> weird effects.
- * TODO: bug, you're allowed to move a piece that's blocking a check for the king.
  *
  * Most of my bugs have to do with the playMove function. Remove the 'updateHashMap' requirement? Then have the program make deep
  * copies of piecesW, piecesB, etc. to test for playMove.
+ *
+ * Also, simplify code.
  * **/
 
 import javax.swing.*;
