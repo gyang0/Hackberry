@@ -23,6 +23,7 @@ public class Board extends JComponent implements MouseListener {
             {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
             {"wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr"}
     };*/
+
     private String boardState[][] = {
             {"", "", "", "", "", "", "", ""},
             {"", "", "", "", "", "", "", ""},
