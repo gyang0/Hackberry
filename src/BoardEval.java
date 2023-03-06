@@ -42,34 +42,36 @@ public class BoardEval {
         BoardEval.piecesW = piecesW;
         BoardEval.piecesB = piecesB;
 
-//        BoardEval.squaresControlledW = squaresControlledW;
-//        BoardEval.squaresControlledB = squaresControlledB;
-//        BoardEval.pieces = pieces;
-//        BoardEval.piecesCopy = piecesCopy;
+        BoardEval.squaresControlledW = squaresControlledW;
+        BoardEval.squaresControlledB = squaresControlledB;
+        BoardEval.pieces = pieces;
+        BoardEval.piecesCopy = piecesCopy;
+
+//        BoardEval.squaresControlledW = new boolean[NUM_SQUARES][NUM_SQUARES];
+//        BoardEval.squaresControlledB = new boolean[NUM_SQUARES][NUM_SQUARES];
+//        BoardEval.pieces = new Piece[NUM_SQUARES][NUM_SQUARES];
+//        BoardEval.piecesCopy = new Piece[NUM_SQUARES][NUM_SQUARES];
 //
-        BoardEval.squaresControlledW = new boolean[NUM_SQUARES][NUM_SQUARES];
-        BoardEval.squaresControlledB = new boolean[NUM_SQUARES][NUM_SQUARES];
-        BoardEval.pieces = new Piece[NUM_SQUARES][NUM_SQUARES];
-        BoardEval.piecesCopy = new Piece[NUM_SQUARES][NUM_SQUARES];
+//        for(int i = 0; i < NUM_SQUARES; i++) {
+//            for (int j = 0; j < NUM_SQUARES; j++){
+//                BoardEval.pieces[i][j] = new Piece(pieces[i][j]);
+//                BoardEval.piecesCopy[i][j] = new Piece();
+//
+//                BoardEval.squaresControlledW[i][j] = squaresControlledW[i][j];
+//                BoardEval.squaresControlledW[i][j] = squaresControlledB[i][j];
+//            }
+//        }
 
-        for(int i = 0; i < NUM_SQUARES; i++) {
-            for (int j = 0; j < NUM_SQUARES; j++){
-                BoardEval.pieces[i][j] = new Piece(pieces[i][j]);
-                BoardEval.piecesCopy[i][j] = new Piece();
-
-                BoardEval.squaresControlledW[i][j] = squaresControlledW[i][j];
-                BoardEval.squaresControlledW[i][j] = squaresControlledB[i][j];
-            }
-        }
-
-        BoardEval.mostRecentPieceMov = new int[]{mostRecentPieceMov[0], mostRecentPieceMov[1]};
-        BoardEval.prevCoords = new int[]{prevCoords[0], prevCoords[1]};
+        //BoardEval.mostRecentPieceMov = new int[]{mostRecentPieceMov[0], mostRecentPieceMov[1]};
+        //BoardEval.prevCoords = new int[]{prevCoords[0], prevCoords[1]};
+        BoardEval.mostRecentPieceMov = mostRecentPieceMov;
+        BoardEval.prevCoords = prevCoords;
 
         BoardEval.possibleMovesW = 0;
         BoardEval.possibleMovesB = 0;
         BoardEval.myTurn = myTurn;
 
-        piecesCopy = new Piece[NUM_SQUARES][NUM_SQUARES];
+        //piecesCopy = new Piece[NUM_SQUARES][NUM_SQUARES];
     }
 
 
@@ -242,13 +244,13 @@ public class BoardEval {
                 setPieces(pieces, piecesCopy);
 
                 // Move piece to square and see if it results in check.
-                p.playMove(arr[0], arr[1], piecesCopy, piecesW, piecesB, prevCoords, false);
+                p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, prevCoords, false);
                 BoardEval.checkControlledSquaresB();
 
                 if(!whiteKingInCheck)
                     moves.add(arr);
 
-                //setPieces(piecesCopy, pieces);
+                setPieces(piecesCopy, pieces);
             }
 
             piecesW.put(p, moves);
