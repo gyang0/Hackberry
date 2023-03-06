@@ -118,7 +118,7 @@ public class HackberryAI {
         }
 
         else if(this.side == 'b'){
-            // Choose a random move
+
             for(Piece p : piecesB.keySet()){
                 if(piecesB.get(p).size() > 0){
 
