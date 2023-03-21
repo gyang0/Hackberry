@@ -62,6 +62,27 @@ public class HackberryAI {
         }
     }*/
 
+    public double minimax(boolean[][] squaresControlledW, boolean[][] squaresControlledB, Piece[][] pieces,
+                         int[] mostRecentPieceMov, HashMap<Piece, ArrayList<int[]>> piecesW,
+                         HashMap<Piece, ArrayList<int[]>> piecesB, int[] prevCoords, int depth){
+        /*if(depth == 0)
+            return BoardEval.boardScore(...args...);
+        else {
+            if(whiteTurn){
+                // Seeking highest board score
+                for(Piece p : piecesW.keySet()){
+                    for(int[] arr : piecesW.get(p)){
+                        // Play that move, undo, etc.
+                    }
+                }
+            } else {
+                // Seeking lowest board score
+            }
+        }*/
+
+        return 0.0;
+    }
+
     /**
      * Populates an array of Pieces to the same values as another array specified. (copy)
      *
@@ -78,115 +99,49 @@ public class HackberryAI {
 
     // Actual AI goes here
     // Find the 5 moves that offer the best position
-    public void makeMove(boolean[][] squaresControlledW, boolean[][] squaresControlledB, Piece[][] pieces, int[] mostRecentPieceMov, HashMap<Piece, ArrayList<int[]>> piecesW, HashMap<Piece, ArrayList<int[]>> piecesB, int[] prevCoords){
+    public void makeMove(boolean[][] squaresControlledW, boolean[][] squaresControlledB, Piece[][] pieces,
+                         int[] mostRecentPieceMov, HashMap<Piece, ArrayList<int[]>> piecesW,
+                         HashMap<Piece, ArrayList<int[]>> piecesB, int[] prevCoords){
         /*if(this.stillInOpening()){
             //playOpening();
             return;
+        } else {
+            // [piece X, piece Y, goal square X, goal square Y]
+            int[] best = new int[4];
+
+            if(side == 'w'){
+                double bestScore = Integer.MIN_VALUE;
+
+                for(Piece p : piecesW.keySet()){
+                    for(int arr[] : piecesW.get(p)){
+                        double score = minimax(...args...);
+                        if(score > bestScore)
+                            best = new int[]{p.getGridX(), p.getGridY(), arr[0], arr[1]};
+                    }
+                }
+            } else {
+                double bestScore = Integer.MAX_VALUE;
+
+                for(Piece p : piecesB.keySet()){
+                    for(int arr[] : piecesB.get(p)){
+                        double score = minimax(...args...);
+                        if(score < bestScore)
+                            best = new int[]{p.getGridX(), p.getGridY(), arr[0], arr[1]};
+                    }
+                }
+            }
+
+            pieces[best[0]][best[1]].playMove(...args...);
         }*/
 
-        // Sort potential moves, each with its x and y coordinates.
-        ArrayList<CheckMoves> bestMoves = new ArrayList<CheckMoves>();
-
-        if(this.side == 'w'){
-            // Choose a random move
-            for(Piece p : piecesW.keySet()){
-                if(piecesW.get(p).size() > 0){
-
-                    int randIndex = (int)(Math.random() * piecesW.get(p).size());
-                    int[] arr = piecesW.get(p).get(randIndex);
-
-                    prevCoords = arr;
-
-
-                    Notation.updateMoves(arr[0], arr[1], pieces[arr[0]][arr[1]]);
+        for(Piece p : piecesB.keySet()){
+            for(int[] arr : piecesB.get(p)){
+                if(arr.length != 0) {
                     p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, prevCoords, true);
-
-                    // Promotion
-                    if(arr[1] == 0 && pieces[arr[0]][arr[1]].getType().equals("wp")){
-                        Notation.updateMoves(arr[0], arr[1], pieces[arr[0]][arr[1]]);
-                        promotePawn(pieces, arr[0], arr[1]);
-                        return;
-                    }
-
-                    mostRecentPieceMov[0] = arr[0];
-                    mostRecentPieceMov[1] = arr[1];
-
                     return;
                 }
             }
-
-        }
-
-        else if(this.side == 'b'){
-
-            for(Piece p : piecesB.keySet()){
-                if(piecesB.get(p).size() > 0){
-
-                    //setPieces(pieces, piecesCopy);
-
-                    for(int arr[] : piecesB.get(p)){
-                        // Try moving there
-                        // Use the copy of the array to avoid ConcurrentModificationException.
-                        p.playMove(arr[0], arr[1], piecesCopy, piecesW, piecesB, prevCoords, false);
-
-                        BoardEval.setBoard(squaresControlledW, squaresControlledB, piecesW, piecesB,
-                                           pieces, piecesCopy, mostRecentPieceMov, prevCoords, true);
-                        BoardEval.updateControlledSquares();
-                        double score = BoardEval.boardScore();
-                        System.out.println("Board score for " + p + ": " + score);
-                        bestMoves.add(new CheckMoves(score, arr, p));
-
-                        //setPieces(piecesCopy, pieces);
-                    }
-                }
-            }
-
-            // Sort to get the best moves
-            Collections.sort(bestMoves);
-            CheckMoves best = bestMoves.get(0);
-            //System.out.println(best.p);
-            //System.out.println(best.position[0] + " " + best.position[1]);
-            for(CheckMoves c : bestMoves)
-                System.out.println(c.p + "  ->  " + c.boardScore);
-
-            // Promotion
-            if(best.position[1] == NUM_SQUARES - 1 && best.p.getType().equals("bp")){
-                Notation.updateMoves(best.position[0], best.position[1], best.p);
-                promotePawn(pieces, best.position[0], best.position[1]);
-                return;
-            } else {
-                Notation.updateMoves(best.position[0], best.position[1], best.p);
-                prevCoords[0] = best.p.getGridX();
-                prevCoords[1] = best.p.getGridY();
-                best.p.playMove(best.position[0], best.position[1], pieces, piecesW, piecesB, prevCoords, true);
-            }
-
-            mostRecentPieceMov[0] = best.position[0];
-            mostRecentPieceMov[1] = best.position[1];
         }
 
     }
-
-    class CheckMoves implements Comparable<CheckMoves> {
-        public double boardScore;
-        public int[] position;
-        public Piece p;
-
-        public CheckMoves(double boardScore, int[] position, Piece p){
-            this.boardScore = boardScore;
-            this.position = new int[]{position[0], position[1]};
-            this.p = p;
-        }
-
-        /**
-         * Decreasing order, so greater -> least.
-         * @param other the object to be compared.
-         * @return
-         */
-        @Override
-        public int compareTo(CheckMoves other) {
-            return Double.compare(other.boardScore, this.boardScore);
-        }
-    };
-
 }
