@@ -27,6 +27,10 @@
  * copies of piecesW, piecesB, etc. to test for playMove.
  *
  * Also, simplify code.
+ *
+ * No, should use alpha-beta pruning + minimax instead of getting the moves all by myself.
+ * Then I only need the current playMove functionality.
+ * playMove functionality needs to work with a copy of pieces.
  * **/
 
 import javax.swing.*;
@@ -36,7 +40,7 @@ import java.awt.*;
  * Chess piece images from https://commons.wikimedia.org/wiki/Category:PNG_chess_pieces/Standard_transparent
  *
  * @author Gene Yang
- * @version Feb. 21, 2023
+ * @version Mar. 21, 2023
  **/
 
 public class Hackberry {
