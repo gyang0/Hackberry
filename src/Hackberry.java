@@ -40,7 +40,7 @@ import java.awt.*;
  * Chess piece images from https://commons.wikimedia.org/wiki/Category:PNG_chess_pieces/Standard_transparent
  *
  * @author Gene Yang
- * @version Mar. 21, 2023
+ * @version Mar. 23, 2023
  **/
 
 public class Hackberry {
