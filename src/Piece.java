@@ -519,29 +519,6 @@ public class Piece {
         return "[ " + "(" + this.gridX + ", " + this.gridY + ") " + this.getType() + " " + this.getSide() + " ]";
     }
 
-    @Override
-    public int hashCode(){
-        // Board position, side, piece type
-        return (NUM_SQUARES + 1) * (NUM_SQUARES + 1) * (NUM_SQUARES + 1) * pieceTypeHash(type) +
-               (NUM_SQUARES + 1) * (NUM_SQUARES + 1) * (side == 'w' ? 2 : 1) +
-               (NUM_SQUARES + 1) * this.getGridX() +
-               this.getGridY();
-    }
-
-    public int pieceTypeHash(String type){
-        if(type.equals("")) return 0;
-        char identifier = type.charAt(1);
-        switch(identifier){
-            case 'p': return 1;
-            case 'r': return 2;
-            case 'n': return 3;
-            case 'b': return 4;
-            case 'q': return 5;
-            case 'k': return 6;
-        }
-        return 7;
-    }
-
 
     // Images
     private final ImageIcon WHITE_PAWN_IMG = new ImageIcon("src/imgs/white_pawn.png");
