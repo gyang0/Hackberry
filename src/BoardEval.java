@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class BoardEval {
     private static final int NUM_SQUARES = 8;
@@ -87,7 +88,6 @@ public class BoardEval {
                 }
             }
         }
-
     }
 
     /**
@@ -95,11 +95,14 @@ public class BoardEval {
      * **/
     public static void getPossibleMoves(HashMap<Piece, ArrayList<int[]>> pieceMap, Piece[][] pieces, int[] mostRecentPieceMov,
                                          boolean[][] squaresControlledW, boolean[][] squaresControlledB){
+        // Copy to avoid ConCurrentModificationException
+        HashMap<Piece, ArrayList<int[]>> ans = new HashMap<>(pieceMap);
+
         // Reset
         pieceMap.replaceAll((p, v) -> new ArrayList<int[]>());
 
-        // For every black piece
-        for(Piece p : pieceMap.keySet()){
+        // For every piece
+        for(Piece p : ans.keySet()){
             ArrayList<int[]> possibleMoves = new ArrayList<int[]>();
 
             // For every square on the board
@@ -133,13 +136,13 @@ public class BoardEval {
                 setPieces(pieces, piecesCopy);
 
                 // Move piece to square and see if it results in check.
-                p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, prevCoords, false);
-                BoardEval.checkControlledSquares('b', squaresControlledW, squaresControlledB, piecesW, pieces);
+                p.playMove(arr[0], arr[1], piecesCopy, piecesW, piecesB, prevCoords, false);
+                BoardEval.checkControlledSquares('b', squaresControlledW, squaresControlledB, piecesB, piecesCopy);
 
                 if(!whiteKingInCheck)
                     moves.add(arr);
 
-                setPieces(piecesCopy, pieces);
+                //setPieces(piecesCopy, pieces);
             }
 
             piecesW.put(p, moves);
@@ -163,13 +166,13 @@ public class BoardEval {
                 setPieces(pieces, piecesCopy);
 
                 // Move piece to square and see if it results in check.
-                p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, prevCoords, false);
-                BoardEval.checkControlledSquares('w', squaresControlledW, squaresControlledB, piecesB, pieces);
+                p.playMove(arr[0], arr[1], piecesCopy, piecesW, piecesB, prevCoords, false);
+                BoardEval.checkControlledSquares('w', squaresControlledW, squaresControlledB, piecesW, piecesCopy);
 
                 if(!blackKingInCheck)
                     moves.add(arr);
 
-                setPieces(piecesCopy, pieces);
+                //setPieces(piecesCopy, pieces);
             }
 
             piecesB.put(p, moves);
@@ -186,7 +189,7 @@ public class BoardEval {
             double positionScore = boardPositionValues[p.getGridX()][p.getGridY()] * Piece.POSITION_WEIGHT;
             p.setValue(baseScore + mobilityScore + positionScore);
 
-            //possibleMovesW += piecesW.get(p).size();
+            possibleMovesW += piecesW.get(p).size();
         }
 
         for(Piece p : piecesB.keySet()){
@@ -195,7 +198,7 @@ public class BoardEval {
             double positionScore = boardPositionValues[p.getGridX()][p.getGridY()] * Piece.POSITION_WEIGHT;
             p.setValue(baseScore + mobilityScore + positionScore);
 
-            //possibleMovesB += piecesB.get(p).size();
+            possibleMovesB += piecesB.get(p).size();
         }
     }
 
@@ -216,8 +219,22 @@ public class BoardEval {
         BoardEval.removeIllegalMovesW(squaresControlledW, squaresControlledB, piecesW, piecesB, pieces, prevCoords);
         BoardEval.removeIllegalMovesB(squaresControlledW, squaresControlledB, piecesW, piecesB, pieces, prevCoords);
 
+        for(Piece p : piecesW.keySet()){
+            System.out.print(p + ": ");
+            for(int arr[] : piecesW.get(p))
+                System.out.print("(" + arr[0] + ", " + arr[1] + ") ");
+            System.out.println();
+        } System.out.println();
+
         BoardEval.cleanUpHashMap('w', piecesW);
         BoardEval.cleanUpHashMap('b', piecesB);
+
+        for(Piece p : piecesW.keySet()){
+            System.out.print(p + ": ");
+            for(int arr[] : piecesW.get(p))
+                System.out.print("(" + arr[0] + ", " + arr[1] + ") ");
+            System.out.println();
+        } System.out.println();
 
         BoardEval.givePieceScores(piecesW, piecesB);
 
@@ -243,11 +260,14 @@ public class BoardEval {
     public static int numPossibleMovesB(){ return BoardEval.possibleMovesB; }
 
     public static void cleanUpHashMap(char side, HashMap<Piece, ArrayList<int[]>> map){
+        //map.entrySet().removeIf(entry -> entry.getType().equals(""));
+
         ArrayList<Piece> toDelete = new ArrayList<Piece>();
 
-        for(Piece p : map.keySet())
-            if(p.getSide() != side || p.getType().equals(""))
+        for(Piece p : map.keySet()) {
+            if (p.getSide() != side || p.getType().equals(""))
                 toDelete.add(p);
+        }
 
         for(Piece p : toDelete)
             map.remove(p);
