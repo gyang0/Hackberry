@@ -1,13 +1,9 @@
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-
 
 /**
  * AI for user to play against.
- *
- * Current makes random moves from the first possible piece.
+ * Makes random moves from the first possible piece.
  */
 
 public class HackberryAI {
@@ -132,6 +128,13 @@ public class HackberryAI {
             }
 
             pieces[best[0]][best[1]].playMove(...args...);
+        }*/
+
+        /*for(Piece p : piecesB.keySet()){
+            System.out.print(p + ": ");
+            for(int arr[] : piecesB.get(p))
+                System.out.print("(" + arr[0] + ", " + arr[1] + ") ");
+            System.out.println();
         }*/
 
         for(Piece p : piecesB.keySet()){
