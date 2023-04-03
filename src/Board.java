@@ -2,7 +2,7 @@
  * Draws the entire board, combining the Piece.java and Square.java.
  *
  * @author Gene Yang
- * @version January 26, 2023
+ * @version April 3, 2023
  * **/
 
 import javax.swing.*;
@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Board extends JComponent implements MouseListener {
-    private String boardState[][] = {
+    /*private String boardState[][] = {
             {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
             {"bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"},
             {"", "", "", "", "", "", "", ""},
@@ -22,7 +22,7 @@ public class Board extends JComponent implements MouseListener {
             {"", "", "", "", "", "", "", ""},
             {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
             {"wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr"}
-    };
+    };*/
 
     /*
     private String boardState[][] = {
@@ -35,6 +35,18 @@ public class Board extends JComponent implements MouseListener {
             {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
             {"wr", "wn", "wb", "wq", "", "wb", "wn", "wr"}
     };*/
+
+
+    private String boardState[][] = {
+            {"br", "bk", "bb", "", "", "", "", ""},
+            {"bp", "bp", "", "", "", "", "", ""},
+            {"bn", "", "", "wp", "", "", "", ""},
+            {"", "", "", "", "", "", "", ""},
+            {"", "", "", "", "", "", "", ""},
+            {"", "", "wq", "", "", "", "", ""},
+            {"", "", "", "", "wk", "", "", ""},
+            {"", "", "", "", "", "", "", ""}
+    };
 
     private HackberryAI hackberryAI; // AI
     private char userSide = 'w'; // User's side
@@ -146,25 +158,27 @@ public class Board extends JComponent implements MouseListener {
     }
 
     public void update(){
-        BoardEval.update(squaresControlledW, squaresControlledB, piecesW, piecesB, pieces, mostRecentPieceMov, prevCoords, whiteTurn);
+        BoardEval.update(squaresControlledW, squaresControlledB,
+                         pieces, mostRecentPieceMov, prevCoords,
+                         piecesW, piecesB, whiteTurn);
     }
 
     public boolean checkGameOver(){
         if(BoardEval.gameOver()) {
             // Checkmate by black
-            if(BoardEval.whiteKingInCheck() && BoardEval.numPossibleMovesW() == 0 && whiteTurn)
+            if(BoardEval.whiteKingInCheck() && BoardEval.possibleMovesW == 0 && whiteTurn)
                 setMessage("Game over - Black wins by checkmate.");
 
             // Checkmate by white
-            if(BoardEval.blackKingInCheck() && BoardEval.numPossibleMovesB() == 0 && !whiteTurn)
+            if(BoardEval.blackKingInCheck() && BoardEval.possibleMovesB == 0 && !whiteTurn)
                 setMessage("Game over - White wins by checkmate.");
 
             // Stalemate by black
-            if(!BoardEval.whiteKingInCheck() && BoardEval.numPossibleMovesW() == 0 && whiteTurn)
+            if(!BoardEval.whiteKingInCheck() && BoardEval.possibleMovesW == 0 && whiteTurn)
                 setMessage("Game over - Stalemate.");
 
             // Stalemate by white
-            if(!BoardEval.blackKingInCheck() && BoardEval.numPossibleMovesB() == 0 && !whiteTurn)
+            if(!BoardEval.blackKingInCheck() && BoardEval.possibleMovesB == 0 && !whiteTurn)
                 setMessage("Game over - Stalemate.");
 
             this.gameOver = true;
@@ -292,8 +306,8 @@ public class Board extends JComponent implements MouseListener {
         pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, prevCoords, true);
 
         // Remove empty pieces in HashMap piecesW
-        if(whiteTurn) BoardEval.cleanUpHashMap('w', piecesW);
-        else BoardEval.cleanUpHashMap('b', piecesB);
+        if(whiteTurn) BoardEval.cleanUpHashMap(piecesW, 'w');
+        else BoardEval.cleanUpHashMap(piecesB, 'b');
 
         // A few changes to make.
         pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
@@ -330,7 +344,21 @@ public class Board extends JComponent implements MouseListener {
                    (BoardEval.whiteKingInCheck() && pieces[i][j].getType().equals("wk"))){
                     g.setColor(CHECK_COLOR);
                     g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
+
+                    //System.out.println("it's a check");
                 }
+
+                /* DEBUGGING */
+                /*if(squaresControlledW[i][j] && squaresControlledB[i][j]){
+                    g.setColor(new Color(0, 255, 0, 100));
+                }
+                else if(squaresControlledW[i][j]){
+                    g.setColor(new Color(255, 0, 0, 100));
+                }
+                else if(squaresControlledB[i][j]){
+                    g.setColor(new Color(0, 0, 255, 100));
+                }*/
+                g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
 
                 //g.drawString(String.valueOf(pieces[i][j].hashCode()), i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET);
             }
@@ -380,8 +408,11 @@ public class Board extends JComponent implements MouseListener {
             // Update notation
             Notation.updateMoves(promoX, promoY, pieces[promoX][promoY]);
 
-            hackberryAI.makeMove(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
             whiteTurn = !whiteTurn;
+            update();
+
+            hackberryAI.makeMove(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
+            //whiteTurn = !whiteTurn;
 
             // Update controlled squares
             update();
@@ -453,19 +484,28 @@ public class Board extends JComponent implements MouseListener {
                 }
 
             }
+
+            //update();
             repaint();
         }
 
 
         if(numClicks == 2) {
             //System.out.println(prevCoords[0] + " " + prevCoords[1]);
-            hackberryAI.makeMove(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
+            //hackberryAI.makeMove(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
 
             // Update controlled squares
             update();
             if(checkGameOver()) return;
 
             whiteTurn = !whiteTurn;
+
+            //System.out.println(prevCoords[0] + " " + prevCoords[1]);
+            hackberryAI.makeMove(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
+
+            update();
+            if(checkGameOver()) return;
+
             numClicks = 0;
             repaint();
         }
