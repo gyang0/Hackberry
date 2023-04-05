@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Board extends JComponent implements MouseListener {
-    /*private String boardState[][] = {
+    private String boardState[][] = {
             {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
             {"bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"},
             {"", "", "", "", "", "", "", ""},
@@ -22,7 +22,7 @@ public class Board extends JComponent implements MouseListener {
             {"", "", "", "", "", "", "", ""},
             {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
             {"wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr"}
-    };*/
+    };
 
     /*
     private String boardState[][] = {
@@ -36,7 +36,7 @@ public class Board extends JComponent implements MouseListener {
             {"wr", "wn", "wb", "wq", "", "wb", "wn", "wr"}
     };*/
 
-
+/*
     private String boardState[][] = {
             {"br", "bk", "bb", "", "", "", "", ""},
             {"bp", "bp", "", "", "", "", "", ""},
@@ -46,7 +46,7 @@ public class Board extends JComponent implements MouseListener {
             {"", "", "wq", "", "", "", "", ""},
             {"", "", "", "", "wk", "", "", ""},
             {"", "", "", "", "", "", "", ""}
-    };
+    };*/
 
     private HackberryAI hackberryAI; // AI
     private char userSide = 'w'; // User's side
@@ -57,9 +57,6 @@ public class Board extends JComponent implements MouseListener {
 
     // Just stores the positions of the pieces. (HashMap does the rest, below.)
     private Piece[][] pieces;
-
-    // Copy of pieces array used for possible move generation.
-    private Piece[][] piecesCopy;
 
     private Square[][] squares;
 
@@ -84,7 +81,7 @@ public class Board extends JComponent implements MouseListener {
     // Third and fourth indices hold the x and y position of black's move.
     private int[] mostRecentPieceMov = {-1, -1};
 
-    private Piece curPiece = new Piece(0, 0, "", ' '); // Currently selected piece
+    private Piece curPiece = new Piece(0, 0, "", ' ', 0); // Currently selected piece
 
     private boolean whiteTurn = true;
 
@@ -137,14 +134,11 @@ public class Board extends JComponent implements MouseListener {
      * **/
     public void initPieces(){
         pieces = new Piece[NUM_SQUARES][NUM_SQUARES];
-        piecesCopy = new Piece[NUM_SQUARES][NUM_SQUARES];
 
         for(int i = 0; i < NUM_SQUARES; i++){
             for(int j = 0; j < NUM_SQUARES; j++){
-                piecesCopy[j][i] = new Piece(j, i, "", ' ');
-
                 if(!boardState[i][j].equals("")){
-                    pieces[j][i] = new Piece(j, i, boardState[i][j], boardState[i][j].charAt(0));
+                    pieces[j][i] = new Piece(j, i, boardState[i][j], boardState[i][j].charAt(0), 0);
 
                     // Reversed coordinates for display
                     if(boardState[i][j].charAt(0) == 'w')
@@ -152,15 +146,29 @@ public class Board extends JComponent implements MouseListener {
                     else
                         piecesB.put(pieces[j][i], new ArrayList<int[]>());
                 } else
-                    pieces[j][i] = new Piece(j, i, "", ' ');
+                    pieces[j][i] = new Piece(j, i, "", ' ', 0);
             }
         }
+    }
+
+    public static void cleanUpHashMap(HashMap<Piece, ArrayList<int[]>> map, char side){
+        ArrayList<Piece> toDelete = new ArrayList<Piece>();
+
+        for(Piece p : map.keySet())
+            if(p.getSide() != side || p.getType().equals(""))
+                toDelete.add(p);
+
+        for(Piece p : toDelete)
+            map.remove(p);
     }
 
     public void update(){
         BoardEval.update(squaresControlledW, squaresControlledB,
                          pieces, mostRecentPieceMov, prevCoords,
                          piecesW, piecesB, whiteTurn);
+
+        cleanUpHashMap(piecesW, 'w');
+        cleanUpHashMap(piecesB, 'b');
     }
 
     public boolean checkGameOver(){
@@ -269,19 +277,19 @@ public class Board extends JComponent implements MouseListener {
         boolean done = false;
         switch(choice){
             case 0:
-                pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wr" : "br", promoOption.side);
+                pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wr" : "br", promoOption.side, 0);
                 done = true;
             break;
             case 1:
-                pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wn" : "bn", promoOption.side);
+                pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wn" : "bn", promoOption.side, 0);
                 done = true;
             break;
             case 2:
-                pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wb" : "bb", promoOption.side);
+                pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wb" : "bb", promoOption.side, 0);
                 done = true;
             break;
             case 3:
-                pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wq" : "bq", promoOption.side);
+                pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wq" : "bq", promoOption.side, 0);
                 done = true;
             break;
         }
@@ -304,10 +312,6 @@ public class Board extends JComponent implements MouseListener {
         Notation.updateMoves(i, j, pieces[prevCoords[0]][prevCoords[1]]);
 
         pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, prevCoords, true);
-
-        // Remove empty pieces in HashMap piecesW
-        if(whiteTurn) BoardEval.cleanUpHashMap(piecesW, 'w');
-        else BoardEval.cleanUpHashMap(piecesB, 'b');
 
         // A few changes to make.
         pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
@@ -348,6 +352,16 @@ public class Board extends JComponent implements MouseListener {
                     //System.out.println("it's a check");
                 }
 
+                if(squaresControlledW[i][j]){
+                    g.setColor(new Color(0, 0, 255, 50));
+                    g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
+                }
+                if(squaresControlledB[i][j]){
+                    g.setColor(new Color(255, 0, 0, 50));
+                    g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
+                }
+
+
                 /* DEBUGGING */
                 /*if(squaresControlledW[i][j] && squaresControlledB[i][j]){
                     g.setColor(new Color(0, 255, 0, 100));
@@ -360,7 +374,8 @@ public class Board extends JComponent implements MouseListener {
                 }*/
                 g.fillRoundRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH, 0, 0);
 
-                //g.drawString(String.valueOf(pieces[i][j].hashCode()), i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET);
+                g.setColor(Color.BLACK);
+                g.drawString(String.valueOf(pieces[i][j].hashCode()), i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET);
             }
         }
 
@@ -474,7 +489,7 @@ public class Board extends JComponent implements MouseListener {
                         return;
 
                     // Currently selected piece
-                    curPiece.setPiece(i, j, pieces[i][j].getType(), pieces[i][j].getSide());
+                    curPiece.setPiece(i, j, pieces[i][j].getType(), pieces[i][j].getSide(), pieces[i][j].numMoves);
                     squares[i][j].selectSquare();
 
                     prevCoords[0] = i;
