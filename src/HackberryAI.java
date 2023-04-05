@@ -36,16 +36,16 @@ public class HackberryAI {
 
         switch(choice){
             case 0:
-                pieces[x][y].setPiece(x, y, this.side == 'w' ? "wr" : "br", this.side);
+                pieces[x][y].setPiece(x, y, this.side == 'w' ? "wr" : "br", this.side, 0);
                 break;
             case 1:
-                pieces[x][y].setPiece(x, y, this.side == 'w' ? "wn" : "bn", this.side);
+                pieces[x][y].setPiece(x, y, this.side == 'w' ? "wn" : "bn", this.side, 0);
                 break;
             case 2:
-                pieces[x][y].setPiece(x, y, this.side == 'w' ? "wb" : "bb", this.side);
+                pieces[x][y].setPiece(x, y, this.side == 'w' ? "wb" : "bb", this.side, 0);
                 break;
             case 3:
-                pieces[x][y].setPiece(x, y, this.side == 'w' ? "wq" : "bq", this.side);
+                pieces[x][y].setPiece(x, y, this.side == 'w' ? "wq" : "bq", this.side, 0);
                 break;
         }
     }
@@ -88,7 +88,7 @@ public class HackberryAI {
     public void setPieces(Piece[][] from, Piece[][] to){
         for(int r = 0; r < NUM_SQUARES; r++) {
             for (int c = 0; c < NUM_SQUARES; c++) {
-                to[r][c].setPiece(r, c, from[r][c].getType(), from[r][c].getSide());
+                to[r][c].setPiece(r, c, from[r][c].getType(), from[r][c].getSide(), from[r][c].numMoves);
             }
         }
     }
