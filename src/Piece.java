@@ -63,7 +63,22 @@ public class Piece {
         this.value = -1;
     }
 
-    public Piece(int i, int j, String type, char side){
+    public Piece(Piece p){
+        this.x = p.x;
+        this.y = p.y;
+
+        this.gridX = p.gridX;
+        this.gridY = p.gridY;
+
+        this.type = p.type;
+        this.side = p.side;
+
+        this.numMoves = p.numMoves;
+        this.baseValue = p.baseValue;
+        this.value = p.value;
+    }
+
+    public Piece(int i, int j, String type, char side, int numMoves){
         this.x = i * SQUARE_WIDTH + X_OFFSET;
         this.y = j * SQUARE_WIDTH + Y_OFFSET;
 
@@ -73,25 +88,12 @@ public class Piece {
         this.type = type;
         this.side = side;
 
+        this.numMoves = numMoves;
         this.baseValue = this.assignValue();
         this.value = this.baseValue;
     }
 
-    public Piece(Piece o){
-        this.x = o.x;
-        this.y = o.y;
-
-        this.gridX = o.gridX;
-        this.gridY = o.gridY;
-
-        this.type = o.type;
-        this.side = o.side;
-
-        this.baseValue = this.assignValue();
-        this.value = this.baseValue;
-    }
-
-    public void setPiece(int x, int y, String type, char side){
+    public void setPiece(int x, int y, String type, char side, int numMoves){
         this.x = x * SQUARE_WIDTH + X_OFFSET;
         this.y = y * SQUARE_WIDTH + Y_OFFSET;
 
@@ -101,6 +103,7 @@ public class Piece {
         this.type = type;
         this.side = side;
 
+        this.numMoves = numMoves;
         this.baseValue = this.assignValue();
         this.value = this.baseValue;
     }
@@ -429,19 +432,19 @@ public class Piece {
         // En passant
         // The target pawn must have moved in the last move, moved two squares up, and be next to the current pawn.
         if (this.type.equals("wp") && j == this.gridY - 1 && Math.abs(i - this.gridX) == 1 && pieces[i][j].getSide() == ' ') {
-            pieces[i][j].setPiece(i, j, this.type, this.side);
-            pieces[i][j + 1].setPiece(i, j + 1, "", ' ');
+            pieces[i][j].setPiece(i, j, this.type, this.side, this.numMoves);
+            pieces[i][j + 1].setPiece(i, j + 1, "", ' ', 0);
         } else if (this.type.equals("bp") && j == this.gridY + 1 && Math.abs(i - this.gridX) == 1 && pieces[i][j].getSide() == ' ') {
-            pieces[i][j].setPiece(i, j, this.type, this.side);
-            pieces[i][j - 1].setPiece(i, j - 1, "", ' ');
+            pieces[i][j].setPiece(i, j, this.type, this.side, this.numMoves);
+            pieces[i][j - 1].setPiece(i, j - 1, "", ' ', 0);
         }
 
         // Castling - white, kingside & queenside
         else if (this.type.equals("wk") && this.numMoves == 0) {
             if (i == 6 && pieces[7][7].getType().equals("wr") && pieces[7][7].numMoves == 0) {
-                pieces[5][7].setPiece(5, 7, "wr", 'w');
-                pieces[6][7].setPiece(6, 7, "wk", 'w');
-                pieces[7][7].setPiece(7, 7, "", ' ');
+                pieces[5][7].setPiece(5, 7, "wr", 'w', 0);
+                pieces[6][7].setPiece(6, 7, "wk", 'w', 0);
+                pieces[7][7].setPiece(7, 7, "", ' ', 0);
 
                 // Put pieces in HashMap
                 if (updateHashMap) {
@@ -450,9 +453,9 @@ public class Piece {
                 }
 
             } else if (i == 2 && pieces[0][7].getType().equals("wr") && pieces[0][7].numMoves == 0) {
-                pieces[3][7].setPiece(3, 7, "wr", 'w');
-                pieces[2][7].setPiece(2, 7, "wk", 'w');
-                pieces[0][7].setPiece(0, 7, "", ' ');
+                pieces[3][7].setPiece(3, 7, "wr", 'w', 0);
+                pieces[2][7].setPiece(2, 7, "wk", 'w', 0);
+                pieces[0][7].setPiece(0, 7, "", ' ', 0);
 
                 // Put pieces in HashMap
                 if (updateHashMap) {
@@ -465,9 +468,9 @@ public class Piece {
         // Castling - black, kingside & queenside
         else if (this.type.equals("bk") && this.numMoves == 0) {
             if (i == 6 && pieces[7][0].getType().equals("br") && pieces[7][0].numMoves == 0) {
-                pieces[5][0].setPiece(5, 0, "br", 'b');
-                pieces[6][0].setPiece(6, 0, "bk", 'b');
-                pieces[7][0].setPiece(7, 0, "", ' ');
+                pieces[5][0].setPiece(5, 0, "br", 'b', 0);
+                pieces[6][0].setPiece(6, 0, "bk", 'b', 0);
+                pieces[7][0].setPiece(7, 0, "", ' ', 0);
 
                 // Put pieces in HashMap
                 if (updateHashMap) {
@@ -476,9 +479,9 @@ public class Piece {
                 }
 
             } else if (i == 2 && pieces[0][0].getType().equals("br") && pieces[0][0].numMoves == 0) {
-                pieces[3][0].setPiece(3, 0, "br", 'b');
-                pieces[2][0].setPiece(2, 0, "bk", 'b');
-                pieces[0][0].setPiece(0, 0, "", ' ');
+                pieces[3][0].setPiece(3, 0, "br", 'b', 0);
+                pieces[2][0].setPiece(2, 0, "bk", 'b', 0);
+                pieces[0][0].setPiece(0, 0, "", ' ', 0);
 
                 // Put pieces in HashMap
                 if (updateHashMap) {
@@ -490,13 +493,13 @@ public class Piece {
         }
 
         // Other pieces
-        pieces[i][j].setPiece(i, j, this.type, this.side);
+        pieces[i][j].setPiece(i, j, this.type, this.side, this.numMoves);
         if (updateHashMap) {
             if (this.side == 'w') piecesW.put(pieces[i][j], new ArrayList<int[]>());
             else if (this.side == 'b') piecesB.put(pieces[i][j], new ArrayList<int[]>());
         }
 
-        pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, "", ' ');
+        pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, "", ' ', 0);
 
         // Set numMoves
         if(updateHashMap){
@@ -517,6 +520,29 @@ public class Piece {
     @Override
     public String toString(){
         return "[ " + "(" + this.gridX + ", " + this.gridY + ") " + this.getType() + " " + this.getSide() + " ]";
+    }
+
+    @Override
+    public int hashCode(){
+        return (this.side == 'w' ? 1 : 2)*64*64*64*64 + convertType() * 64*64*64 + this.gridX * 64*64 + this.gridY * 64 + this.numMoves;
+    }
+
+    public int convertType(){
+        switch (this.type){
+            case "wp": return 1;
+            case "wr": return 2;
+            case "wn": return 3;
+            case "wb": return 4;
+            case "wq": return 5;
+            case "wk": return 6;
+            case "bp": return 7;
+            case "br": return 8;
+            case "bn": return 9;
+            case "bb": return 10;
+            case "bq": return 11;
+            case "bk": return 12;
+        }
+        return 15;
     }
 
 
