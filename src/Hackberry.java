@@ -1,3 +1,4 @@
+
 /**
  * This is where most of the stuff will take place.
  * All methods will be combined to set turns, make moves, etc.
@@ -7,12 +8,19 @@
  * TODO: Javadoc comments
  * TODO: Different side toggle
  * TODO: if two knights can move to the same square, then the notation should reflect that. (same for pawns, rooks, queens, bishops)
- * TODO: 50-move rule (no pawn moves or captures), stalemate, checkmate, draw by insufficient material
- * TODO: threefold repetition (this should check the HashMaps, not the board)
  * TODO: pawn values should increase with every step taken.
  * TODO: make the notation work with captures, castling, en passant, and promotions.
  * TODO: AI doesn't recognize captures as being valuable.
+ *
+ * TODO: computer tries to castle out of check when it's still a check.
+ * TODO: computer doesn't realize that a king can capture out of check.
+ * TODO: weird board evaluation in-between mouse clicks
  * **/
+
+/** Test cases to verify correctness
+ * Puzzle #1: not using castling when in check
+ * Puzzle #2: using pawn promotion to block a check
+ */
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,7 +29,7 @@ import java.awt.*;
  * Chess piece images from https://commons.wikimedia.org/wiki/Category:PNG_chess_pieces/Standard_transparent
  *
  * @author Gene Yang
- * @version April 3, 2023
+ * @version April 8, 2023
  **/
 
 public class Hackberry {
