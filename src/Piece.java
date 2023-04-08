@@ -425,10 +425,8 @@ public class Piece {
      * @param piecesW - The piecesW HashMap in Board.java.
      * @param piecesB - The piecesB HashMap in Board.java.
      * @param prevCoords - Coordinates of previous piece that was moved.
-     * @param updateHashMap - Whether to actually manipulate the HashMap or not, depends on if we're checking illegal
-     *                        moves or if we're simulating an actual move.
      * **/
-    public void playMove(int i, int j, Piece[][] pieces, HashMap<Piece, ArrayList<int[]>> piecesW, HashMap<Piece, ArrayList<int[]>> piecesB, int[] prevCoords, boolean updateHashMap) {
+    public void playMove(int i, int j, Piece[][] pieces, HashMap<Piece, ArrayList<int[]>> piecesW, HashMap<Piece, ArrayList<int[]>> piecesB, int[] prevCoords) {
         // En passant
         // The target pawn must have moved in the last move, moved two squares up, and be next to the current pawn.
         if (this.type.equals("wp") && j == this.gridY - 1 && Math.abs(i - this.gridX) == 1 && pieces[i][j].getSide() == ' ') {
@@ -447,10 +445,10 @@ public class Piece {
                 pieces[7][7].setPiece(7, 7, "", ' ', 0);
 
                 // Put pieces in HashMap
-                if (updateHashMap) {
+                /*if (updateHashMap) {
                     piecesW.put(pieces[6][7], new ArrayList<int[]>());
                     piecesW.put(pieces[5][7], new ArrayList<int[]>());
-                }
+                }*/
 
             } else if (i == 2 && pieces[0][7].getType().equals("wr") && pieces[0][7].numMoves == 0) {
                 pieces[3][7].setPiece(3, 7, "wr", 'w', 0);
@@ -458,10 +456,10 @@ public class Piece {
                 pieces[0][7].setPiece(0, 7, "", ' ', 0);
 
                 // Put pieces in HashMap
-                if (updateHashMap) {
+                /*if (updateHashMap) {
                     piecesW.put(pieces[3][7], new ArrayList<int[]>());
                     piecesW.put(pieces[2][7], new ArrayList<int[]>());
-                }
+                }*/
 
             }
         }
@@ -473,10 +471,10 @@ public class Piece {
                 pieces[7][0].setPiece(7, 0, "", ' ', 0);
 
                 // Put pieces in HashMap
-                if (updateHashMap) {
+                /*if (updateHashMap) {
                     piecesB.put(pieces[5][0], new ArrayList<int[]>());
                     piecesB.put(pieces[6][0], new ArrayList<int[]>());
-                }
+                }*/
 
             } else if (i == 2 && pieces[0][0].getType().equals("br") && pieces[0][0].numMoves == 0) {
                 pieces[3][0].setPiece(3, 0, "br", 'b', 0);
@@ -484,28 +482,30 @@ public class Piece {
                 pieces[0][0].setPiece(0, 0, "", ' ', 0);
 
                 // Put pieces in HashMap
-                if (updateHashMap) {
+                /*if (updateHashMap) {
                     piecesB.put(pieces[3][0], new ArrayList<int[]>());
                     piecesB.put(pieces[2][0], new ArrayList<int[]>());
-                }
+                }*/
 
             }
         }
 
         // Other pieces
-        pieces[i][j].setPiece(i, j, this.type, this.side, this.numMoves);
-        if (updateHashMap) {
+        pieces[i][j].setPiece(i, j, this.type, this.side, this.numMoves + 1);
+
+        // Remove appropriate pieces and set numMoves
+        pieces[this.gridX][this.gridY] = new Piece();
+        pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
+
+        /*if (updateHashMap) {
             if (this.side == 'w') piecesW.put(pieces[i][j], new ArrayList<int[]>());
             else if (this.side == 'b') piecesB.put(pieces[i][j], new ArrayList<int[]>());
-        }
 
-        pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, "", ' ', 0);
+            // Remove piece from HashMap
+            if(this.side == 'w') piecesW.remove(new Piece(pieces[this.gridX][this.gridY]));
+            else if(this.side == 'b') piecesB.remove(new Piece(pieces[this.gridX][this.gridY]));
+        }*/
 
-        // Set numMoves
-        if(updateHashMap){
-            pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
-            pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
-        }
     }
 
     @Override
@@ -524,7 +524,11 @@ public class Piece {
 
     @Override
     public int hashCode(){
-        return (this.side == 'w' ? 1 : 2)*64*64*64*64 + convertType() * 64*64*64 + this.gridX * 64*64 + this.gridY * 64 + this.numMoves;
+        return (this.side == 'w' ? 1 : 2) * (int)Math.pow(NUM_SQUARES*NUM_SQUARES, 4) +
+                convertType() * (int)Math.pow(NUM_SQUARES*NUM_SQUARES, 3) +
+                this.gridX * (int)Math.pow(NUM_SQUARES*NUM_SQUARES, 2) +
+                this.gridY * (NUM_SQUARES*NUM_SQUARES) +
+                this.numMoves;
     }
 
     public int convertType(){
