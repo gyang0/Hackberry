@@ -140,7 +140,16 @@ public class HackberryAI {
         for(Piece p : piecesB.keySet()){
             for(int[] arr : piecesB.get(p)){
                 if(arr.length != 0) {
-                    p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, prevCoords, true);
+                    p.playMove(arr[0], arr[1], pieces, piecesW, piecesB, prevCoords);
+                    //System.out.println("Move: " + p + " to (" + arr[0] + ", " + arr[1] + ")");
+
+                    if(p.getType().equals("bp") && arr[1] == 7){
+                        promotePawn(pieces, arr[0], arr[1]);
+                    } else if(p.getType().equals("wp") && arr[1] == 0){
+                        promotePawn(pieces, arr[0], arr[1]);
+                    }
+
+
                     return;
                 }
             }
