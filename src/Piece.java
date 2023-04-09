@@ -344,7 +344,7 @@ public class Piece {
 
             case "wk":
                 // Kingside castling
-                if(this.numMoves == 0 && toX == 6 && toY == this.gridY){
+                if(this.numMoves == 0 && toX == 6 && toY == this.gridY && this.gridX == 4 && this.gridY == 7){
                     // Rook hasn't moved
                     if(pieces[7][this.gridY].getType().equals("wr") && pieces[7][this.gridY].numMoves == 0){
                         // All spaces cleared
@@ -356,7 +356,7 @@ public class Piece {
                 }
 
                 // Queenside castling
-                else if(this.numMoves == 0 && toX == 2 && toY == this.gridY){
+                else if(this.numMoves == 0 && toX == 2 && toY == this.gridY && this.gridX == 4 && this.gridY == 7){
                     // Rook hasn't moved
                     if(pieces[0][this.gridY].getType().equals("wr") && pieces[0][this.gridY].numMoves == 0){
                         // All spaces cleared
@@ -376,7 +376,7 @@ public class Piece {
 
             case "bk":
                 // Kingside castling
-                if(this.numMoves == 0 && toX == 6 && toY == this.gridY){
+                if(this.numMoves == 0 && toX == 6 && toY == this.gridY && this.gridX == 4 && this.gridY == 0){
                     // Rook hasn't moved
                     if(pieces[7][this.gridY].getType().equals("br") && pieces[7][this.gridY].numMoves == 0){
                         // All spaces cleared
@@ -388,7 +388,7 @@ public class Piece {
                 }
 
                 // Queenside castling
-                else if(this.numMoves == 0 && toX == 2 && toY == this.gridY){
+                else if(this.numMoves == 0 && toX == 2 && toY == this.gridY && this.gridX == 4 && this.gridY == 0){
                     // Rook hasn't moved
                     if(pieces[0][this.gridY].getType().equals("br") && pieces[0][this.gridY].numMoves == 0){
                         // All spaces cleared
@@ -438,8 +438,8 @@ public class Piece {
         }
 
         // Castling - white, kingside & queenside
-        else if (this.type.equals("wk") && this.numMoves == 0) {
-            if (i == 6 && pieces[7][7].getType().equals("wr") && pieces[7][7].numMoves == 0) {
+        else if (this.type.equals("wk") && this.numMoves == 0 && this.gridX == 4 && this.gridY == 7) {
+            if (i == 6 && j == 7 && pieces[7][7].getType().equals("wr") && pieces[7][7].numMoves == 0) {
                 pieces[5][7].setPiece(5, 7, "wr", 'w', 0);
                 pieces[6][7].setPiece(6, 7, "wk", 'w', 0);
                 pieces[7][7].setPiece(7, 7, "", ' ', 0);
@@ -450,7 +450,7 @@ public class Piece {
                     piecesW.put(pieces[5][7], new ArrayList<int[]>());
                 }*/
 
-            } else if (i == 2 && pieces[0][7].getType().equals("wr") && pieces[0][7].numMoves == 0) {
+            } else if (i == 2 && j == 7 && pieces[0][7].getType().equals("wr") && pieces[0][7].numMoves == 0) {
                 pieces[3][7].setPiece(3, 7, "wr", 'w', 0);
                 pieces[2][7].setPiece(2, 7, "wk", 'w', 0);
                 pieces[0][7].setPiece(0, 7, "", ' ', 0);
@@ -464,8 +464,8 @@ public class Piece {
             }
         }
         // Castling - black, kingside & queenside
-        else if (this.type.equals("bk") && this.numMoves == 0) {
-            if (i == 6 && pieces[7][0].getType().equals("br") && pieces[7][0].numMoves == 0) {
+        else if (this.type.equals("bk") && this.numMoves == 0 && this.gridX == 4 && this.gridY == 0) {
+            if (i == 6 && j == 0 && pieces[7][0].getType().equals("br") && pieces[7][0].numMoves == 0) {
                 pieces[5][0].setPiece(5, 0, "br", 'b', 0);
                 pieces[6][0].setPiece(6, 0, "bk", 'b', 0);
                 pieces[7][0].setPiece(7, 0, "", ' ', 0);
@@ -476,7 +476,7 @@ public class Piece {
                     piecesB.put(pieces[6][0], new ArrayList<int[]>());
                 }*/
 
-            } else if (i == 2 && pieces[0][0].getType().equals("br") && pieces[0][0].numMoves == 0) {
+            } else if (i == 2 && j == 0 && pieces[0][0].getType().equals("br") && pieces[0][0].numMoves == 0) {
                 pieces[3][0].setPiece(3, 0, "br", 'b', 0);
                 pieces[2][0].setPiece(2, 0, "bk", 'b', 0);
                 pieces[0][0].setPiece(0, 0, "", ' ', 0);
