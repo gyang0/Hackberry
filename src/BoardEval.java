@@ -41,6 +41,18 @@ public class BoardEval {
     }
 
 
+    public static HashMap<Piece, ArrayList<int[]>> reset(Piece[][] pieces, char side){
+        HashMap<Piece, ArrayList<int[]>> map = new HashMap<>();
+
+        for(int i = 0; i < NUM_SQUARES; i++){
+            for(int j = 0; j < NUM_SQUARES; j++)
+                if(pieces[i][j].getSide() == side)
+                    map.put(new Piece(pieces[i][j]), new ArrayList<int[]>());
+        }
+
+        return map;
+    }
+
 
     /**
      * Checks the squares controlled by the white side.
@@ -88,18 +100,6 @@ public class BoardEval {
             }
         }
 
-    }
-
-    public static HashMap<Piece, ArrayList<int[]>> reset(Piece[][] pieces, char side){
-        HashMap<Piece, ArrayList<int[]>> map = new HashMap<>();
-
-        for(int i = 0; i < NUM_SQUARES; i++){
-            for(int j = 0; j < NUM_SQUARES; j++)
-                if(pieces[i][j].getSide() == side)
-                    map.put(new Piece(pieces[i][j]), new ArrayList<int[]>());
-        }
-
-        return map;
     }
 
     /**
@@ -266,15 +266,13 @@ public class BoardEval {
 
                 // Move piece to square and see if it results in check.
                 piecesCopy[p.getGridX()][p.getGridY()].playMove(arr[0], arr[1], piecesCopy, piecesW, piecesB, new int[]{p.getGridX(), p.getGridY()});
-                //piecesCopy[p.getGridX()][p.getGridY()] = new Piece();
-                //piecesCopy[arr[0]][arr[1]] = new Piece(p);
 
                 BoardEval.checkControlledSquaresW(squaresControlledW, squaresControlledB, piecesCopy);
 
                 /*System.out.println();
                 for(int i = 0; i < NUM_SQUARES; i++){
                     for(int j = 0; j < NUM_SQUARES; j++)
-                        System.out.print("[" + pieces[j][i].getType() + (pieces[j][i].getType().length() == 2 ? "" : "  ") + "]");
+                        System.out.print("[" + piecesCopy[j][i].getType() + (piecesCopy[j][i].getType().length() == 2 ? "" : "  ") + "]");
                     System.out.println();
                 }
                 System.out.println();
