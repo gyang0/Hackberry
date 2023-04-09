@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Board extends JComponent implements MouseListener {
-    /*private String boardState[][] = {
+    private String boardState[][] = {
             {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
             {"bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"},
             {"", "", "", "", "", "", "", ""},
@@ -22,41 +22,8 @@ public class Board extends JComponent implements MouseListener {
             {"", "", "", "", "", "", "", ""},
             {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
             {"wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr"}
-    };*/
-
-    /*
-    private String boardState[][] = {
-            {"", "", "", "", "", "", "", ""},
-            {"", "", "", "", "", "", "", ""},
-            {"wk", "wp", "", "", "", "", "", "br"},
-            {"", "", "", "", "", "", "", ""},
-            {"", "", "", "", "", "", "", ""},
-            {"", "", "", "", "", "", "", ""},
-            {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
-            {"wr", "wn", "wb", "wq", "", "wb", "wn", "wr"}
-    };*/
-
-    /*private String boardState[][] = {
-            {"br", "bk", "bb", "", "", "", "", ""},
-            {"bp", "bp", "", "", "", "", "", ""},
-            {"bn", "", "", "wp", "", "", "", ""},
-            {"", "", "", "", "", "", "", ""},
-            {"", "", "", "", "", "", "", ""},
-            {"", "", "wq", "", "", "", "", ""},
-            {"", "", "", "", "wk", "", "", ""},
-            {"", "", "", "", "", "", "", ""}
-    };*/
-
-    private String boardState[][] = {
-            {"bp", "wr", "", "", "", "", "", ""},
-            {"", "", "", "", "", "", "", ""},
-            {"bp", "", "", "", "", "", "", ""},
-            {"bk", "", "", "", "", "", "", ""},
-            {"bp", "", "", "", "", "", "", ""},
-            {"wp", "", "", "", "", "", "", ""},
-            {"", "wp", "", "", "", "", "", ""},
-            {"wk", "", "", "", "", "", "", ""}
     };
+
 
     private HackberryAI hackberryAI; // AI
     private char userSide = 'w'; // User's side
@@ -173,8 +140,8 @@ public class Board extends JComponent implements MouseListener {
     }
 
     public void update(){
-        //BoardEval.checkControlledSquaresW(squaresControlledW, squaresControlledB, pieces, piecesW);
-        //BoardEval.checkControlledSquaresB(squaresControlledW, squaresControlledB, pieces, piecesB);
+        BoardEval.checkControlledSquaresW(squaresControlledW, squaresControlledB, pieces);
+        BoardEval.checkControlledSquaresB(squaresControlledW, squaresControlledB, pieces);
 
         piecesW = BoardEval.reset(pieces, 'w');
         piecesB = BoardEval.reset(pieces, 'b');
@@ -183,9 +150,9 @@ public class Board extends JComponent implements MouseListener {
         piecesB = BoardEval.getPossibleMovesB(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, piecesB);
 
         /*System.out.println("---------- Before removing illegal moves ----------");
-        for(Piece p : piecesW.keySet()){
+        for(Piece p : piecesB.keySet()){
             System.out.print(p + ": ");
-            for(int arr[] : piecesW.get(p))
+            for(int arr[] : piecesB.get(p))
                 System.out.print("(" + arr[0] + ", " + arr[1] + ") ");
             System.out.println();
         }
@@ -215,6 +182,7 @@ public class Board extends JComponent implements MouseListener {
             System.out.println();
         }
         System.out.println();*/
+
         System.out.println("White: ");
         for(Piece p : piecesW.keySet()){
             System.out.print(p + ": ");
@@ -572,7 +540,7 @@ public class Board extends JComponent implements MouseListener {
 
             }
 
-            update();
+            //update();
             repaint();
         }
 
