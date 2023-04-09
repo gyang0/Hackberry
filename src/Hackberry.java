@@ -1,4 +1,13 @@
 
+/** Milestones
+ * Jan 4, 2023 - Successfully recreated the Opera Game (Paul Morphy vs Duke of Brunswick & Count Isouard, 1858).
+ * Jan 8, 2023 - All legal moves are now recognized (hopefully), including: En passant, castling, checks, promotion, etc.
+ * Jan 26, 2023 - Moved from 8x8 board search to piece HashMaps. All legal moves are recognized as well. ~500K -> ~65K iterations.
+ * Feb 20, 2023 - AI makes random moves. Includes promotion, en passant, and castling.
+ * Apr 9, 2023 - Took a small break, organized BoardEval.java better and got things working again.
+ * **/
+
+
 /**
  * This is where most of the stuff will take place.
  * All methods will be combined to set turns, make moves, etc.
@@ -12,15 +21,10 @@
  * TODO: make the notation work with captures, castling, en passant, and promotions.
  * TODO: AI doesn't recognize captures as being valuable.
  *
- * TODO: computer tries to castle out of check when it's still a check.
- * TODO: computer doesn't realize that a king can capture out of check.
- * TODO: weird board evaluation in-between mouse clicks
+ * TODO: weird board evaluation in-between mouse clicks.
+ * TODO: checkmate & stalemate aren't recognized.
+ *
  * **/
-
-/** Test cases to verify correctness
- * Puzzle #1: not using castling when in check
- * Puzzle #2: using pawn promotion to block a check
- */
 
 import javax.swing.*;
 import java.awt.*;
