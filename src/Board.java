@@ -149,26 +149,8 @@ public class Board extends JComponent implements MouseListener {
         piecesW = BoardEval.getPossibleMovesW(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, piecesW);
         piecesB = BoardEval.getPossibleMovesB(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, piecesB);
 
-        /*System.out.println("---------- Before removing illegal moves ----------");
-        for(Piece p : piecesB.keySet()){
-            System.out.print(p + ": ");
-            for(int arr[] : piecesB.get(p))
-                System.out.print("(" + arr[0] + ", " + arr[1] + ") ");
-            System.out.println();
-        }
-        System.out.println();*/
-
         piecesW = BoardEval.removeIllegalMovesW(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, prevCoords, piecesW, piecesB);
         piecesB = BoardEval.removeIllegalMovesB(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, prevCoords, piecesW, piecesB);
-
-        /*System.out.println("---------- After removing illegal moves ----------");
-        for(Piece p : piecesW.keySet()){
-            System.out.print(p + ": ");
-            for(int arr[] : piecesW.get(p))
-                System.out.print("(" + arr[0] + ", " + arr[1] + ") ");
-            System.out.println();
-        }
-        System.out.println();*/
 
         BoardEval.givePieceScores(piecesW, piecesB);
         BoardEval.checkControlledSquaresW(squaresControlledW, squaresControlledB, pieces);
@@ -176,38 +158,9 @@ public class Board extends JComponent implements MouseListener {
         piecesW = BoardEval.cleanUpHashMap(piecesW, 'w');
         piecesB = BoardEval.cleanUpHashMap(piecesB, 'b');
 
-        /*for(int i = 0; i < NUM_SQUARES; i++){
-            for(int j = 0; j < NUM_SQUARES; j++)
-                System.out.print("[" + pieces[i][j].getType() + (pieces[i][j].getType().equals("") ? "  " : "") + "] ");
-            System.out.println();
-        }
-        System.out.println();*/
-
-        System.out.println("White: ");
-        for(Piece p : piecesW.keySet()){
-            System.out.print(p + ": ");
-            for(int arr[] : piecesW.get(p))
-                System.out.print("(" + arr[0] + ", " + arr[1] + ") ");
-            System.out.println();
-        }
-        System.out.println();
-
-        System.out.println("Black: ");
-        for(Piece p : piecesB.keySet()){
-            System.out.print(p + ": ");
-            for(int arr[] : piecesB.get(p))
-                System.out.print("(" + arr[0] + ", " + arr[1] + ") ");
-            System.out.println();
-        }
-        System.out.println();
-
         // Checkmate or stalemate
         if(BoardEval.possibleMovesW == 0 && whiteTurn) gameOver = true;
         if(BoardEval.possibleMovesB == 0 && !whiteTurn) gameOver = true;
-
-        //BoardEval.update(squaresControlledW, squaresControlledB,
-        //                 pieces, mostRecentPieceMov, prevCoords,
-        //                 piecesW, piecesB, whiteTurn);
     }
 
     public boolean checkGameOver(){
@@ -247,7 +200,7 @@ public class Board extends JComponent implements MouseListener {
         this.initPieces();
 
         // AI
-        hackberryAI = new HackberryAI(userSide == 'w' ? 'b' : 'w', 3);
+        hackberryAI = new HackberryAI(userSide == 'w' ? 'b' : 'w', 0);
 
         // Add mouse listener
         addMouseListener(this);
@@ -350,13 +303,12 @@ public class Board extends JComponent implements MouseListener {
         // Go through possible moves for that piece and check for legal moves
         Notation.updateMoves(i, j, pieces[prevCoords[0]][prevCoords[1]]);
 
-        pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, piecesW, piecesB, prevCoords);
+        pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces, prevCoords);
 
         // A few changes to make.
         //pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
         pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
 
-        whiteTurn = !whiteTurn;
         pieces[prevCoords[0]][prevCoords[1]].numMoves = 0;
         mostRecentPieceMov[0] = i;
         mostRecentPieceMov[1] = j;
@@ -463,11 +415,10 @@ public class Board extends JComponent implements MouseListener {
             // Update notation
             Notation.updateMoves(promoX, promoY, pieces[promoX][promoY]);
 
-            whiteTurn = !whiteTurn;
             update();
 
-            hackberryAI.makeMove(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
-            //whiteTurn = !whiteTurn;
+            hackberryAI.makeMove(pieces, mostRecentPieceMov, whiteTurn);
+            whiteTurn = !whiteTurn;
 
             // Update controlled squares
             update();
@@ -498,6 +449,7 @@ public class Board extends JComponent implements MouseListener {
                         // Go through possible moves for that piece and check for legal moves
                         if(this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
                             makeMove(i, j);
+                            whiteTurn = !whiteTurn;
 
                             // Update controlled squares
                             update();
@@ -537,26 +489,19 @@ public class Board extends JComponent implements MouseListener {
 
                     numClicks++;
                 }
-
             }
 
-            //update();
             repaint();
         }
 
 
         if(numClicks == 2) {
-            //System.out.println(prevCoords[0] + " " + prevCoords[1]);
-            //hackberryAI.makeMove(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
-
             // Update controlled squares
             update();
             if(checkGameOver()) return;
 
+            hackberryAI.makeMove(pieces, mostRecentPieceMov, whiteTurn);
             whiteTurn = !whiteTurn;
-
-            //System.out.println(prevCoords[0] + " " + prevCoords[1]);
-            hackberryAI.makeMove(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, piecesW, piecesB, prevCoords);
 
             update();
             if(checkGameOver()) return;
@@ -564,10 +509,6 @@ public class Board extends JComponent implements MouseListener {
             numClicks = 0;
             repaint();
         }
-
-        /*for(String s : Notation.PGNMoves){
-            System.out.println(s + " ");
-        }*/
     }
 
     @Override
