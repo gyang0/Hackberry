@@ -223,7 +223,7 @@ public class BoardEval {
                 // Copy of board state before move
                 setPieces(pieces, piecesCopy);
 
-                piecesCopy[p.getGridX()][p.getGridY()].playMove(arr[0], arr[1], piecesCopy, piecesW, piecesB, new int[]{p.getGridX(), p.getGridY()});
+                piecesCopy[p.getGridX()][p.getGridY()].playMove(arr[0], arr[1], piecesCopy, new int[]{p.getGridX(), p.getGridY()});
 
                 // Move piece to square and see if it results in check.
                 //piecesCopy[p.getGridX()][p.getGridY()] = new Piece();
@@ -265,7 +265,7 @@ public class BoardEval {
                 setPieces(pieces, piecesCopy);
 
                 // Move piece to square and see if it results in check.
-                piecesCopy[p.getGridX()][p.getGridY()].playMove(arr[0], arr[1], piecesCopy, piecesW, piecesB, new int[]{p.getGridX(), p.getGridY()});
+                piecesCopy[p.getGridX()][p.getGridY()].playMove(arr[0], arr[1], piecesCopy, new int[]{p.getGridX(), p.getGridY()});
 
                 BoardEval.checkControlledSquaresW(squaresControlledW, squaresControlledB, piecesCopy);
 
@@ -344,6 +344,21 @@ public class BoardEval {
 
         for(Piece p : piecesB.keySet())
             blackScore += p.getValue();
+
+        return whiteScore - blackScore;
+    }
+
+    public static double boardScore(Piece[][] pieces){
+        // Sum of the relative values for each piece
+        double whiteScore = 0.0,
+                blackScore = 0.0;
+
+        for(int i = 0; i < NUM_SQUARES; i++){
+            for(int j = 0; j < NUM_SQUARES; j++){
+                if(pieces[i][j].getSide() == 'w') whiteScore += pieces[i][j].getValue();
+                else if(pieces[i][j].getSide() == 'b') blackScore += pieces[i][j].getValue();
+            }
+        }
 
         return whiteScore - blackScore;
     }
