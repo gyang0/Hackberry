@@ -422,11 +422,9 @@ public class Piece {
      * @param i - Row number of square to move to.
      * @param j - Column number of square to move to.
      * @param pieces - Array of Piece objects in the board.
-     * @param piecesW - The piecesW HashMap in Board.java.
-     * @param piecesB - The piecesB HashMap in Board.java.
      * @param prevCoords - Coordinates of previous piece that was moved.
      * **/
-    public void playMove(int i, int j, Piece[][] pieces, HashMap<Piece, ArrayList<int[]>> piecesW, HashMap<Piece, ArrayList<int[]>> piecesB, int[] prevCoords) {
+    public void playMove(int i, int j, Piece[][] pieces, int[] prevCoords) {
         // En passant
         // The target pawn must have moved in the last move, moved two squares up, and be next to the current pawn.
         if (this.type.equals("wp") && j == this.gridY - 1 && Math.abs(i - this.gridX) == 1 && pieces[i][j].getSide() == ' ') {
