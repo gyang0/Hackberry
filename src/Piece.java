@@ -59,8 +59,8 @@ public class Piece {
         this.type = "";
         this.side = ' ';
 
-        this.baseValue = -1;
-        this.value = -1;
+        this.baseValue = 0;
+        this.value = 0;
     }
 
     public Piece(Piece p){
