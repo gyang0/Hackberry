@@ -8,6 +8,8 @@
  * TODO: castling
  * TODO: promotion
  * TODO: actually save the game (maybe a button or something?)
+ * TODO: make the notation work with captures, castling, en passant, and promotions.
+ * TODO: if two knights can move to the same square, then the notation should reflect that. (same for pawns, rooks, queens, bishops)
  *
  * @author Gene Yang
  * @version January 22, 2023
@@ -20,7 +22,7 @@ import java.util.ArrayList;
 
 public class Notation {
     private static int numTurns = 1;
-    private static String fileName = "games.txt";
+    private final static String fileName = "games.txt";
     public static ArrayList<String> PGNMoves = new ArrayList<String>();
 
     public static void updateNumTurns(){ numTurns++; }
