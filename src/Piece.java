@@ -30,9 +30,9 @@ public class Piece {
     private final int NUM_SQUARES = 8;
 
     // For assigning scores to pieces
-    public static final double BASE_VAL_WEIGHT = 0.90; // % base value
-    public static final double MOBILITY_WEIGHT = 0.07; // % mobility
-    public static final double POSITION_WEIGHT = 0.03; // % board position
+    public static final double BASE_VAL_WEIGHT = 0.95; // % base value
+    public static final double MOBILITY_WEIGHT = 0.03; // % mobility
+    public static final double POSITION_WEIGHT = 0.02; // % board position
 
     public double assignValue(){
         if(this.type.equals("")) return 0;
