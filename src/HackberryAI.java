@@ -12,6 +12,7 @@ public class HackberryAI {
     private final int NUM_SQUARES = 8;
     private char side;
     private int DEPTH;
+    private final int NUM_CANDIDATES = 5;
 
 
     public HackberryAI(char side, int depth){
@@ -70,16 +71,19 @@ public class HackberryAI {
         System.out.println();
     }
 
+    private int numNodes = 0;
     public double minimax(int fromX, int fromY, int toX, int toY, Piece[][] pieces, int[] mostRecentPieceMov, int[] prevCoords,
-                          boolean whiteTurn, int depth, double prevScore){
+                          boolean whiteTurn, int depth, double alpha, double beta){
+        numNodes++;
+
         System.out.print("    Depth " + depth + ": Checking (" + fromX + ", " + fromY + ") to (" + toX + ", " + toY + ")");
         System.out.println(" with " + (whiteTurn ? "white" : "black") + " to move.");
 
         // Avoids changing piecesW and piecesB directly (they're needed for future iterations)
-        HashMap<Piece, ArrayList<int[]>> piecesWCopy = new HashMap<>();
-        HashMap<Piece, ArrayList<int[]>> piecesBCopy = new HashMap<>();
-        Piece[][] piecesCopy = new Piece[NUM_SQUARES][NUM_SQUARES];
+        HashMap<Piece, ArrayList<int[]>> piecesWCopy = null;
+        HashMap<Piece, ArrayList<int[]>> piecesBCopy = null;
 
+        Piece[][] piecesCopy = new Piece[NUM_SQUARES][NUM_SQUARES];
         boolean[][] squaresControlledWCopy = new boolean[NUM_SQUARES][NUM_SQUARES];
         boolean[][] squaresControlledBCopy = new boolean[NUM_SQUARES][NUM_SQUARES];
 
@@ -90,12 +94,6 @@ public class HackberryAI {
         print(piecesCopy);
 
 
-
-
-        // Update stuff
-        //update(piecesWCopy, piecesBCopy, piecesCopy, squaresControlledWCopy, squaresControlledBCopy, mostRecentPieceMov, prevCoords);
-
-        /** Updating stuff **/
         //{
         piecesWCopy = BoardEval.reset(pieces, 'w');
         piecesBCopy = BoardEval.reset(pieces, 'b');
@@ -106,8 +104,8 @@ public class HackberryAI {
         piecesWCopy = BoardEval.removeIllegalMovesW(squaresControlledWCopy, squaresControlledBCopy, piecesCopy, mostRecentPieceMov, prevCoords, piecesWCopy, piecesBCopy);
         piecesBCopy = BoardEval.removeIllegalMovesB(squaresControlledWCopy, squaresControlledBCopy, piecesCopy, mostRecentPieceMov, prevCoords, piecesWCopy, piecesBCopy);
 
-        BoardEval.checkControlledSquaresW(squaresControlledWCopy, squaresControlledBCopy, piecesWCopy, piecesCopy);
-        BoardEval.checkControlledSquaresB(squaresControlledWCopy, squaresControlledBCopy, piecesBCopy, piecesCopy);
+        BoardEval.checkControlledSquaresW(squaresControlledWCopy, squaresControlledBCopy, piecesCopy);
+        BoardEval.checkControlledSquaresB(squaresControlledWCopy, squaresControlledBCopy, piecesCopy);
 
         piecesWCopy = BoardEval.cleanUpHashMap(piecesWCopy, 'w');
         piecesBCopy = BoardEval.cleanUpHashMap(piecesBCopy, 'b');
@@ -116,8 +114,8 @@ public class HackberryAI {
         //}
 
 
-        //double score = BoardEval.boardScore(piecesWCopy, piecesBCopy);
-        double score = BoardEval.boardScore(piecesCopy);
+        double score = BoardEval.boardScore(piecesWCopy, piecesBCopy);
+        //double score = BoardEval.boardScore(piecesCopy);
         System.out.println("     This move was given score " + score);
 
         // Check if game is over and assign values
@@ -126,10 +124,8 @@ public class HackberryAI {
         else if(!BoardEval.whiteKingInCheck() && BoardEval.possibleMovesW == 0 && whiteTurn) return 0;
         else if(!BoardEval.blackKingInCheck() && BoardEval.possibleMovesB == 0 && !whiteTurn) return 0;
 
-        // Alpha-beta pruning (I think?)
-        //if(whiteTurn && prevScore > score) return prevScore;
-        //else if(!whiteTurn && prevScore < score) return prevScore;
-
+        boolean breakout = false;
+        int iter = 0;
 
         if(depth == 0)
             return score;
@@ -140,8 +136,19 @@ public class HackberryAI {
                 // Seeking the highest board score
                 for(Piece p : piecesWCopy.keySet()){
                     for(int[] arr : piecesWCopy.get(p)){
-                        val = Math.max(val, minimax(p.getGridX(), p.getGridY(), arr[0], arr[1], piecesCopy, mostRecentPieceMov, prevCoords, !whiteTurn, depth - 1, score));
+                        val = Math.max(val, minimax(p.getGridX(), p.getGridY(), arr[0], arr[1], piecesCopy, mostRecentPieceMov, prevCoords, !whiteTurn, depth - 1, alpha, beta));
+
+                        iter++;
+
+                        if(val > beta || iter > 4) {
+                            breakout = true;
+                            break;
+                        }
+                        alpha = Math.max(alpha, val);
                     }
+
+                    if(breakout)
+                        break;
                 }
 
                 return val;
@@ -151,8 +158,19 @@ public class HackberryAI {
                 // Seeking the lowest board score
                 for(Piece p : piecesBCopy.keySet()){
                     for(int[] arr : piecesBCopy.get(p)){
-                        val = Math.max(val, minimax(p.getGridX(), p.getGridY(), arr[0], arr[1], piecesCopy, mostRecentPieceMov, prevCoords, !whiteTurn, depth - 1, score));
+                        val = Math.min(val, minimax(p.getGridX(), p.getGridY(), arr[0], arr[1], piecesCopy, mostRecentPieceMov, prevCoords, !whiteTurn, depth - 1, alpha, beta));
+
+                        iter++;
+
+                        if(val < alpha || iter > 4) {
+                            breakout = true;
+                            break;
+                        }
+                        beta = Math.min(beta, val);
                     }
+
+                    if(breakout)
+                        break;
                 }
 
                 return val;
@@ -167,6 +185,8 @@ public class HackberryAI {
                          int[] mostRecentPieceMov, int[] prevCoords, boolean whiteTurn){
         //update(piecesW, piecesB, pieces, squaresControlledW, squaresControlledB, mostRecentPieceMov, prevCoords);
 
+        numNodes = 0;
+
         /*if(this.stillInOpening()){
             //playOpening();
             return;
@@ -179,7 +199,7 @@ public class HackberryAI {
 
                 for(Piece p : piecesW.keySet()){
                     for(int arr[] : piecesW.get(p)){
-                        double score = minimax(p.getGridX(), p.getGridY(), arr[0], arr[1], pieces, mostRecentPieceMov, prevCoords, whiteTurn, DEPTH, Integer.MIN_VALUE);
+                        double score = minimax(p.getGridX(), p.getGridY(), arr[0], arr[1], pieces, mostRecentPieceMov, prevCoords, whiteTurn, DEPTH, Integer.MIN_VALUE, Integer.MAX_VALUE);
 
                         if(score > bestScore) {
                             bestScore = score;
@@ -193,7 +213,7 @@ public class HackberryAI {
                 for(Piece p : piecesB.keySet()){
                     for(int arr[] : piecesB.get(p)){
                         System.out.println("Checking " + p + " to (" + arr[0] + ", " + arr[1] + ")");
-                        double score = minimax(p.getGridX(), p.getGridY(), arr[0], arr[1], pieces, mostRecentPieceMov, prevCoords, !whiteTurn, DEPTH, Integer.MAX_VALUE);
+                        double score = minimax(p.getGridX(), p.getGridY(), arr[0], arr[1], pieces, mostRecentPieceMov, prevCoords, !whiteTurn, DEPTH, Integer.MIN_VALUE, Integer.MAX_VALUE);
                         System.out.println("Score: " + score);
 
                         if(score < bestScore) {
@@ -206,6 +226,7 @@ public class HackberryAI {
 
 
             System.out.println("\n\nChosen move: " + pieces[best[0]][best[1]] + " to (" + best[2] + ", " + best[3] + ")");
+            System.out.println("Searched " + numNodes + " nodes.");
             mostRecentPieceMov[0] = best[2];
             mostRecentPieceMov[1] = best[3];
             pieces[best[0]][best[1]].playMove(best[2], best[3], pieces, new int[]{best[0], best[1]});
@@ -224,8 +245,8 @@ public class HackberryAI {
         piecesW = BoardEval.removeIllegalMovesW(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, prevCoords, piecesW, piecesB);
         piecesB = BoardEval.removeIllegalMovesB(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, prevCoords, piecesW, piecesB);
 
-        BoardEval.checkControlledSquaresW(squaresControlledW, squaresControlledB, piecesW, pieces);
-        BoardEval.checkControlledSquaresB(squaresControlledW, squaresControlledB, piecesB, pieces);
+        BoardEval.checkControlledSquaresW(squaresControlledW, squaresControlledB, pieces);
+        BoardEval.checkControlledSquaresB(squaresControlledW, squaresControlledB, pieces);
 
         piecesW = BoardEval.cleanUpHashMap(piecesW, 'w');
         piecesB = BoardEval.cleanUpHashMap(piecesB, 'b');
