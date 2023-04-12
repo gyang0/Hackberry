@@ -10,7 +10,6 @@ public class BoardEval {
     // Number of possible moves white or black can make.
     public static int possibleMovesW = 0;
     public static int possibleMovesB = 0;
-    private static boolean gameOver = false;
 
 
     // Gives a score to each board (center squares > edge squares).
@@ -57,8 +56,7 @@ public class BoardEval {
     /**
      * Checks the squares controlled by the white side.
      * **/
-    public static void checkControlledSquaresW(boolean[][] squaresControlledW, boolean[][] squaresControlledB,
-                                               HashMap<Piece, ArrayList<int[]>> piecesW, Piece[][] pieces) {
+    public static void checkControlledSquaresW(boolean[][] squaresControlledW, boolean[][] squaresControlledB, Piece[][] pieces) {
         // Reset
         for (int i = 0; i < NUM_SQUARES; i++){
             for (int j = 0; j < NUM_SQUARES; j++)
@@ -69,29 +67,34 @@ public class BoardEval {
         Piece prev = new Piece(0, 0, "", ' ', 0);
 
         // For every white piece
-        for(Piece p : piecesW.keySet()){
+        for(int i = 0; i < NUM_SQUARES; i++) {
+            for(int j = 0; j < NUM_SQUARES; j++) {
 
-            // For every square on the board
-            for (int pos1 = 0; pos1 < NUM_SQUARES; pos1++) {
-                for (int pos2 = 0; pos2 < NUM_SQUARES; pos2++) {
+                if(pieces[i][j].getSide() != 'w')
+                    continue;
 
-                    // Having control over that square:
-                    // For testing purposes, we set the piece of an opposite side at that square.
-                    // Then we see if that piece can be captured.
-                    prev.setPiece(pos1, pos2, pieces[pos1][pos2].getType(), pieces[pos1][pos2].getSide(), pieces[pos1][pos2].numMoves);
-                    pieces[pos1][pos2].setPiece(pos1, pos2, "bp", 'b', 0);
+                // For every square on the board
+                for (int pos1 = 0; pos1 < NUM_SQUARES; pos1++) {
+                    for (int pos2 = 0; pos2 < NUM_SQUARES; pos2++) {
 
-                    // Can make a capture (if necessary) at that position.
-                    if (p.legalMove(pos1, pos2, pieces, new int[]{pos1, pos2}, squaresControlledW, squaresControlledB)) {
-                        squaresControlledW[pos1][pos2] = true;
+                        // Having control over that square:
+                        // For testing purposes, we set the piece of an opposite side at that square.
+                        // Then we see if that piece can be captured.
+                        prev.setPiece(pos1, pos2, pieces[pos1][pos2].getType(), pieces[pos1][pos2].getSide(), pieces[pos1][pos2].numMoves);
+                        pieces[pos1][pos2].setPiece(pos1, pos2, "bp", 'b', 0);
 
-                        // If the piece at that position is a king, it's in check.
-                        if (prev.getType().equals("bk"))
-                            blackKingInCheck = true;
+                        // Can make a capture (if necessary) at that position.
+                        if (pieces[i][j].legalMove(pos1, pos2, pieces, new int[]{pos1, pos2}, squaresControlledW, squaresControlledB)) {
+                            squaresControlledW[pos1][pos2] = true;
+
+                            // If the piece at that position is a king, it's in check.
+                            if (prev.getType().equals("bk"))
+                                blackKingInCheck = true;
+                        }
+
+                        // Reset
+                        pieces[pos1][pos2].setPiece(pos1, pos2, prev.getType(), prev.getSide(), prev.numMoves);
                     }
-
-                    // Reset
-                    pieces[pos1][pos2].setPiece(pos1, pos2, prev.getType(), prev.getSide(), prev.numMoves);
                 }
             }
         }
@@ -100,8 +103,7 @@ public class BoardEval {
     /**
      * Checks the squares controlled by the black side.
      * **/
-    public static void checkControlledSquaresB(boolean[][] squaresControlledW, boolean[][] squaresControlledB,
-                                               HashMap<Piece, ArrayList<int[]>> piecesB, Piece[][] pieces) {
+    public static void checkControlledSquaresB(boolean[][] squaresControlledW, boolean[][] squaresControlledB, Piece[][] pieces) {
         // Reset
         for (int i = 0; i < NUM_SQUARES; i++) {
             for (int j = 0; j < NUM_SQUARES; j++)
@@ -112,28 +114,33 @@ public class BoardEval {
         Piece prev = new Piece(0, 0, "", ' ', 0);
 
         // For every black piece
-        for(Piece p : piecesB.keySet()) {
+        for(int i = 0; i < NUM_SQUARES; i++) {
+            for(int j = 0; j < NUM_SQUARES; j++) {
 
-            // For every square on the board
-            for (int pos1 = 0; pos1 < NUM_SQUARES; pos1++) {
-                for (int pos2 = 0; pos2 < NUM_SQUARES; pos2++) {
+                if(pieces[i][j].getSide() != 'b')
+                    continue;
 
-                    // Having control over that square:
-                    // For testing purposes, we set the piece of an opposite side at that square.
-                    // Then we see if that piece can be captured.
-                    prev.setPiece(pos1, pos2, pieces[pos1][pos2].getType(), pieces[pos1][pos2].getSide(), pieces[pos1][pos2].numMoves);
-                    pieces[pos1][pos2].setPiece(pos1, pos2, "wp", 'w', 0);
+                // For every square on the board
+                for (int pos1 = 0; pos1 < NUM_SQUARES; pos1++) {
+                    for (int pos2 = 0; pos2 < NUM_SQUARES; pos2++) {
 
-                    // Can make a capture (if necessary) at that position.
-                    if (p.legalMove(pos1, pos2, pieces, new int[]{pos1, pos2}, squaresControlledW, squaresControlledB)) {
-                        squaresControlledB[pos1][pos2] = true;
+                        // Having control over that square:
+                        // For testing purposes, we set the piece of an opposite side at that square.
+                        // Then we see if that piece can be captured.
+                        prev.setPiece(pos1, pos2, pieces[pos1][pos2].getType(), pieces[pos1][pos2].getSide(), pieces[pos1][pos2].numMoves);
+                        pieces[pos1][pos2].setPiece(pos1, pos2, "wp", 'w', 0);
 
-                        // If the piece at that position is a king, it's in check.
-                        if (prev.getType().equals("wk"))
-                            whiteKingInCheck = true;
+                        // Can make a capture (if necessary) at that position.
+                        if (pieces[i][j].legalMove(pos1, pos2, pieces, new int[]{pos1, pos2}, squaresControlledW, squaresControlledB)) {
+                            squaresControlledB[pos1][pos2] = true;
+
+                            // If the piece at that position is a king, it's in check.
+                            if (prev.getType().equals("wk"))
+                                whiteKingInCheck = true;
+                        }
+
+                        pieces[pos1][pos2].setPiece(pos1, pos2, prev.getType(), prev.getSide(), prev.numMoves);
                     }
-
-                    pieces[pos1][pos2].setPiece(pos1, pos2, prev.getType(), prev.getSide(), prev.numMoves);
                 }
             }
         }
@@ -215,7 +222,7 @@ public class BoardEval {
 
                 piecesCopy[p.getGridX()][p.getGridY()].playMove(arr[0], arr[1], piecesCopy, new int[]{p.getGridX(), p.getGridY()});
 
-                BoardEval.checkControlledSquaresB(squaresControlledW, squaresControlledB, piecesB, piecesCopy);
+                BoardEval.checkControlledSquaresB(squaresControlledW, squaresControlledB, piecesCopy);
 
                 if(!whiteKingInCheck)
                     moves.add(arr);
@@ -249,7 +256,7 @@ public class BoardEval {
                 // Move piece to square and see if it results in check.
                 piecesCopy[p.getGridX()][p.getGridY()].playMove(arr[0], arr[1], piecesCopy, new int[]{p.getGridX(), p.getGridY()});
 
-                BoardEval.checkControlledSquaresW(squaresControlledW, squaresControlledB, piecesW, piecesCopy);
+                BoardEval.checkControlledSquaresW(squaresControlledW, squaresControlledB, piecesCopy);
 
                 if(!blackKingInCheck)
                     moves.add(arr);
