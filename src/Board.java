@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Board extends JComponent implements MouseListener {
-    /*private String boardState[][] = {
+    private String boardState[][] = {
             {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
             {"bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"},
             {"", "", "", "", "", "", "", ""},
@@ -22,9 +22,19 @@ public class Board extends JComponent implements MouseListener {
             {"", "", "", "", "", "", "", ""},
             {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
             {"wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr"}
+    };
+    /*private String boardState[][] = {
+            {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
+            {"bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"},
+            {"", "", "", "", "", "", "", ""},
+            {"", "", "", "", "", "", "", "wq"},
+            {"", "", "", "", "", "", "", ""},
+            {"", "", "", "", "", "", "", ""},
+            {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
+            {"wr", "wn", "wb", "", "wk", "wb", "wn", "wr"}
     };*/
 
-    private String boardState[][] = {
+    /*private String boardState[][] = {
             {"", "", "", "", "bk", "", "", ""},
             {"", "", "", "", "", "", "", ""},
             {"", "", "", "", "", "", "", ""},
@@ -33,7 +43,7 @@ public class Board extends JComponent implements MouseListener {
             {"", "", "", "", "", "bn", "", ""},
             {"", "", "", "", "", "wp", "wp", "wp"},
             {"", "", "", "", "wk", "wb", "wn", "wr"},
-    };
+    };*/
 
 
     private HackberryAI hackberryAI; // AI
@@ -149,8 +159,8 @@ public class Board extends JComponent implements MouseListener {
         piecesW = BoardEval.removeIllegalMovesW(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, prevCoords, piecesW, piecesB);
         piecesB = BoardEval.removeIllegalMovesB(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, prevCoords, piecesW, piecesB);
 
-        BoardEval.checkControlledSquaresW(squaresControlledW, squaresControlledB, piecesW, pieces);
-        BoardEval.checkControlledSquaresB(squaresControlledW, squaresControlledB, piecesB, pieces);
+        BoardEval.checkControlledSquaresW(squaresControlledW, squaresControlledB, pieces);
+        BoardEval.checkControlledSquaresB(squaresControlledW, squaresControlledB, pieces);
 
         piecesW = BoardEval.cleanUpHashMap(piecesW, 'w');
         piecesB = BoardEval.cleanUpHashMap(piecesB, 'b');
@@ -357,7 +367,8 @@ public class Board extends JComponent implements MouseListener {
 
                 g.setColor(Color.BLACK);
                 //g.drawString(String.valueOf(pieces[i][j].hashCode()), i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET);
-                g.drawString(String.valueOf(pieces[i][j].numMoves), i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET);
+                g.drawString(String.valueOf(pieces[i][j].getValue()), i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET + 20);
+                g.drawString(i + ", " + j, i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET + 30);
             }
         }
 
@@ -491,10 +502,9 @@ public class Board extends JComponent implements MouseListener {
                     prevCoords[1] = j;
 
                     numClicks++;
+                    repaint();
                 }
             }
-
-            repaint();
         }
 
 
@@ -508,6 +518,8 @@ public class Board extends JComponent implements MouseListener {
             }
 
             whiteTurn = !whiteTurn;
+
+            //whiteTurn = !whiteTurn;
 
             numClicks = 0;
             repaint();
