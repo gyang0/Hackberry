@@ -34,6 +34,8 @@ public class Piece {
     public static final double MOBILITY_WEIGHT = 0.03; // % mobility
     public static final double POSITION_WEIGHT = 0.02; // % board position
 
+    public boolean recentlyMoved;
+
     public double assignValue(){
         if(this.type.equals("")) return 0;
 
@@ -61,6 +63,8 @@ public class Piece {
 
         this.baseValue = 0;
         this.value = 0;
+
+        this.recentlyMoved = false;
     }
 
     public Piece(Piece p){
@@ -76,6 +80,8 @@ public class Piece {
         this.numMoves = p.numMoves;
         this.baseValue = p.baseValue;
         this.value = p.value;
+
+        this.recentlyMoved = false;
     }
 
     public Piece(int i, int j, String type, char side, int numMoves){
@@ -91,6 +97,8 @@ public class Piece {
         this.numMoves = numMoves;
         this.baseValue = this.assignValue();
         this.value = this.baseValue;
+
+        this.recentlyMoved = false;
     }
 
     public void setPiece(int x, int y, String type, char side, int numMoves){
@@ -256,7 +264,17 @@ public class Piece {
         return true;
     }
 
-    public boolean legalMove(int toX, int toY, Piece[][] pieces, int[] mostRecentPieceMov, boolean[][] squaresControlledW, boolean[][] squaresControlledB){
+    /**
+     * Checks if a move is simply legal, with checks, pins, etc.
+     * Moves passed to it MUST HAVE PASSED THE INITIAL CHECK. This is in BoardEval.
+     * @param toX
+     * @param toY
+     * @param pieces
+     * @param squaresControlledW
+     * @param squaresControlledB
+     * @return
+     */
+    public boolean legalMove(int toX, int toY, Piece[][] pieces, boolean[][] squaresControlledW, boolean[][] squaresControlledB){
         // Can't capture pieces on its own side
         if(pieces[toX][toY].side == this.side)
             return false;
@@ -276,7 +294,7 @@ public class Piece {
                     // En passant
                     else if(pieces[toX][toY].getSide() == ' '){
                         if(pieces[toX][toY + 1].getType().equals("bp")){
-                            if(mostRecentPieceMov[0] == toX && mostRecentPieceMov[1] == toY + 1 && pieces[toX][toY + 1].numMoves == 1)
+                            if(pieces[toX][toY + 1].recentlyMoved && pieces[toX][toY + 1].numMoves == 1)
                                 return true;
                         }
                     }
@@ -301,7 +319,7 @@ public class Piece {
                         // En passant
                     else if(pieces[toX][toY].getSide() == ' '){
                         if(pieces[toX][toY - 1].getType().equals("wp")){
-                            if(mostRecentPieceMov[0] == toX && mostRecentPieceMov[1] == toY - 1 && pieces[toX][toY - 1].numMoves == 1)
+                            if(pieces[toX][toY - 1].recentlyMoved && pieces[toX][toY - 1].numMoves == 1)
                                 return true;
                         }
                     }
@@ -422,9 +440,8 @@ public class Piece {
      * @param i - Row number of square to move to.
      * @param j - Column number of square to move to.
      * @param pieces - Array of Piece objects in the board.
-     * @param prevCoords - Coordinates of previous piece that was moved.
      * **/
-    public void playMove(int i, int j, Piece[][] pieces, int[] prevCoords) {
+    public void playMove(int i, int j, Piece[][] pieces) {
         // En passant
         // The target pawn must have moved in the last move, moved two squares up, and be next to the current pawn.
         if (this.type.equals("wp") && j == this.gridY - 1 && Math.abs(i - this.gridX) == 1 && pieces[i][j].getSide() == ' ') {
@@ -442,23 +459,10 @@ public class Piece {
                 pieces[6][7].setPiece(6, 7, "wk", 'w', 0);
                 pieces[7][7].setPiece(7, 7, "", ' ', 0);
 
-                // Put pieces in HashMap
-                /*if (updateHashMap) {
-                    piecesW.put(pieces[6][7], new ArrayList<int[]>());
-                    piecesW.put(pieces[5][7], new ArrayList<int[]>());
-                }*/
-
             } else if (i == 2 && j == 7 && pieces[0][7].getType().equals("wr") && pieces[0][7].numMoves == 0) {
                 pieces[3][7].setPiece(3, 7, "wr", 'w', 0);
                 pieces[2][7].setPiece(2, 7, "wk", 'w', 0);
                 pieces[0][7].setPiece(0, 7, "", ' ', 0);
-
-                // Put pieces in HashMap
-                /*if (updateHashMap) {
-                    piecesW.put(pieces[3][7], new ArrayList<int[]>());
-                    piecesW.put(pieces[2][7], new ArrayList<int[]>());
-                }*/
-
             }
         }
         // Castling - black, kingside & queenside
@@ -468,23 +472,10 @@ public class Piece {
                 pieces[6][0].setPiece(6, 0, "bk", 'b', 0);
                 pieces[7][0].setPiece(7, 0, "", ' ', 0);
 
-                // Put pieces in HashMap
-                /*if (updateHashMap) {
-                    piecesB.put(pieces[5][0], new ArrayList<int[]>());
-                    piecesB.put(pieces[6][0], new ArrayList<int[]>());
-                }*/
-
             } else if (i == 2 && j == 0 && pieces[0][0].getType().equals("br") && pieces[0][0].numMoves == 0) {
                 pieces[3][0].setPiece(3, 0, "br", 'b', 0);
                 pieces[2][0].setPiece(2, 0, "bk", 'b', 0);
                 pieces[0][0].setPiece(0, 0, "", ' ', 0);
-
-                // Put pieces in HashMap
-                /*if (updateHashMap) {
-                    piecesB.put(pieces[3][0], new ArrayList<int[]>());
-                    piecesB.put(pieces[2][0], new ArrayList<int[]>());
-                }*/
-
             }
         }
 
@@ -492,19 +483,18 @@ public class Piece {
         pieces[i][j].setPiece(i, j, this.type, this.side, this.numMoves + 1);
 
         // Remove appropriate pieces and set numMoves
+        pieces[i][j].setBaseValue(pieces[this.gridX][this.gridY].getBaseValue());
         pieces[this.gridX][this.gridY] = new Piece();
-        pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
 
-        /*if (updateHashMap) {
-            if (this.side == 'w') piecesW.put(pieces[i][j], new ArrayList<int[]>());
-            else if (this.side == 'b') piecesB.put(pieces[i][j], new ArrayList<int[]>());
 
-            // Remove piece from HashMap
-            if(this.side == 'w') piecesW.remove(new Piece(pieces[this.gridX][this.gridY]));
-            else if(this.side == 'b') piecesB.remove(new Piece(pieces[this.gridX][this.gridY]));
-        }*/
-
+        // Reset everything except for current square
+        for(int r = 0; r < NUM_SQUARES; r++){
+            for(int c = 0; c < NUM_SQUARES; c++)
+                pieces[r][c].recentlyMoved = false;
+        }
+        pieces[i][j].recentlyMoved = true;
     }
+
 
     @Override
     public boolean equals(Object o){
