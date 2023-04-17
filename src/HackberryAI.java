@@ -74,125 +74,39 @@ public class HackberryAI {
     private int numNodes = 0;
     public double minimax(int fromX, int fromY, int toX, int toY, Piece[][] pieces, int[] mostRecentPieceMov, int[] prevCoords,
                           boolean whiteTurn, int depth, double alpha, double beta){
-        numNodes++;
-
-        System.out.print("    Depth " + depth + ": Checking (" + fromX + ", " + fromY + ") to (" + toX + ", " + toY + ")");
-        System.out.println(" with " + (whiteTurn ? "white" : "black") + " to move.");
-
-        // Avoids changing piecesW and piecesB directly (they're needed for future iterations)
-        HashMap<Piece, ArrayList<int[]>> piecesWCopy = null;
-        HashMap<Piece, ArrayList<int[]>> piecesBCopy = null;
-
-        Piece[][] piecesCopy = new Piece[NUM_SQUARES][NUM_SQUARES];
-        boolean[][] squaresControlledWCopy = new boolean[NUM_SQUARES][NUM_SQUARES];
-        boolean[][] squaresControlledBCopy = new boolean[NUM_SQUARES][NUM_SQUARES];
-
-        // Play the move specified
-        setPieces(pieces, piecesCopy);
-        piecesCopy[fromX][fromY].playMove(toX, toY, piecesCopy, new int[]{fromX, fromY});
-
-        print(piecesCopy);
-
-
-        //{
-        piecesWCopy = BoardEval.reset(pieces, 'w');
-        piecesBCopy = BoardEval.reset(pieces, 'b');
-
-        piecesWCopy = BoardEval.getPossibleMovesW(squaresControlledWCopy, squaresControlledBCopy, piecesCopy, mostRecentPieceMov, piecesWCopy);
-        piecesBCopy = BoardEval.getPossibleMovesB(squaresControlledWCopy, squaresControlledBCopy, piecesCopy, mostRecentPieceMov, piecesBCopy);
-
-        piecesWCopy = BoardEval.removeIllegalMovesW(squaresControlledWCopy, squaresControlledBCopy, piecesCopy, mostRecentPieceMov, prevCoords, piecesWCopy, piecesBCopy);
-        piecesBCopy = BoardEval.removeIllegalMovesB(squaresControlledWCopy, squaresControlledBCopy, piecesCopy, mostRecentPieceMov, prevCoords, piecesWCopy, piecesBCopy);
-
-        BoardEval.checkControlledSquaresW(squaresControlledWCopy, squaresControlledBCopy, piecesCopy);
-        BoardEval.checkControlledSquaresB(squaresControlledWCopy, squaresControlledBCopy, piecesCopy);
-
-        piecesWCopy = BoardEval.cleanUpHashMap(piecesWCopy, 'w');
-        piecesBCopy = BoardEval.cleanUpHashMap(piecesBCopy, 'b');
-
-        BoardEval.givePieceScores(piecesWCopy, piecesBCopy);
-        //}
-
-
-        double score = BoardEval.boardScore(piecesWCopy, piecesBCopy);
-        //double score = BoardEval.boardScore(piecesCopy);
-        System.out.println("     This move was given score " + score);
-
-        // Check if game is over and assign values
-        if(BoardEval.whiteKingInCheck() && whiteTurn && BoardEval.possibleMovesW == 0) return Integer.MIN_VALUE + 10;
-        else if(BoardEval.blackKingInCheck() && !whiteTurn && BoardEval.possibleMovesB == 0) return Integer.MAX_VALUE - 10;
-        else if(!BoardEval.whiteKingInCheck() && BoardEval.possibleMovesW == 0 && whiteTurn) return 0;
-        else if(!BoardEval.blackKingInCheck() && BoardEval.possibleMovesB == 0 && !whiteTurn) return 0;
-
-        boolean breakout = false;
-        int iter = 0;
-
-        if(depth == 0)
-            return score;
-        else {
-            if(whiteTurn){
-                double val = Integer.MIN_VALUE;
-
-                // Seeking the highest board score
-                for(Piece p : piecesWCopy.keySet()){
-                    for(int[] arr : piecesWCopy.get(p)){
-                        val = Math.max(val, minimax(p.getGridX(), p.getGridY(), arr[0], arr[1], piecesCopy, mostRecentPieceMov, prevCoords, !whiteTurn, depth - 1, alpha, beta));
-
-                        iter++;
-
-                        if(val > beta || iter > 4) {
-                            breakout = true;
-                            break;
-                        }
-                        alpha = Math.max(alpha, val);
-                    }
-
-                    if(breakout)
-                        break;
-                }
-
-                return val;
-            } else {
-                double val = Integer.MAX_VALUE;
-
-                // Seeking the lowest board score
-                for(Piece p : piecesBCopy.keySet()){
-                    for(int[] arr : piecesBCopy.get(p)){
-                        val = Math.min(val, minimax(p.getGridX(), p.getGridY(), arr[0], arr[1], piecesCopy, mostRecentPieceMov, prevCoords, !whiteTurn, depth - 1, alpha, beta));
-
-                        iter++;
-
-                        if(val < alpha || iter > 4) {
-                            breakout = true;
-                            break;
-                        }
-                        beta = Math.min(beta, val);
-                    }
-
-                    if(breakout)
-                        break;
-                }
-
-                return val;
-            }
-        }
+        return 0.0;
     }
 
     // Actual AI goes here
     // Find the 5 moves that offer the best position
-    public void makeMove(HashMap<Piece, ArrayList<int[]>> piecesW, HashMap<Piece, ArrayList<int[]>> piecesB, Piece[][] pieces,
-                         boolean[][] squaresControlledW, boolean[][] squaresControlledB,
-                         int[] mostRecentPieceMov, int[] prevCoords, boolean whiteTurn){
-        //update(piecesW, piecesB, pieces, squaresControlledW, squaresControlledB, mostRecentPieceMov, prevCoords);
+    public void makeMove(Piece[][] pieces, boolean[][] squaresControlledW, boolean[][] squaresControlledB){
+        // Update possible moves for the computer
+        ArrayList<int[]>[][] moveGen = BoardEval.updateControlledSquares(pieces);
 
-        numNodes = 0;
+        // Get list of all possible moves
+        ArrayList<int[]> moves = new ArrayList<>();
+
+        for(int i = 0; i < NUM_SQUARES; i++){
+            for(int j = 0; j < NUM_SQUARES; j++){
+                for(int[] arr : moveGen[i][j]){
+                    if(this.side == pieces[arr[0]][arr[1]].getSide())
+                        moves.add(new int[]{arr[0], arr[1], i, j});
+                }
+            }
+        }
+
+        int ind = (int)(Math.random() * moves.size());
+        pieces[moves.get(ind)[0]][moves.get(ind)[1]].playMove(moves.get(ind)[2], moves.get(ind)[3], pieces);
+
+
+        //numNodes = 0;
 
         /*if(this.stillInOpening()){
             //playOpening();
             return;
         } else {*/
             // [piece X, piece Y, goal square X, goal square Y]
-            int[] best = new int[4];
+            /*int[] best = new int[4];
 
             if(side == 'w'){
                 double bestScore = Integer.MIN_VALUE;
@@ -229,15 +143,16 @@ public class HackberryAI {
             System.out.println("Searched " + numNodes + " nodes.");
             mostRecentPieceMov[0] = best[2];
             mostRecentPieceMov[1] = best[3];
-            pieces[best[0]][best[1]].playMove(best[2], best[3], pieces, new int[]{best[0], best[1]});
+            pieces[best[0]][best[1]].playMove(best[2], best[3], pieces);*/
         //}
     }
 
 
-    public void update(HashMap<Piece, ArrayList<int[]>> piecesW, HashMap<Piece, ArrayList<int[]>> piecesB, Piece[][] pieces,
-                       boolean[][] squaresControlledW, boolean[][] squaresControlledB, int[] mostRecentPieceMov, int[] prevCoords){
-        piecesW = BoardEval.reset(pieces, 'w');
-        piecesB = BoardEval.reset(pieces, 'b');
+    public ArrayList<int[]>[][] update(Piece[][] pieces, boolean[][] squaresControlledW, boolean[][] squaresControlledB, int[] prevCoords){
+        /*Piece[][] piecesCopy = new Piece[NUM_SQUARES][NUM_SQUARES];
+        ArrayList<Piece>[][] destSquares = new ArrayList<Piece>[NUM_SQUARES][NUM_SQUARES];
+
+        setPieces(pieces, piecesCopy);
 
         piecesW = BoardEval.getPossibleMovesW(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, piecesW);
         piecesB = BoardEval.getPossibleMovesB(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, piecesB);
@@ -248,9 +163,8 @@ public class HackberryAI {
         BoardEval.checkControlledSquaresW(squaresControlledW, squaresControlledB, pieces);
         BoardEval.checkControlledSquaresB(squaresControlledW, squaresControlledB, pieces);
 
-        piecesW = BoardEval.cleanUpHashMap(piecesW, 'w');
-        piecesB = BoardEval.cleanUpHashMap(piecesB, 'b');
+        BoardEval.givePieceScores(piecesW, piecesB);*/
 
-        BoardEval.givePieceScores(piecesW, piecesB);
+        return null;
     }
 }
