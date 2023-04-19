@@ -1,38 +1,21 @@
-/** Schedule
- * Feb 5 - AI follows opening library before making random moves
- * Feb 25 - AI sees one move ahead
- * Mar 5 - AI sees five moves ahead
- * Mar 10 - Option to switch sides
- * Mar 15 - Store games in a file
- * Mar 30 - Optimizations
- *
- * Apr 12 - Working AI for depth 1
- * Apr 15 - Switch to new system of move search (3 candidate moves -> explore those)
- * Apr 17 - Working AI for depth 4
- * **/
-
-/** Milestones
+** Milestones
  * Jan 4, 2023 - Successfully recreated the Opera Game (Paul Morphy vs Duke of Brunswick & Count Isouard, 1858).
  * Jan 8, 2023 - All legal moves are now recognized (hopefully), including: En passant, castling, checks, promotion, etc.
  * Jan 26, 2023 - Moved from 8x8 board search to piece HashMaps. All legal moves are recognized as well. ~500K -> ~65K iterations.
  * Feb 20, 2023 - AI makes random moves. Includes promotion, en passant, and castling.
- * Apr 9, 2023 - Took a break, organized BoardEval.java better and got things working again.
+ * Apr 9, 2023 - Took a break for other pursuits, organized BoardEval.java better and got things working again.
  * Apr 10, 2023 - AI is semi-working, but it's so slow it can only see 1 move in advance (even then it takes a few seconds).
  * Apr 11, 2023 - Purely materialistic AI can see 1-2 moves ahead, taking ~15 seconds per move.
  * Apr 17, 2023 - Switched to simpler array-based move generation. Less complicated than HashMap system but still as efficient.
+ * Apr 19, 2023 - Switched from minimax to negamax with alpha-beta pruning. Program seems to make good decisions.
  * **/
 
 
 /**
- * This is where most of the stuff will take place.
- * All methods will be combined to set turns, make moves, etc.
- *
- * AI is currently being implemented.
- *
- * TODO: Javadoc comments
  * TODO: Different side toggle
- * TODO: pawn values should increase with every step taken.
- * TODO: piece values change depending on position
+ * TODO: give scores to pieces (pawn values increase as it gets closer to promotion)
+ *
+ * TODO: maintain a hashmap of FENs to cut down on board eval costs.
  * **/
 
 import javax.swing.*;
@@ -40,9 +23,10 @@ import java.awt.*;
 
 /**
  * Chess piece images from https://commons.wikimedia.org/wiki/Category:PNG_chess_pieces/Standard_transparent
+ * Negamax algorithm from https://en.wikipedia.org/wiki/Negamax
  *
  * @author Gene Yang
- * @version April 8, 2023
+ * @version April 19, 2023
  **/
 
 public class Hackberry {
