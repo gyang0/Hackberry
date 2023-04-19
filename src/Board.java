@@ -214,7 +214,7 @@ public class Board extends JComponent implements MouseListener {
 
 
         // AI
-        hackberryAI = new HackberryAI(userSide == 'w' ? 'b' : 'w', 1);
+        hackberryAI = new HackberryAI(userSide == 'w' ? 'b' : 'w', 2);
 
         // Add mouse listener
         addMouseListener(this);
@@ -326,7 +326,7 @@ public class Board extends JComponent implements MouseListener {
                 // Selected a piece
                 if(prevCoords[0] != -1 && prevCoords[1] != -1){
                     if(this.canMoveTo(prevCoords[0], prevCoords[1], i, j)){
-                        System.out.println("Can move to [" + i + ", " + j + "] ");
+                        //System.out.println("Can move to [" + i + ", " + j + "] ");
 
                         g.setColor(OPAQUE_GRAY);
                         g.fillRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH);
@@ -458,10 +458,8 @@ public class Board extends JComponent implements MouseListener {
                 // First click (choice)
                 else if(numClicks == 0){
                     // Chose a movable piece
-
-                    /** UNCOMMENT THIS LATER **/
-                    //if((whiteTurn && pieces[i][j].getSide() != 'w') || (!whiteTurn && pieces[i][j].getSide() != 'b'))
-                    //    return;
+                    if((whiteTurn && pieces[i][j].getSide() != 'w') || (!whiteTurn && pieces[i][j].getSide() != 'b'))
+                        return;
 
                     // Currently selected piece
                     curPiece.setPiece(i, j, pieces[i][j].getType(), pieces[i][j].getSide(), pieces[i][j].numMoves);
