@@ -284,16 +284,16 @@ public class BoardEval {
             for(int j = 0; j < NUM_SQUARES; j++){
                 for(int[] arr : pseudoLegalMoves[i][j]){
 
-                    System.out.print("Testing (" + arr[0] + ", " + arr[1] + ") - " + pieces[arr[0]][arr[1]].getType() + " move to (" + i + ", " + j + ")");
+                    //System.out.print("Testing (" + arr[0] + ", " + arr[1] + ") - " + pieces[arr[0]][arr[1]].getType() + " move to (" + i + ", " + j + ")");
 
                     // Remove illegal moves off the bat
                     if(!pieces[arr[0]][arr[1]].legalMove(i, j, pieces, controlledW, controlledB)) {
-                        System.out.print("     -- FAILED CHECK 1");
-                        System.out.println();
+                        //System.out.print("     -- FAILED CHECK 1");
+                        //System.out.println();
                         continue;
                     }
 
-                    System.out.print("    -- OK check 1 --");
+                    //System.out.print("    -- OK check 1 --");
 
                     piecesCopy = makeCopy(pieces);
                     piecesCopy[arr[0]][arr[1]].playMove(i, j, piecesCopy);
@@ -316,18 +316,18 @@ public class BoardEval {
 
                     // Update moves and controlled squares
                     if(pieces[arr[0]][arr[1]].getSide() == 'b' && BInCheck){
-                        System.out.println(" FAILED CHECK 2");
-                        System.out.println();
+                        //System.out.println(" FAILED CHECK 2");
+                        //System.out.println();
                         continue;
                     }
                     else if(pieces[arr[0]][arr[1]].getSide() == 'w' && WInCheck){
-                        System.out.print(" FAILED CHECK 2");
-                        System.out.println();
+                        //System.out.print(" FAILED CHECK 2");
+                        //System.out.println();
                         continue;
                     }
 
-                    System.out.print(" OK check 2");
-                    System.out.println();
+                    //System.out.print(" OK check 2");
+                    //System.out.println();
                     ans[i][j].add(new int[]{arr[0], arr[1]});
                 }
             }
@@ -354,6 +354,63 @@ public class BoardEval {
         ans = testMoves(ans, pieces);
 
         return ans;
+    }
+
+    public static double boardScore(Piece[][] pieces){
+        double whiteScore = 0.0,
+               blackScore = 0.0;
+        for(int i = 0; i < NUM_SQUARES; i++){
+            for(int j = 0; j < NUM_SQUARES; j++){
+                if(pieces[i][j].getSide() == 'w') whiteScore += pieces[i][j].getValue();
+                else blackScore += pieces[i][j].getValue();
+            }
+        }
+
+        return whiteScore - blackScore;
+    }
+
+    /**
+     *
+     * @param moveGen
+     * @param pieces
+     * @param curSide - the side to move (1 = white, -1 = black)
+     * @return
+     */
+    public static double gameOver(ArrayList<int[]>[][] moveGen, Piece[][] pieces, int curSide){
+        boolean BKcheck = false;
+        boolean WKcheck = false;
+        int bOptions = 0;
+        int wOptions = 0;
+        for(int i = 0; i < NUM_SQUARES; i++){
+            for(int j = 0; j < NUM_SQUARES; j++){
+
+                int curWOptions = 0;
+                int curBOptions = 0;
+
+                for(int[] move : moveGen[i][j]){
+                    if(pieces[move[0]][move[1]].getSide() == 'w') curWOptions++;
+                    else if(pieces[move[0]][move[1]].getSide() == 'b') curBOptions++;
+                }
+
+                if(pieces[i][j].getType().equals("wk") && curBOptions > 0) WKcheck = true;
+                if(pieces[i][j].getType().equals("bk") && curWOptions > 0) BKcheck = true;
+
+                bOptions += curBOptions;
+                wOptions += curWOptions;
+            }
+        }
+
+        // White checkmated
+        if(curSide == 1 && WKcheck && wOptions == 0) return 1000.0;
+
+        // Black checkmated
+        else if(curSide == -1 && BKcheck && bOptions == 0) return -1000.0;
+
+        // Stalemate
+        else if(!WKcheck && !BKcheck && bOptions == 0 && wOptions == 0) return 0.0;
+
+        // Game not over
+        else return -1;
     }
 
 }
