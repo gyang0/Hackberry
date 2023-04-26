@@ -1,10 +1,11 @@
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
- * Individual pieces on the chessboard
+ * Individual pieces on the chessboard.
+ * 
+ * @author Gene Yang
+ * @version April 26, 2023
  * **/
 
 public class Piece {
@@ -28,11 +29,6 @@ public class Piece {
     private final int X_OFFSET = 100;
     private final int Y_OFFSET = 100;
     private final int NUM_SQUARES = 8;
-
-    // For assigning scores to pieces
-    public static final double BASE_VAL_WEIGHT = 0.95; // % base value
-    public static final double MOBILITY_WEIGHT = 0.03; // % mobility
-    public static final double POSITION_WEIGHT = 0.02; // % board position
 
     public boolean recentlyMoved;
 
@@ -81,7 +77,7 @@ public class Piece {
         this.baseValue = p.baseValue;
         this.value = p.value;
 
-        this.recentlyMoved = false;
+        this.recentlyMoved = p.recentlyMoved;
     }
 
     public Piece(int i, int j, String type, char side, int numMoves){
@@ -334,32 +330,6 @@ public class Piece {
                 }
             break;
 
-            case "wn":
-            case "bn":
-                if(Math.abs(toX - this.gridX) == 2 && Math.abs(toY - this.gridY) == 1)
-                    return true;
-                else if(Math.abs(toX - this.gridX) == 1 && Math.abs(toY - this.gridY) == 2)
-                    return true;
-            break;
-
-            case "wb":
-            case "bb":
-                // Easy check
-                if(Math.abs(toX - this.gridX) != Math.abs(toY - this.gridY))
-                    return false;
-                else if(this.bishopCheck(toX, toY, pieces))
-                   return true;
-            break;
-
-            case "wr":
-            case "br":
-                // Easy check
-                if(toX != this.gridX && toY != this.gridY)
-                    return false;
-                else if(this.rookCheck(toX, toY, pieces))
-                   return true;
-            break;
-
             case "wk":
                 // Kingside castling
                 if(this.numMoves == 0 && toX == 6 && toY == this.gridY && this.gridX == 4 && this.gridY == 7){
@@ -423,16 +393,9 @@ public class Piece {
                     else return false;
                 }
             break;
-
-            case "wq":
-            case "bq":
-                // Queen is a rook and bishop combined.
-                if(bishopCheck(toX, toY, pieces) || rookCheck(toX, toY, pieces))
-                    return true;
-            break;
         }
 
-        return false;
+        return true;
     }
 
     /**
@@ -484,7 +447,7 @@ public class Piece {
 
         // Remove appropriate pieces and set numMoves
         pieces[i][j].setBaseValue(pieces[this.gridX][this.gridY].getBaseValue());
-        pieces[this.gridX][this.gridY] = new Piece();
+        pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, "", ' ', 0);
 
 
         // Reset everything except for current square
