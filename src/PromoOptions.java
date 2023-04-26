@@ -6,6 +6,9 @@ import java.awt.*;
  * Should be used in Board class.
  * In essence, a button that displays whenever a pawn is on the back rank.
  * The Board class handles clicking of these individual buttons and sets the piece type.
+ * 
+ * @author Gene Yang
+ * @version April 26, 2023
  * **/
 
 public class PromoOptions {
