@@ -1,8 +1,19 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 
+
+/**
+ * Helper methods, legal move generation, and board evaluation.
+ * @author Gene Yang
+ * @version April 26, 2023
+ */
 public class BoardEval {
     private static final int NUM_SQUARES = 8;
-    Piece[][] piecesCopy = new Piece[NUM_SQUARES][NUM_SQUARES];
+
+    // For assigning scores to pieces
+    public static final double BASE_VAL_WEIGHT = 0.95; // % base value
+    public static final double MOBILITY_WEIGHT = 0.03; // % mobility
+    public static final double POSITION_WEIGHT = 0.02; // % board position
 
     // Gives a score to each board (center squares > edge squares).
     private static int boardPositionValues[][] = {
@@ -90,17 +101,16 @@ public class BoardEval {
             yPos = p.getGridY() + rook_dy[i];
 
             while (xPos < NUM_SQUARES && yPos < NUM_SQUARES && xPos >= 0 && yPos >= 0) {
-                // Can't capture pieces on its own side
-                if(pieces[xPos][yPos].getSide() == p.getSide())
-                    break;
-
                 // Can capture opponent's pieces
-                else if(pieces[xPos][yPos].getSide() == (p.getSide() == 'w' ? 'b' : 'w')){
+                if(pieces[xPos][yPos].getSide() != p.getSide() && pieces[xPos][yPos].getSide() != ' '){
                     ans[xPos][yPos].add(new int[]{p.getGridX(), p.getGridY()});
                     break;
                 }
-
-                ans[xPos][yPos].add(new int[]{p.getGridX(), p.getGridY()});
+                else if(pieces[xPos][yPos].getSide() == p.getSide()){
+                    break;
+                }
+                else
+                    ans[xPos][yPos].add(new int[]{p.getGridX(), p.getGridY()});
 
                 xPos += rook_dx[i];
                 yPos += rook_dy[i];
@@ -118,17 +128,16 @@ public class BoardEval {
 
             // Go in the direction and stop if a piece is found (blocking).
             while(xPos < NUM_SQUARES && yPos < NUM_SQUARES && xPos >= 0 && yPos >= 0){
-                // Can't capture pieces on its own side
-                if(pieces[xPos][yPos].getSide() == p.getSide())
-                    break;
-
                 // Can capture opponent's pieces
-                else if(pieces[xPos][yPos].getSide() == (p.getSide() == 'w' ? 'b' : 'w')){
+                if(pieces[xPos][yPos].getSide() != p.getSide() && pieces[xPos][yPos].getSide() != ' '){
                     ans[xPos][yPos].add(new int[]{p.getGridX(), p.getGridY()});
                     break;
                 }
-
-                ans[xPos][yPos].add(new int[]{p.getGridX(), p.getGridY()});
+                else if(pieces[xPos][yPos].getSide() == p.getSide()){
+                    break;
+                }
+                else
+                    ans[xPos][yPos].add(new int[]{p.getGridX(), p.getGridY()});
 
                 xPos += bishop_dx[i];
                 yPos += bishop_dy[i];
@@ -165,7 +174,6 @@ public class BoardEval {
                 // Can't capture pieces on its own side
                 if(pieces[originX + king_dx[i]][originY + king_dy[i]].getSide() != p.getSide()) {
                     ans[originX + king_dx[i]][originY + king_dy[i]].add(new int[]{originX, originY});
-                    //System.out.println("Can move to (" + (originX + king_dx[i]) + ", " + (originY + king_dy[i]) + ")");
                 }
             }
         }
@@ -225,26 +233,41 @@ public class BoardEval {
         return ans;
     }
 
-    public static boolean whiteCanMoveHere(ArrayList<int[]> moves, Piece[][] pieces) {
-        for (int[] arr : moves){
-            if (pieces[arr[0]][arr[1]].getSide() == 'w')
-                return true;
+    public static boolean blackKingInCheck(boolean[][] controlledW, boolean[][] controlledB, Piece[][] pieces){
+        for(int i = 0; i < NUM_SQUARES; i++){
+            for(int j = 0; j < NUM_SQUARES; j++){
+                if(pieces[i][j].getType().equals("bk"))
+                    return controlledW[i][j];
+            }
         }
+
         return false;
     }
-
-    public static boolean blackCanMoveHere(ArrayList<int[]> moves, Piece[][] pieces) {
-        for (int[] arr : moves){
-            if (pieces[arr[0]][arr[1]].getSide() == 'b')
-                return true;
+    public static boolean whiteKingInCheck(boolean[][] controlledW, boolean[][] controlledB, Piece[][] pieces){
+        for(int i = 0; i < NUM_SQUARES; i++){
+            for(int j = 0; j < NUM_SQUARES; j++){
+                if(pieces[i][j].getType().equals("wk"))
+                    return controlledB[i][j];
+            }
         }
+
         return false;
     }
 
     public static void print(Piece[][] p){
         for(int i = 0; i < NUM_SQUARES; i++){
+            System.out.print("   ");
             for(int j = 0; j < NUM_SQUARES; j++)
                 System.out.print("[" + p[j][i].getType() + (p[j][i].getType().equals("") ? "  " : "") + "] ");
+            System.out.println();
+        }
+        System.out.println();
+    }
+    public static void print(boolean[][] a){
+        for(int i = 0; i < NUM_SQUARES; i++){
+            System.out.print("   ");
+            for(int j = 0; j < NUM_SQUARES; j++)
+                System.out.print((a[j][i] ? "[XX] " : "[  ] "));
             System.out.println();
         }
         System.out.println();
@@ -253,11 +276,25 @@ public class BoardEval {
     public static boolean[][] getControlled(ArrayList<int[]>[][] pseudoLegalMoves, Piece[][] pieces, char side){
         boolean[][] ans = new boolean[NUM_SQUARES][NUM_SQUARES];
         for(int i = 0; i < NUM_SQUARES; i++){
-            for(int j = 0; j < NUM_SQUARES; j++){
+            for(int j = 0; j < NUM_SQUARES; j++)
                 ans[i][j] = false;
+        }
+
+        for(int i = 0; i < NUM_SQUARES; i++){
+            for(int j = 0; j < NUM_SQUARES; j++){
 
                 for(int[] arr : pseudoLegalMoves[i][j]){
-                    if(pieces[arr[0]][arr[1]].getSide() == side)
+                    // Pawns are an exception - can move forward but only captures diagonally.
+                    if(pieces[arr[0]][arr[1]].getType().equals("wp") && side == 'w'){
+                        if(arr[1] - 1 >= 0 && arr[0] > 0) ans[arr[0] - 1][arr[1] - 1] = true;
+                        if(arr[1] - 1 >= 0 && arr[0] < NUM_SQUARES - 1) ans[arr[0] + 1][arr[1] - 1] = true;
+
+                    } else if(pieces[arr[0]][arr[1]].getType().equals("bp") && side == 'b'){
+                        if(arr[1] + 1 < NUM_SQUARES && arr[0] > 0) ans[arr[0] - 1][arr[1] + 1] = true;
+                        if(arr[1] + 1 < NUM_SQUARES && arr[0] < NUM_SQUARES - 1) ans[arr[0] + 1][arr[1] + 1] = true;
+                    }
+
+                    else if(pieces[arr[0]][arr[1]].getSide() == side)
                         ans[i][j] = true;
                 }
             }
@@ -268,7 +305,6 @@ public class BoardEval {
 
 
     public static ArrayList<int[]>[][] testMoves(ArrayList<int[]>[][] pseudoLegalMoves, Piece[][] pieces){
-        Piece[][] piecesCopy;
 
         ArrayList<int[]>[][] ans = new ArrayList[NUM_SQUARES][NUM_SQUARES];
         for(int i = 0; i < NUM_SQUARES; i++){
@@ -283,51 +319,29 @@ public class BoardEval {
         for(int i = 0; i < NUM_SQUARES; i++){
             for(int j = 0; j < NUM_SQUARES; j++){
                 for(int[] arr : pseudoLegalMoves[i][j]){
-
-                    //System.out.print("Testing (" + arr[0] + ", " + arr[1] + ") - " + pieces[arr[0]][arr[1]].getType() + " move to (" + i + ", " + j + ")");
-
-                    // Remove illegal moves off the bat
-                    if(!pieces[arr[0]][arr[1]].legalMove(i, j, pieces, controlledW, controlledB)) {
-                        //System.out.print("     -- FAILED CHECK 1");
-                        //System.out.println();
+                    if(!pieces[arr[0]][arr[1]].legalMove(i, j, pieces, controlledW, controlledB)){
                         continue;
                     }
 
-                    //System.out.print("    -- OK check 1 --");
+                    char sideThatMoved = pieces[arr[0]][arr[1]].getSide();
 
-                    piecesCopy = makeCopy(pieces);
+                    // Simulate the move
+                    Piece[][] piecesCopy = BoardEval.makeCopy(pieces);
                     piecesCopy[arr[0]][arr[1]].playMove(i, j, piecesCopy);
 
-                    //print(piecesCopy);
+                    // Get move generation for the new board state
+                    ArrayList<int[]>[][] moveGenCopy = BoardEval.getMoveGen(piecesCopy);
+                    boolean[][] controlledWCopy = getControlled(moveGenCopy, piecesCopy, 'w');
+                    boolean[][] controlledBCopy = getControlled(moveGenCopy, piecesCopy, 'b');
 
-                    // Check the controlled squares after playing that move.
-                    ArrayList<int[]>[][] movesCopy = getMoveGen(piecesCopy);
-
-
-                    // If the piece that was moved and the king in check are in the same side, not legal.
-                    boolean BInCheck = false;
-                    boolean WInCheck = false;
-                    for(int x = 0; x < NUM_SQUARES; x++){
-                        for(int y = 0; y < NUM_SQUARES; y++){
-                            if(piecesCopy[x][y].getType().equals("wk") && blackCanMoveHere(movesCopy[x][y], piecesCopy)) WInCheck = true;
-                            if(piecesCopy[x][y].getType().equals("bk") && whiteCanMoveHere(movesCopy[x][y], piecesCopy)) BInCheck = true;
-                        }
-                    }
-
-                    // Update moves and controlled squares
-                    if(pieces[arr[0]][arr[1]].getSide() == 'b' && BInCheck){
-                        //System.out.println(" FAILED CHECK 2");
-                        //System.out.println();
+                    if(sideThatMoved == 'w' && whiteKingInCheck(controlledWCopy, controlledBCopy, piecesCopy)){
+                        //System.out.println("Found illegal move for white");
                         continue;
-                    }
-                    else if(pieces[arr[0]][arr[1]].getSide() == 'w' && WInCheck){
-                        //System.out.print(" FAILED CHECK 2");
-                        //System.out.println();
+                    } else if(sideThatMoved == 'b' && blackKingInCheck(controlledWCopy, controlledBCopy, piecesCopy)){
+                        //System.out.println("Found illegal move for black");
                         continue;
                     }
 
-                    //System.out.print(" OK check 2");
-                    //System.out.println();
                     ans[i][j].add(new int[]{arr[0], arr[1]});
                 }
             }
@@ -353,6 +367,8 @@ public class BoardEval {
         /** Sensitive test points: king moves, king opposition, castling **/
         ans = testMoves(ans, pieces);
 
+        givePieceScores(pieces, ans);
+
         return ans;
     }
 
@@ -376,22 +392,23 @@ public class BoardEval {
      * @param curSide - the side to move (1 = white, -1 = black)
      * @return
      */
-    public static double gameOver(ArrayList<int[]>[][] moveGen, Piece[][] pieces, int curSide){
-        boolean BKcheck = false;
-        boolean WKcheck = false;
-        int bOptions = 0;
-        int wOptions = 0;
+    public static int gameOver(ArrayList<int[]>[][] moveGen, Piece[][] pieces, int curSide){
+        int bOptions = 0,
+            wOptions = 0;
+        boolean WKcheck = false,
+                BKcheck = false;
+
         for(int i = 0; i < NUM_SQUARES; i++){
             for(int j = 0; j < NUM_SQUARES; j++){
+                int curWOptions = 0,
+                        curBOptions = 0;
 
-                int curWOptions = 0;
-                int curBOptions = 0;
-
-                for(int[] move : moveGen[i][j]){
-                    if(pieces[move[0]][move[1]].getSide() == 'w') curWOptions++;
-                    else if(pieces[move[0]][move[1]].getSide() == 'b') curBOptions++;
+                for(int[] arr : moveGen[i][j]){
+                    if(pieces[arr[0]][arr[1]].getSide() == 'w') curWOptions++;
+                    else if(pieces[arr[0]][arr[1]].getSide() == 'b') curBOptions++;
                 }
 
+                // Checks
                 if(pieces[i][j].getType().equals("wk") && curBOptions > 0) WKcheck = true;
                 if(pieces[i][j].getType().equals("bk") && curWOptions > 0) BKcheck = true;
 
@@ -400,17 +417,59 @@ public class BoardEval {
             }
         }
 
-        // White checkmated
-        if(curSide == 1 && WKcheck && wOptions == 0) return 1000.0;
-
-        // Black checkmated
-        else if(curSide == -1 && BKcheck && bOptions == 0) return -1000.0;
+        // Checkmate
+        if(WKcheck && wOptions == 0) return -1000;
+        if(BKcheck && bOptions == 0) return 1000;
 
         // Stalemate
-        else if(!WKcheck && !BKcheck && bOptions == 0 && wOptions == 0) return 0.0;
-
-        // Game not over
+        if(bOptions == 0 && wOptions == 0) return 0;
         else return -1;
     }
 
+    public static void givePieceScores(Piece[][] pieces, ArrayList<int[]>[][] moveGen){
+        HashMap<Piece, Integer> mobility = new HashMap<>();
+        for(int i = 0; i < NUM_SQUARES; i++){
+            for(int j = 0; j < NUM_SQUARES; j++){
+                for(int[] arr : moveGen[i][j]){
+                    mobility.put(new Piece(pieces[arr[0]][arr[1]]), mobility.get(pieces[arr[0]][arr[1]]) == null ? 1 : mobility.get(pieces[arr[0]][arr[1]]) + 1);
+                }
+            }
+        }
+
+        for(int i = 0; i < NUM_SQUARES; i++){
+            for(int j = 0; j < NUM_SQUARES; j++){
+                if(pieces[i][j].getSide() == ' ')
+                    continue;
+
+                pieces[i][j].setValue(
+                        BASE_VAL_WEIGHT * pieces[i][j].getBaseValue() +
+                        MOBILITY_WEIGHT * (mobility.get(pieces[i][j]) == null ? 0 : mobility.get(pieces[i][j])) +
+                        POSITION_WEIGHT * boardPositionValues[i][j]
+                );
+            }
+        }
+    }
+
+    public static String FENify(Piece[][] pieces, int curSide){
+        String ans = "";
+        int blanks = 0;
+        for(int i = 0; i < NUM_SQUARES; i++){
+            for(int j = 0; j < NUM_SQUARES; j++){
+                if(pieces[i][j].getSide() == ' ')
+                    blanks++;
+                else {
+                    if(blanks > 0){
+                        ans += String.valueOf(blanks);
+                        blanks = 0;
+                    }
+                    ans += pieces[i][j].getType().charAt(1);
+                }
+            }
+        }
+
+        if(blanks > 0)
+            ans += String.valueOf(blanks);
+
+        return ans + (curSide == 1 ? " -1" : " 1");
+    }
 }
