@@ -2,7 +2,7 @@
  * Draws the entire board, combining the Piece.java and Square.java.
  *
  * @author Gene Yang
- * @version April 3, 2023
+ * @version April 26, 2023
  * **/
 
 import javax.swing.*;
@@ -10,10 +10,9 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class Board extends JComponent implements MouseListener {
-    /*private String boardState[][] = {
+    private String boardState[][] = {
             {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
             {"bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"},
             {"", "", "", "", "", "", "", ""},
@@ -22,16 +21,6 @@ public class Board extends JComponent implements MouseListener {
             {"", "", "", "", "", "", "", ""},
             {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
             {"wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr"}
-    };*/
-    private String boardState[][] = {
-            {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
-            {"bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"},
-            {"", "", "", "", "", "", "", ""},
-            {"", "", "", "", "", "", "", "wq"},
-            {"", "", "", "", "", "", "", ""},
-            {"", "", "", "", "", "", "", ""},
-            {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
-            {"wr", "wn", "wb", "", "wk", "wb", "wn", "wr"}
     };
 
 
@@ -39,8 +28,8 @@ public class Board extends JComponent implements MouseListener {
     private char userSide = 'w'; // User's side
 
     // The squares that can be moved to by each side
-    private boolean[][] squaresControlledW;
-    private boolean[][] squaresControlledB;
+    private boolean[][] controlledW;
+    private boolean[][] controlledB;
 
 
     // For each square, keeps track of the pieces that can potentially move there.
@@ -77,8 +66,6 @@ public class Board extends JComponent implements MouseListener {
     private String message = "";
     private boolean gameOver = false;
 
-    double boardScore = 0.0;
-
     /**
      * Shows a message to the user for help and also for debugging purposes.
      *
@@ -94,8 +81,8 @@ public class Board extends JComponent implements MouseListener {
      * **/
     public void initSquares() {
         squares = new Square[NUM_SQUARES][NUM_SQUARES];
-        squaresControlledW = new boolean[NUM_SQUARES][NUM_SQUARES];
-        squaresControlledB = new boolean[NUM_SQUARES][NUM_SQUARES];
+        controlledW = new boolean[NUM_SQUARES][NUM_SQUARES];
+        controlledB = new boolean[NUM_SQUARES][NUM_SQUARES];
 
         boolean flag = true;
 
@@ -109,8 +96,8 @@ public class Board extends JComponent implements MouseListener {
                     flag = !flag;
 
                 // Setting the squares controlled
-                squaresControlledW[i][j] = false;
-                squaresControlledB[i][j] = false;
+                controlledW[i][j] = false;
+                controlledB[i][j] = false;
             }
         }
     }
@@ -137,65 +124,24 @@ public class Board extends JComponent implements MouseListener {
         }
     }
 
-    public void update(){
+    public boolean checkGameOver(char side) {
+        // Update possible moves
+        movableSquares = BoardEval.updateControlledSquares(pieces);
+        controlledW = BoardEval.getControlled(movableSquares, pieces, 'w');
+        controlledB = BoardEval.getControlled(movableSquares, pieces, 'b');
 
+        int result = BoardEval.gameOver(movableSquares, pieces, side == 'w' ? 0 : 1);
 
-        /*System.out.println("Updating...");
-        for(int i = 0; i < NUM_SQUARES; i++){
-            for(int j = 0; j < NUM_SQUARES; j++) {
-                System.out.print("[" + i + ", " + j + "]: ");
-                for(int[] arr : movableSquares[i][j])
-                    System.out.print("[" + arr[0] + ", " + arr[1] + "] ");
-                System.out.println();
-            }
-        }
-        System.out.println();*/
-
-        //boardScore = BoardEval.getEval(movableSquares, pieces);
-
-        /*piecesW = BoardEval.getPossibleMovesW(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, piecesW);
-        piecesB = BoardEval.getPossibleMovesB(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, piecesB);
-
-        piecesW = BoardEval.removeIllegalMovesW(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, prevCoords, piecesW, piecesB);
-        piecesB = BoardEval.removeIllegalMovesB(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, prevCoords, piecesW, piecesB);
-
-        BoardEval.checkControlledSquaresW(squaresControlledW, squaresControlledB, pieces);
-        BoardEval.checkControlledSquaresB(squaresControlledW, squaresControlledB, pieces);
-
-        piecesW = BoardEval.cleanUpHashMap(piecesW, 'w');
-        piecesB = BoardEval.cleanUpHashMap(piecesB, 'b');
-
-        BoardEval.givePieceScores(piecesW, piecesB);*/
-
-        // Checkmate or stalemate
-        //if(BoardEval.possibleMovesW == 0 && whiteTurn) gameOver = true;
-        //if(BoardEval.possibleMovesB == 0 && !whiteTurn) gameOver = true;
-    }
-
-    public boolean checkGameOver() {
-        // Checkmate by black
-        /*if (BoardEval.whiteKingInCheck() && BoardEval.possibleMovesW == 0 && whiteTurn) {
-            setMessage("Game over - Black wins by checkmate.");
-            return true;
-        }
-
-        // Checkmate by white
-        if (BoardEval.blackKingInCheck() && BoardEval.possibleMovesB == 0 && !whiteTurn) {
+        if(result == 1000){
             setMessage("Game over - White wins by checkmate.");
             return true;
-        }
-
-        // Stalemate by black
-        if (!BoardEval.whiteKingInCheck() && BoardEval.possibleMovesW == 0 && whiteTurn) {
+        } else if(result == -1000){
+            setMessage("Game over - Black wins by checkmate.");
+            return true;
+        } else if(result == 0){
             setMessage("Game over - Stalemate.");
             return true;
         }
-
-        // Stalemate by white
-        if (!BoardEval.blackKingInCheck() && BoardEval.possibleMovesB == 0 && !whiteTurn) {
-            setMessage("Game over - Stalemate.");
-            return true;
-        }*/
 
         return false;
     }
@@ -206,20 +152,22 @@ public class Board extends JComponent implements MouseListener {
      * Adds the mouse listener and initializes the squares and pieces.
      * **/
     public Board(){
-        //piecesW = new HashMap<Piece, ArrayList<int[]>>();
-        //piecesB = new HashMap<Piece, ArrayList<int[]>>();
-
         this.initSquares();
         this.initPieces();
 
 
         // AI
-        hackberryAI = new HackberryAI(userSide == 'w' ? 'b' : 'w', 2);
+        // Depth 1: Plays recognizable chess but can't see ahead too much, fast.
+        // Depth 2: Can defend & attack better, slower.
+        // Larger depths: Really slow :/
+        hackberryAI = new HackberryAI(userSide == 'w' ? 'b' : 'w', 1);
 
         // Add mouse listener
         addMouseListener(this);
 
         movableSquares = BoardEval.updateControlledSquares(pieces);
+        controlledW = BoardEval.getControlled(movableSquares, pieces, 'w');
+        controlledB = BoardEval.getControlled(movableSquares, pieces, 'b');
     }
 
 
@@ -342,19 +290,19 @@ public class Board extends JComponent implements MouseListener {
                     //System.out.println("it's a check");
                 }*/
 
-                if(squaresControlledW[i][j]){
+                /*if(controlledW[i][j]){
                     g.setColor(new Color(0, 0, 255, 50));
                     g.fillRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH);
                 }
-                if(squaresControlledB[i][j]){
+                if(controlledB[i][j]){
                     g.setColor(new Color(255, 0, 0, 50));
                     g.fillRect(i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET, SQUARE_WIDTH, SQUARE_WIDTH);
-                }
+                }*/
 
-                g.setColor(Color.BLACK);
+                //g.setColor(Color.BLACK);
                 //g.drawString(String.valueOf(pieces[i][j].hashCode()), i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET);
-                g.drawString(String.valueOf(pieces[i][j].getValue()), i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET + 20);
-                g.drawString(i + ", " + j, i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET + 30);
+                //g.drawString(String.valueOf(pieces[i][j].getValue()), i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET + 20);
+                //g.drawString(i + ", " + j, i*SQUARE_WIDTH + X_OFFSET, j*SQUARE_WIDTH + Y_OFFSET + 30);
 
                 // Piece images
                 if(pieces[i][j].getSide() != ' ')
@@ -400,14 +348,15 @@ public class Board extends JComponent implements MouseListener {
 
             if(choice == -1) return;
 
-            //update(userSide == 'w' ? 'b' : 'w');
+            if(checkGameOver(userSide == 'w' ? 'b' : 'w')){
+                repaint();
+                return;
+            }
 
-            hackberryAI.makeMove(pieces, squaresControlledW, squaresControlledB);
+            hackberryAI.makeMove(pieces);
             whiteTurn = !whiteTurn;
 
-            // Update controlled squares
-            movableSquares = BoardEval.updateControlledSquares(pieces);
-            if(checkGameOver()){
+            if(checkGameOver(userSide)){
                 repaint();
                 return;
             }
@@ -478,17 +427,14 @@ public class Board extends JComponent implements MouseListener {
         if(numClicks == 2) {
 
             // If the user checkmated the computer
-            if(checkGameOver()){
+            if(checkGameOver(userSide == 'w' ? 'b' : 'w')){
                 repaint();
                 return;
             }
 
-            hackberryAI.makeMove(pieces, squaresControlledW, squaresControlledB);
+            hackberryAI.makeMove(pieces);
 
-            // Update possible moves for the user
-            movableSquares = BoardEval.updateControlledSquares(pieces);
-
-            if(checkGameOver()){
+            if(checkGameOver(userSide)){
                 repaint();
                 return;
             }
