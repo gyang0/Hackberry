@@ -1,16 +1,15 @@
-/**
- * Draws the entire board, combining the Piece.java and Square.java.
- *
- * @author Gene Yang
- * @version April 26, 2023
- * **/
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 
+/**
+ * Draws the entire board, combining the Piece.java and Square.java.
+ *
+ * @author Gene Yang
+ * @version April 3, 2023
+ * **/
 public class Board extends JComponent implements MouseListener {
     private String boardState[][] = {
             {"br", "bn", "bb", "bq", "bk", "bb", "bn", "br"},
