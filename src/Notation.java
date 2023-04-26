@@ -1,18 +1,10 @@
 /**
  * A class used to write chess moves in algebraic notation to games.txt file.
  * All methods are static because I kind of like not having to make a new Notation();
- *
- * TODO: captures
- * TODO: checks and checkmate
- * TODO: score reports (0-1 or 1-0)
- * TODO: castling
- * TODO: promotion
- * TODO: actually save the game (maybe a button or something?)
- * TODO: make the notation work with captures, castling, en passant, and promotions.
- * TODO: if two knights can move to the same square, then the notation should reflect that. (same for pawns, rooks, queens, bishops)
+ * Still a work in progress.
  *
  * @author Gene Yang
- * @version January 22, 2023
+ * @version April 26, 2023
  * **/
 
 import java.io.FileNotFoundException;
@@ -54,30 +46,14 @@ public class Notation {
         }
     }
 
-    public static void updateFile(){
-        PrintWriter output = null;
+    public static void update(Piece[][] pieces, int fromX, int fromY, int toX, int toY){
         try {
-            output = new PrintWriter(new FileOutputStream(fileName, true));
-
-        } catch (FileNotFoundException e) {
+            PrintWriter output = new PrintWriter(fileName);
+            output.print("Working on it");
+            output.close();
+        } catch(FileNotFoundException e){
             System.out.println("Couldn't open " + fileName + ".");
             System.exit(0);
         }
-
-        // Writes the PGN to the file
-        for(int i = 0; i < PGNMoves.size(); i++){
-            // Move number
-            if(i % 2 == 0)
-                output.print(i/2 + ". ");
-
-            // Move that was played
-            output.print(PGNMoves.get(i) + " ");
-        }
-
-        output.close();
-    }
-
-    public static void updateMoves(int toX, int toY, Piece curPiece){
-        PGNMoves.add(Notation.getNotation(toX, toY, curPiece));
     }
 }
