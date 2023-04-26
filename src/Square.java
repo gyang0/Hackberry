@@ -1,5 +1,8 @@
 /**
- * Individual squares of the chessboard
+ * Individual squares of the chessboard.
+ * 
+ * @author Gene Yang
+ * @version April 26, 2023
  * **/
 
 import java.awt.*;
