@@ -5,7 +5,7 @@ import java.util.HashMap;
 /**
  * Helper methods, legal move generation, and board evaluation.
  * @author Gene Yang
- * @version April 26, 2023
+ * @version May 10, 2023
  */
 public class BoardEval {
     private static final int NUM_SQUARES = 8;
@@ -181,10 +181,12 @@ public class BoardEval {
 
 
         // Kingside castling
-        ans[6][p.getGridY()].add(new int[]{4, p.getGridY()});
+        if(p.getSide() == 'w') ans[6][NUM_SQUARES - 1].add(new int[]{4, NUM_SQUARES - 1});
+        else ans[6][0].add(new int[]{4, 0});
 
         // Queenside castling
-        ans[2][p.getGridY()].add(new int[]{4, p.getGridY()});
+        if(p.getSide() == 'w') ans[2][NUM_SQUARES - 1].add(new int[]{4, NUM_SQUARES - 1});
+        else ans[2][0].add(new int[]{4, 0});
     }
 
 
@@ -440,12 +442,22 @@ public class BoardEval {
             for(int j = 0; j < NUM_SQUARES; j++){
                 if(pieces[i][j].getSide() == ' ')
                     continue;
-
-                pieces[i][j].setValue(
-                        BASE_VAL_WEIGHT * pieces[i][j].getBaseValue() +
-                        MOBILITY_WEIGHT * (mobility.get(pieces[i][j]) == null ? 0 : mobility.get(pieces[i][j])) +
-                        POSITION_WEIGHT * boardPositionValues[i][j]
-                );
+                else if(pieces[i][j].getType().equals("wp"))
+                    pieces[i][j].setValue(
+                            BASE_VAL_WEIGHT * pieces[i][j].getBaseValue() +
+                            MOBILITY_WEIGHT * (mobility.get(pieces[i][j]) == null ? 0 : mobility.get(pieces[i][j])) +
+                            POSITION_WEIGHT * (NUM_SQUARES - i));
+                else if(pieces[i][j].getType().equals("bp"))
+                    pieces[i][j].setValue(
+                            BASE_VAL_WEIGHT * pieces[i][j].getBaseValue() +
+                            MOBILITY_WEIGHT * (mobility.get(pieces[i][j]) == null ? 0 : mobility.get(pieces[i][j])) +
+                            POSITION_WEIGHT * i);
+                else
+                   pieces[i][j].setValue(
+                            BASE_VAL_WEIGHT * pieces[i][j].getBaseValue() +
+                            MOBILITY_WEIGHT * (mobility.get(pieces[i][j]) == null ? 0 : mobility.get(pieces[i][j])) +
+                            POSITION_WEIGHT * boardPositionValues[i][j]
+                   );
             }
         }
     }
