@@ -5,14 +5,32 @@ import java.util.*;
  * Takes some positional factors into account, and caches board states to improve speed later on in the game.
  *
  * @author Gene Yang
- * @version April 26, 2023
+ * @version May 10, 2023
+ */
+
+/**
+ * Stores possible openings for Hackberry to reference without calculating moves.
+ *
+ * For white: Ruy Lopez
+ *            English Opening
+ *            Catalan
+ *            Queen's Gambit
+ *            Giuoco Piano
+ *            Fried Liver
+ *
+ * For black: King's Indian
+ *            Nimzo-Indian
+ *            Sicilian Defense
+ *            Slav Defense
+ *            Caro-Kann Defense
+ *            Refutation for Fried Liver
  */
 
 public class HackberryAI {
     private final int NUM_SQUARES = 8;
     private char side;
     private int DEPTH;
-    
+
     public static String[][] continuations = new String[][]{
             {"e4", "e5", "Nf3", "Nf6", "Bb5", "a6", "Ba4", "Nf6", "O-O"}, // Ruy Lopez
             {"d4", "d5", "c4", "c6", "Nc3", "e6", "Nf3", "Nf6", "Bg5", "dxc4"}, // Queen's Gambit + slav defense
@@ -76,84 +94,22 @@ public class HackberryAI {
         }
     }*/
 
-    public void print(Piece[][] pieces, int numTabs){
+    public void autopromote(Piece[][] pieces){
+        Piece[][] pieceCopy = BoardEval.makeCopy(pieces);
+
+        // Just promote to a queen.
         for(int i = 0; i < NUM_SQUARES; i++){
-            if(numTabs == 1) System.out.print("   ");
-            else if(numTabs == 2) System.out.print("      ");
-            else if(numTabs == 3) System.out.print("         ");
-            for(int j = 0; j < NUM_SQUARES; j++)
-                System.out.print("[" + pieces[j][i].getType() + (pieces[j][i].getType().length() == 2 ? " " : "   ") + "] ");
-            System.out.println();
+            if(pieces[i][0].getType().equals("wp"))
+                pieces[i][0] = new Piece(i, 0, "wq", 'w', 0);
+            if(pieces[i][NUM_SQUARES - 1].getType().equals("bp"))
+                pieces[i][NUM_SQUARES - 1] = new Piece(i, NUM_SQUARES - 1, "bq", 'b', 0);
         }
-
-        System.out.println();
     }
-
-    public ArrayList<int[]> sortByCaptures(ArrayList<int[]> arr, Piece[][] pieces){
-        ArrayList<int[]> ans = new ArrayList<>();
-
-        for(int i = 0; i < arr.size(); i++){
-            if(pieces[arr.get(i)[2]][arr.get(i)[3]].getSide() != ' ')
-                ans.add(new int[]{arr.get(i)[0], arr.get(i)[1], arr.get(i)[2], arr.get(i)[3]});
-        }
-
-        for(int i = 0; i < arr.size(); i++){
-            if(pieces[arr.get(i)[2]][arr.get(i)[3]].getSide() == ' ')
-                ans.add(new int[]{arr.get(i)[0], arr.get(i)[1], arr.get(i)[2], arr.get(i)[3]});
-        }
-
-        return ans;
-    }
-
-    /*public double negamax(Piece[][] originalPieces, int[] move, int depth, double alpha, double beta, int curSide){
-        // Make a copy and play the move.
-        Piece[][] pieces = BoardEval.makeCopy(originalPieces);
-        pieces[move[0]][move[1]].playMove(move[2], move[3], pieces);
-
-        // Update possible moves for the computer
-        ArrayList<int[]>[][] moveGen = BoardEval.updateControlledSquares(pieces);
-
-        //print(pieces, 2 - depth + 1);
-
-
-        // If the game is over with the other side to move
-        if(BoardEval.gameOver(moveGen, pieces, -curSide) != -1) {
-            //System.out.println("GAME OVER STATE FOUND");
-            //System.exit(0);
-            return BoardEval.gameOver(moveGen, pieces, -curSide);
-        }
-
-        // Max depth reached
-        if(depth == 0) return BoardEval.boardScore(pieces);
-
-
-        // Get the possible moves in this position
-        ArrayList<int[]> possibleMoves = new ArrayList<>();
-        for(int i = 0; i < NUM_SQUARES; i++){
-            for(int j = 0; j < NUM_SQUARES; j++){
-                for(int[] arr : moveGen[i][j]){
-                    if((pieces[arr[0]][arr[1]].getSide() == 'w' && curSide == -1) ||
-                       (pieces[arr[0]][arr[1]].getSide() == 'b' && curSide == 1))
-                        possibleMoves.add(new int[]{arr[0], arr[1], i, j});
-                }
-            }
-        }
-
-        double val = -10000.0;
-        for(int[] toTest : possibleMoves){
-            val = Math.max(val, -negamax(pieces, toTest, depth - 1, -beta, -alpha, -curSide));
-
-            alpha = Math.max(alpha, val);
-            if(alpha >= beta)
-                break;
-        }
-
-        return val;
-    }*/
 
     public double minimax(Piece[][] originalBoard, int[] move, int depth, double alpha, double beta, int curSide){
         Piece[][] pieces = BoardEval.makeCopy(originalBoard);
         pieces[move[0]][move[1]].playMove(move[2], move[3], pieces);
+        this.autopromote(pieces);
 
         //System.out.println();
         //System.out.println("DEPTH " + depth);
@@ -275,30 +231,16 @@ public class HackberryAI {
         //}
 
         // Play the best move found
+        // Promotion
+        if((pieces[best[0]][best[1]].getType().equals("wp") || pieces[best[0]][best[1]].getType().equals("bp")) &&
+           (best[3] == 0 || best[3] == NUM_SQUARES - 1))
+            Notation.addPromotion(best[2], best[3], "Q");
+        else
+            Notation.update(pieces, best[0], best[1], best[2], best[3]);
+
         pieces[best[0]][best[1]].playMove(best[2], best[3], pieces);
-        Notation.update(pieces, best[0], best[1], best[2], best[3]);
+        autopromote(pieces);
 
         System.out.println();
-    }
-
-
-    public ArrayList<int[]>[][] update(Piece[][] pieces, boolean[][] squaresControlledW, boolean[][] squaresControlledB, int[] prevCoords){
-        /*Piece[][] piecesCopy = new Piece[NUM_SQUARES][NUM_SQUARES];
-        ArrayList<Piece>[][] destSquares = new ArrayList<Piece>[NUM_SQUARES][NUM_SQUARES];
-
-        setPieces(pieces, piecesCopy);
-
-        piecesW = BoardEval.getPossibleMovesW(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, piecesW);
-        piecesB = BoardEval.getPossibleMovesB(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, piecesB);
-
-        piecesW = BoardEval.removeIllegalMovesW(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, prevCoords, piecesW, piecesB);
-        piecesB = BoardEval.removeIllegalMovesB(squaresControlledW, squaresControlledB, pieces, mostRecentPieceMov, prevCoords, piecesW, piecesB);
-
-        BoardEval.checkControlledSquaresW(squaresControlledW, squaresControlledB, pieces);
-        BoardEval.checkControlledSquaresB(squaresControlledW, squaresControlledB, pieces);
-
-        BoardEval.givePieceScores(piecesW, piecesB);*/
-
-        return null;
     }
 }
