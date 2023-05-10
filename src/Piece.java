@@ -3,9 +3,9 @@ import java.awt.*;
 
 /**
  * Individual pieces on the chessboard.
- * 
+ *
  * @author Gene Yang
- * @version April 26, 2023
+ * @version May 10, 2023
  * **/
 
 public class Piece {
@@ -443,11 +443,11 @@ public class Piece {
         }
 
         // Other pieces
-        pieces[i][j].setPiece(i, j, this.type, this.side, this.numMoves + 1);
+        pieces[i][j] = new Piece(i, j, this.type, this.side, this.numMoves + 1);
 
         // Remove appropriate pieces and set numMoves
         pieces[i][j].setBaseValue(pieces[this.gridX][this.gridY].getBaseValue());
-        pieces[this.gridX][this.gridY].setPiece(this.gridX, this.gridY, "", ' ', 0);
+        pieces[this.gridX][this.gridY] = new Piece(this.gridX, this.gridY, "", ' ', 0);
 
 
         // Reset everything except for current square
