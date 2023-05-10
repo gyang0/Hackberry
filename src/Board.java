@@ -8,7 +8,7 @@ import java.util.ArrayList;
  * Draws the entire board, combining the Piece.java and Square.java.
  *
  * @author Gene Yang
- * @version April 3, 2023
+ * @version May 10, 2023
  * **/
 public class Board extends JComponent implements MouseListener {
     private String boardState[][] = {
@@ -21,7 +21,6 @@ public class Board extends JComponent implements MouseListener {
             {"wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"},
             {"wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr"}
     };
-
 
     private HackberryAI hackberryAI; // AI
     private char userSide = 'w'; // User's side
@@ -133,12 +132,15 @@ public class Board extends JComponent implements MouseListener {
 
         if(result == 1000){
             setMessage("Game over - White wins by checkmate.");
+            Notation.printGame();
             return true;
         } else if(result == -1000){
             setMessage("Game over - Black wins by checkmate.");
+            Notation.printGame();
             return true;
         } else if(result == 0){
             setMessage("Game over - Stalemate.");
+            Notation.printGame();
             return true;
         }
 
@@ -219,17 +221,21 @@ public class Board extends JComponent implements MouseListener {
             case 0:
                 pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wr" : "br", promoOption.side, 0);
                 done = true;
+                Notation.addPromotion(promoX, promoY, "R");
             break;
             case 1:
                 pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wn" : "bn", promoOption.side, 0);
                 done = true;
+                Notation.addPromotion(promoX, promoY, "N");
             break;
             case 2:
                 pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wb" : "bb", promoOption.side, 0);
                 done = true;
+                Notation.addPromotion(promoX, promoY, "B");
             break;
             case 3:
                 pieces[promoX][promoY].setPiece(promoX, promoY, promoOption.side == 'w' ? "wq" : "bq", promoOption.side, 0);
+                Notation.addPromotion(promoX, promoY, "Q");
                 done = true;
             break;
         }
@@ -251,7 +257,7 @@ public class Board extends JComponent implements MouseListener {
         pieces[prevCoords[0]][prevCoords[1]].playMove(i, j, pieces);
 
         // A few changes to make.
-        //pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
+        pieces[i][j].numMoves = pieces[prevCoords[0]][prevCoords[1]].numMoves + 1;
         pieces[i][j].setBaseValue(pieces[prevCoords[0]][prevCoords[1]].getBaseValue());
 
         pieces[prevCoords[0]][prevCoords[1]].numMoves = 0;
@@ -384,6 +390,7 @@ public class Board extends JComponent implements MouseListener {
                     } else {
                         // Go through possible moves for that piece and check for legal moves
                         if(this.canMoveTo(prevCoords[0], prevCoords[1], i, j)) {
+                            Notation.update(pieces, prevCoords[0], prevCoords[1], i, j);
                             makeMove(i, j);
                             whiteTurn = !whiteTurn;
 
@@ -431,18 +438,21 @@ public class Board extends JComponent implements MouseListener {
                 return;
             }
 
-            hackberryAI.makeMove(pieces);
+            //hackberryAI.makeMove(pieces);
 
             if(checkGameOver(userSide)){
                 repaint();
                 return;
             }
 
-            whiteTurn = !whiteTurn;
+            //whiteTurn = !whiteTurn;
 
             numClicks = 0;
             repaint();
         }
+
+        for(String s : Notation.PGNMoves)
+            System.out.println(s);
     }
 
     @Override
